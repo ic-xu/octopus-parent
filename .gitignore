@@ -1,23 +1,67 @@
-# Compiled class file
+/build
+*/build/
+/target/
+/target/**
+*/target/**
+**/target/**
+/parser/target/
+/benchmarking/target/
+.idea/
+.idea
+.mvn/
+*.iml
+broker/target/
+client/target/
+parser_commons/target/
+netty_parser/target/
+distribution/target/
+broker/octopus.log
+broker/runner
+/bundle/target/
+/bundle/runner/
+/osgi_test/target/
+/perf/target/
+/mapdb_storage/target/
+client-mqttv3/target/
+mqtt-de-encoder/target/
+data/*
+data/
+data
+*~
+*.log*
+.DS_Store
+.settings/
+.project
+.classpath
+/*/bin/
+*.swp
+
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
+gilog.log
+.mvn/*
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
-*.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
-
+logs
+logs/
+/data
+data
+data/
+*/data
+*/data/*
+*.log
+*.h2
+octopus_store.h2
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+broker/*octopus.*
+embedding_octopus/target/
+broker/nb-configuration.xml
+broker/nbactions-Server.xml
+
+maven-metadata.xml
+/.gradle/
+/bin/
