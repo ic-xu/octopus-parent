@@ -1,0 +1,43 @@
+@startuml
+
+() 发布
+() 订阅者
+
+package 协议解析组件{
+}
+
+
+rectangle core {
+
+    package IPostOffice消息分发组件{
+    }
+
+    package ISubscribtion订阅信息管理组件{
+    }
+
+    package ISessionRegister用户会话信息管理组件{
+    }
+
+    package Session单独某一个用户会话{
+    }
+
+}
+
+package 协议编码组件{
+}
+
+note left of core
+  这里面统一封装一个
+  消息对象Message，
+  消息进来出去都需要
+  进行消息格式转换。
+end note
+
+发布 --> 协议解析组件:http 携带参数
+协议解析组件 --> IPostOffice消息分发组件: message
+IPostOffice消息分发组件 ..> ISubscribtion订阅信息管理组件:查询订阅路由
+IPostOffice消息分发组件 ..> ISessionRegister用户会话信息管理组件:查询目标用户
+IPostOffice消息分发组件 --> Session单独某一个用户会话:直接发送到目标用户
+Session单独某一个用户会话 --> 协议编码组件:按照响应的协议编码
+协议编码组件 --> 订阅者:编码后的内容推送给订阅者
+@enduml

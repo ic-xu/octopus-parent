@@ -1,0 +1,27 @@
+@startuml
+
+() 发布
+actor 订阅者
+
+package 协议解析组件{
+}
+
+package IPostOffice消息分发组件{
+}
+
+package ISubscribtion订阅信息管理组件{
+}
+
+package ISessionRegister用户会话信息管理组件{
+}
+
+package Session单独某一个用户会话{
+}
+
+发布 --> 协议解析组件:http 携带参数
+协议解析组件 --> IPostOffice消息分发组件:http 携带参数
+IPostOffice消息分发组件 ..> ISubscribtion订阅信息管理组件:查询订阅路由
+IPostOffice消息分发组件 ..> ISessionRegister用户会话信息管理组件:查询目标用户
+IPostOffice消息分发组件 --> Session单独某一个用户会话:直接发送到目标用户
+Session单独某一个用户会话 --> 订阅者:推送给订阅者
+@enduml
