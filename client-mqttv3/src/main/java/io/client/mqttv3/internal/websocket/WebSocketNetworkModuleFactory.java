@@ -27,33 +27,34 @@ import io.client.mqttv3.internal.NetworkModule;
 
 public class WebSocketNetworkModuleFactory implements NetworkModuleFactory {
 
-    @Override
-    public Set<String> getSupportedUriSchemes() {
-        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList("ws")));
-    }
+	@Override
+	public Set<String> getSupportedUriSchemes() {
+		return Collections.unmodifiableSet(new HashSet<>(Arrays.asList("ws")));
+	}
 
-    @Override
-    public void validateURI(URI brokerUri) throws IllegalArgumentException {
-        // so specific requirements so far
-    }
+	@Override
+	public void validateURI(URI brokerUri) throws IllegalArgumentException {
+		// so specific requirements so far
+	}
 
-    @Override
-    public NetworkModule createNetworkModule(URI brokerUri, MqttConnectOptions options, String clientId)
-            throws MqttException {
-        String host = brokerUri.getHost();
-        int port = brokerUri.getPort(); // -1 if not defined
-        if (port == -1) {
-            port = 80;
-        }
-        SocketFactory factory = options.getSocketFactory();
-        if (factory == null) {
-            factory = SocketFactory.getDefault();
-        } else if (factory instanceof SSLSocketFactory) {
-            throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
-        }
-        WebSocketNetworkModule netModule = new WebSocketNetworkModule(factory, brokerUri.toString(), host, port,
-                clientId, options.getCustomWebSocketHeaders());
-        netModule.setConnectTimeout(options.getConnectionTimeout());
-        return netModule;
-    }
+	@Override
+	public NetworkModule createNetworkModule(URI brokerUri, MqttConnectOptions options, String clientId)
+			throws MqttException
+	{
+		String host = brokerUri.getHost();
+		int port = brokerUri.getPort(); // -1 if not defined
+		if (port == -1) {
+			port = 80;
+		}
+		SocketFactory factory = options.getSocketFactory();
+		if (factory == null) {
+			factory = SocketFactory.getDefault();
+		} else if (factory instanceof SSLSocketFactory) {
+			throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
+		}
+		WebSocketNetworkModule netModule = new WebSocketNetworkModule(factory, brokerUri.toString(), host, port,
+				clientId, options.getCustomWebSocketHeaders());
+		netModule.setConnectTimeout(options.getConnectionTimeout());
+		return netModule;
+	}
 }

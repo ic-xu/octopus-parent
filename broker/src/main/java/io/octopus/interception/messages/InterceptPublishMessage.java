@@ -1,7 +1,7 @@
 package io.octopus.interception.messages;
 
-import io.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.buffer.ByteBuf;
+import io.handler.codec.mqtt.MqttPublishMessage;
 
 public class InterceptPublishMessage extends InterceptAbstractMessage {
 

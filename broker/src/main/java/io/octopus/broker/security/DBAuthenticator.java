@@ -1,9 +1,8 @@
 package io.octopus.broker.security;
 
 import com.zaxxer.hikari.HikariDataSource;
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.interfaces.IAuthenticator;
+import io.octopus.contants.BrokerConstants;
+import io.octopus.broker.config.IConfig;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

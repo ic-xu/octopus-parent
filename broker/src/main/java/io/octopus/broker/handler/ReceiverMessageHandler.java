@@ -2,22 +2,22 @@ package io.octopus.broker.handler;
 
 import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.handler.codec.mqtt.utils.MessageDecoderUtils;
-import io.netty.buffer.ByteBuf;
-import io.octopus.scala.broker.PostOffice;
+import io.handler.codec.mqtt.utils.MqttDecoderUtils;
+import io.octopus.broker.PostOffice;
 import io.octopus.udp.message.MessageReceiverListener;
+import io.netty.buffer.ByteBuf;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ReceiverMessageHandler implements MessageReceiverListener {
 
-    private PostOffice postOffice;
+    private PostOffice dispatcher;
 
     private MessageHandlerWorker[] worker = new MessageHandlerWorker[1];
 
 
-    public ReceiverMessageHandler(PostOffice msgDispatcher) {
-        this.postOffice = msgDispatcher;
+    public ReceiverMessageHandler(PostOffice postOffice) {
+        this.dispatcher = postOffice;
         for (int i = 0; i < worker.length; i++) {
             worker[i] = new MessageHandlerWorker();
             worker[i].setDaemon(true);
@@ -29,7 +29,7 @@ public class ReceiverMessageHandler implements MessageReceiverListener {
 
     @Override
     public Boolean onMessage(Long messageId, ByteBuf msg) {
-        MqttMessage decode = MessageDecoderUtils.decode(messageId,msg.array());
+        MqttMessage decode = MqttDecoderUtils.decode(messageId,msg.array());
         if (decode instanceof MqttPublishMessage) {
             MqttPublishMessage publishMessage = (MqttPublishMessage) decode;
             int i = publishMessage.variableHeader().topicName().hashCode();
@@ -40,7 +40,7 @@ public class ReceiverMessageHandler implements MessageReceiverListener {
     }
 
 
-    class MessageHandlerWorker extends Thread  {
+    class MessageHandlerWorker extends Thread {
         private final LinkedBlockingQueue<MqttPublishMessage> messageQueue = new LinkedBlockingQueue<>();
 
         public void processMessage(MqttPublishMessage msg) {
@@ -53,10 +53,10 @@ public class ReceiverMessageHandler implements MessageReceiverListener {
 
         @Override
         public void run() {
-            for ( ; ; ) {
+            for (; ; ) {
                 try {
                     MqttPublishMessage take = messageQueue.take();
-                    postOffice.internalPublish(take);
+                    dispatcher.internalPublish(take);
                     take.payload().release();
                 } catch (InterruptedException e) {
                     e.printStackTrace();

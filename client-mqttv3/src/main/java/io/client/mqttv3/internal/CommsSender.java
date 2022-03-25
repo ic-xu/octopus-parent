@@ -34,8 +34,8 @@ public class CommsSender implements Runnable {
 	//Sends MQTT packets to the server on its own thread
 	private enum State {STOPPED, RUNNING, STARTING}
 
-    private State currentState = State.STOPPED;
-	private State targetState = State.STOPPED;
+    private State current_state = State.STOPPED;
+	private State target_state = State.STOPPED;
 	private final Object lifecycle = new Object();
 	private Thread 	sendThread		= null;
 	private String threadName;
@@ -63,8 +63,8 @@ public class CommsSender implements Runnable {
 	public void start(String threadName, ExecutorService executorService) {
 		this.threadName = threadName;
 		synchronized (lifecycle) {
-			if (currentState == State.STOPPED && targetState == State.STOPPED) {
-				targetState = State.RUNNING;
+			if (current_state == State.STOPPED && target_state == State.STOPPED) {
+				target_state = State.RUNNING;
 				if (executorService == null) {
 					new Thread(this).start();
 				} else {
@@ -94,7 +94,7 @@ public class CommsSender implements Runnable {
 			//@TRACE 800=stopping sender
 			log.fine(CLASS_NAME,methodName,"800");
 			if (isRunning()) {
-				targetState = State.STOPPED;
+				target_state = State.STOPPED;
 				clientState.notifyQueueLock();
 			}
 		}
@@ -113,15 +113,15 @@ public class CommsSender implements Runnable {
 		MqttWireMessage message = null;
 		
 		synchronized (lifecycle) {
-			currentState = State.RUNNING;
+			current_state = State.RUNNING;
 		}
 
 		try {
-			State myTarget;
+			State my_target;
 			synchronized (lifecycle) {
-				myTarget = targetState;
+				my_target = target_state;
 			}
-			while (myTarget == State.RUNNING && (out != null)) {
+			while (my_target == State.RUNNING && (out != null)) {
 				try {
 					message = clientState.get();
 					if (message != null) {
@@ -167,7 +167,7 @@ public class CommsSender implements Runnable {
 						//@TRACE 803=get message returned null, stopping}
 						log.fine(CLASS_NAME,methodName,"803");
 						synchronized (lifecycle) {
-							targetState = State.STOPPED;
+							target_state = State.STOPPED;
 						}
 					}
 				} catch (MqttException me) {
@@ -176,12 +176,12 @@ public class CommsSender implements Runnable {
 					handleRunException(message, ex);
 				}
 				synchronized (lifecycle) {
-					myTarget = targetState;
+					my_target = target_state;
 				}
 			} // end while
 		} finally {
 			synchronized (lifecycle) {
-				currentState = State.STOPPED;
+				current_state = State.STOPPED;
 				sendThread = null;
 			}
 		}
@@ -201,7 +201,7 @@ public class CommsSender implements Runnable {
 			mex = (MqttException)ex;
 		}
 		synchronized (lifecycle) {
-			targetState = State.STOPPED;
+			target_state = State.STOPPED;
 		}
 		clientComms.shutdownConnection(null, mex);
 	}
@@ -209,7 +209,7 @@ public class CommsSender implements Runnable {
 	public boolean isRunning() {
 		boolean result;
 		synchronized (lifecycle) {
-			result = (currentState == State.RUNNING && targetState == State.RUNNING);
+			result = (current_state == State.RUNNING && target_state == State.RUNNING);
 		}
 		return result;
 	}

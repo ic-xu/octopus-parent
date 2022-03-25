@@ -17,9 +17,9 @@ public class MqttPublishMessage extends MqttMessage implements ByteBufHolder {
     }
 
     public MqttPublishMessage(Long messageId,
-                              MqttFixedHeader mqttFixedHeader,
-                              MqttPublishVariableHeader variableHeader,
-                              ByteBuf payload) {
+            MqttFixedHeader mqttFixedHeader,
+            MqttPublishVariableHeader variableHeader,
+            ByteBuf payload) {
         super(messageId,mqttFixedHeader, variableHeader, payload);
     }
 
@@ -55,8 +55,7 @@ public class MqttPublishMessage extends MqttMessage implements ByteBufHolder {
 
     @Override
     public MqttPublishMessage replace(ByteBuf content) {
-        MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(fixedHeader(), variableHeader(), content);
-        return mqttPublishMessage;
+        return new MqttPublishMessage(fixedHeader(), variableHeader(), content);
     }
 
     @Override

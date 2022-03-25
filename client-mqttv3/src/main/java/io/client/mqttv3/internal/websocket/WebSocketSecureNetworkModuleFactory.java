@@ -30,51 +30,52 @@ import io.client.mqttv3.internal.security.SSLSocketFactoryFactory;
 
 public class WebSocketSecureNetworkModuleFactory implements NetworkModuleFactory {
 
-    @Override
-    public Set<String> getSupportedUriSchemes() {
-        return Collections.unmodifiableSet(new HashSet<>(Arrays.asList("wss")));
-    }
+	@Override
+	public Set<String> getSupportedUriSchemes() {
+		return Collections.unmodifiableSet(new HashSet<>(Arrays.asList("wss")));
+	}
 
-    @Override
-    public void validateURI(URI brokerUri) throws IllegalArgumentException {
-        // so specific requirements so far
-    }
+	@Override
+	public void validateURI(URI brokerUri) throws IllegalArgumentException {
+		// so specific requirements so far
+	}
 
-    @Override
-    public NetworkModule createNetworkModule(URI brokerUri, MqttConnectOptions options, String clientId)
-            throws MqttException {
-        String host = brokerUri.getHost();
-        int port = brokerUri.getPort(); // -1 if not defined
-        if (port == -1) {
-            port = 443;
-        }
-        SocketFactory factory = options.getSocketFactory();
-        SSLSocketFactoryFactory wSSFactoryFactory = null;
-        if (factory == null) {
-            wSSFactoryFactory = new SSLSocketFactoryFactory();
-            Properties sslClientProps = options.getSSLProperties();
-            if (null != sslClientProps) {
-                wSSFactoryFactory.initialize(sslClientProps, null);
-            }
-            factory = wSSFactoryFactory.createSocketFactory(null);
+	@Override
+	public NetworkModule createNetworkModule(URI brokerUri, MqttConnectOptions options, String clientId)
+			throws MqttException
+	{
+		String host = brokerUri.getHost();
+		int port = brokerUri.getPort(); // -1 if not defined
+		if (port == -1) {
+			port = 443;
+		}
+		SocketFactory factory = options.getSocketFactory();
+		SSLSocketFactoryFactory wSSFactoryFactory = null;
+		if (factory == null) {
+			wSSFactoryFactory = new SSLSocketFactoryFactory();
+			Properties sslClientProps = options.getSSLProperties();
+			if (null != sslClientProps) {
+				wSSFactoryFactory.initialize(sslClientProps, null);
+			}
+			factory = wSSFactoryFactory.createSocketFactory(null);
 
-        } else if ((factory instanceof SSLSocketFactory) == false) {
-            throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
-        }
+		} else if ((factory instanceof SSLSocketFactory) == false) {
+			throw ExceptionHelper.createMqttException(MqttException.REASON_CODE_SOCKET_FACTORY_MISMATCH);
+		}
 
-        // Create the network module...
-        WebSocketSecureNetworkModule netModule = new WebSocketSecureNetworkModule((SSLSocketFactory) factory,
-                brokerUri.toString(), host, port, clientId, options.getCustomWebSocketHeaders());
-        netModule.setSSLhandshakeTimeout(options.getConnectionTimeout());
-        netModule.setSSLHostnameVerifier(options.getSSLHostnameVerifier());
-        netModule.setHttpsHostnameVerificationEnabled(options.isHttpsHostnameVerificationEnabled());
-        // Ciphers suites need to be set, if they are available
-        if (wSSFactoryFactory != null) {
-            String[] enabledCiphers = wSSFactoryFactory.getEnabledCipherSuites(null);
-            if (enabledCiphers != null) {
-                ((SSLNetworkModule) netModule).setEnabledCiphers(enabledCiphers);
-            }
-        }
-        return netModule;
-    }
+		// Create the network module...
+		WebSocketSecureNetworkModule netModule = new WebSocketSecureNetworkModule((SSLSocketFactory) factory,
+				brokerUri.toString(), host, port, clientId, options.getCustomWebSocketHeaders());
+		netModule.setSSLhandshakeTimeout(options.getConnectionTimeout());
+		netModule.setSSLHostnameVerifier(options.getSSLHostnameVerifier());
+		netModule.setHttpsHostnameVerificationEnabled(options.isHttpsHostnameVerificationEnabled());
+		// Ciphers suites need to be set, if they are available
+		if (wSSFactoryFactory != null) {
+			String[] enabledCiphers = wSSFactoryFactory.getEnabledCipherSuites(null);
+			if (enabledCiphers != null) {
+				((SSLNetworkModule) netModule).setEnabledCiphers(enabledCiphers);
+			}
+		}
+		return netModule;
+	}
 }

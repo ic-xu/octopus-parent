@@ -1,7 +1,6 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.config.IResourceLoader;
-import io.octopus.base.interfaces.IAuthenticator;
+import io.octopus.broker.config.IResourceLoader;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +30,7 @@ public class ResourceAuthenticator implements IAuthenticator {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(ResourceAuthenticator.class);
 
-    private Map<String, String> identities = new HashMap<>();
+    private Map<String, String> m_identities = new HashMap<>();
 
     public ResourceAuthenticator(IResourceLoader resourceLoader, String resourceName) {
         try {
@@ -88,7 +87,7 @@ public class ResourceAuthenticator implements IAuthenticator {
                     String username = line.substring(0, delimiterIdx).trim();
                     String password = line.substring(delimiterIdx + 1).trim();
 
-                    identities.put(username, password);
+                    m_identities.put(username, password);
                 }
             }
         } catch (IOException ex) {
@@ -102,7 +101,7 @@ public class ResourceAuthenticator implements IAuthenticator {
             LOGGER.info("username or password was null");
             return false;
         }
-        String foundPwq = identities.get(username);
+        String foundPwq = m_identities.get(username);
         if (foundPwq == null) {
             return false;
         }

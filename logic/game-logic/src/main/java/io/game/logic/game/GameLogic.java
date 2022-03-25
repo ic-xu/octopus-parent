@@ -15,7 +15,7 @@ public class GameLogic {
     private final static Logger LOGGER = LoggerFactory.getLogger(GameLogic.class);
 
     static Map<String, Player> pool = new HashMap<>();
-    final static Random RANDOM = new Random();
+    final static Random random = new Random();
 
     public static void handlerMessage(MqttCustomerMessage message) {
         GameMessage gameMessage = JSON.parseObject(message.payload().array(), GameMessage.class);
@@ -29,7 +29,7 @@ public class GameLogic {
                 Player player = pool.get(gameMessage.data.id);
                 if (null == player) {
                     player = new Player(i, gameMessage.data.nick, gameMessage.data.skin, 22,
-                            new Position(RANDOM.nextDouble() +30, RANDOM.nextDouble() +20));
+                            new Position(random.nextDouble() +30, random.nextDouble() +20));
                     pool.put(gameMessage.data.id, player);
                 }
                 player.setLife(100);
@@ -56,15 +56,15 @@ public class GameLogic {
                 break;
 
             case "RECEIVED_DAMAGE":
-                Player player1 = pool.get(gameMessage.getData().getPlayerId());
+                Player player1 = pool.get(gameMessage.getData().getPlayer_id());
                 if (null != player1)
                     player1.setLife(player1.getLife() - gameMessage.getData().getLife());
                 if (player1.getLife() <= 0) {
-                    pool.remove(gameMessage.getData().getPlayerId());
+                    pool.remove(gameMessage.getData().getPlayer_id());
                     player1.setKills(player1.getKills() + 1);
                 }
             case "MOVE":
-                Player player2 = pool.get(gameMessage.data.getPlayerId());
+                Player player2 = pool.get(gameMessage.data.getPlayer_id());
                 player2.setPosition(gameMessage.data.position);
             case "ATTACK":
 //                pool.forEach((key, value) -> value.getConnection().getBoundSession().sendCustomerMessage(wrapperGameMessage(message.payload().array())));

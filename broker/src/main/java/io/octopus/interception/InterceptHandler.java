@@ -2,6 +2,7 @@ package io.octopus.interception;
 
 import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
+import io.octopus.broker.subscriptions.Subscription;
 import io.octopus.interception.messages.*;
 
 /**
@@ -11,7 +12,7 @@ import io.octopus.interception.messages.*;
  * <p>
  * Almost every method receives a subclass of {@link MqttMessage}, except <code>onDisconnect</code>
  * that receives the client id string and <code>onSubscribe</code> and <code>onUnsubscribe</code>
- * that receive a {@link io.octopus.base.subscriptions.Subscription} object.
+ * that receive a {@link Subscription} object.
  */
 public interface InterceptHandler {
 

@@ -1,9 +1,9 @@
 package io.octopus.persistence.zookeeper;
 
 
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.interfaces.IRouterRegister;
+import io.octopus.broker.config.IConfig;
+import io.octopus.contants.BrokerConstants;
+import io.octopus.persistence.RouterRegister;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -14,15 +14,15 @@ import org.slf4j.LoggerFactory;
 import java.net.*;
 import java.util.*;
 
-public class ZookeeperRegisters implements IRouterRegister {
+public class ZookeeperRegisters implements RouterRegister {
 
 
     Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     private IConfig config;
-    private final ZkClient zkClient;
-    private final String rootPath;
-    private final Integer port;
+    private ZkClient zkClient;
+    private String rootPath;
+    private Integer port;
     private volatile Set<InetSocketAddress> inetSocketAddresses = new HashSet<>();
     public static String splitRegex = ":";
 
@@ -34,7 +34,7 @@ public class ZookeeperRegisters implements IRouterRegister {
                 config.getIntegerProperty("zookeeper.session-timeout", 1000),
                 config.getIntegerProperty("zookeeper.connect-timeout", 3000));
         rootPath = config.getProperty("zookeeper.root-path");
-        this.port = config.getIntegerProperty("udp.port", BrokerConstants.UDP_TRANSPORT_DEFAULT_PORT);
+        this.port = config.getIntegerProperty("udp.port", BrokerConstants.udpTransportDefaultPort);
         zkClient.subscribeStateChanges(new ZookeeperStatusListener());
         zkClient.subscribeChildChanges(rootPath, new ZKChildListener());
         if(!zkClient.exists(rootPath)){
@@ -47,21 +47,20 @@ public class ZookeeperRegisters implements IRouterRegister {
         if (null == localAddress) {
             localAddress = getPath();
         }
-
-        for (String path:localAddress) {
+        localAddress.forEach(path -> {
             String zkPath = rootPath+"/"+path;
             if (!zkClient.exists(zkPath)){
                 zkClient.createEphemeral(zkPath, "ff");
                 logger.info("register path ===[ {} ]=== to zookeeper server success ,", path);
             }
 
-        }
+        });
     }
 
     private void getCurrentPathChild(List<String> children) {
         if (children != null) {
             HashSet<InetSocketAddress> inetSocketAddressesCopy = new HashSet<>();
-            for (String address:children) {
+            children.forEach(address -> {
                 //剔除本机地址
                 if (!localAddress.contains(address)) {
                     String[] addr = address.split(splitRegex);
@@ -70,21 +69,22 @@ public class ZookeeperRegisters implements IRouterRegister {
                         inetSocketAddressesCopy.add(new InetSocketAddress(addr[0], port));
                     }
                 }
-            }
+            });
             inetSocketAddresses = inetSocketAddressesCopy;
         }
     }
 
     public void stop() throws SocketException {
-        for (String path:getPath()) {
-            zkClient.delete(path);
-        }
+        getPath().forEach(zkClient::delete);
         localAddress = null;
     }
 
     @Override
     public boolean checkIpExit(InetSocketAddress address) {
-        return inetSocketAddresses.contains(address);
+        if(inetSocketAddresses.contains(address)){
+            return true;
+        }
+        return false;
     }
 
 

@@ -1,6 +1,6 @@
 package io.webrtc.signaler;
 
-import io.handler.codec.mqtt.utils.MessageDecoderUtils;
+import io.handler.codec.mqtt.utils.MqttDecoderUtils;
 import io.netty.buffer.ByteBuf;
 import io.octopus.udp.config.TransportConfig;
 import io.octopus.udp.message.MessageReceiverListener;
@@ -22,6 +22,6 @@ public class SignalerServer implements MessageReceiverListener {
 
     @Override
     public Boolean onMessage(Long messageId, ByteBuf msg) {
-       return messageHandler.receiverMessage(MessageDecoderUtils.decode(messageId,msg.array()));
+       return messageHandler.receiverMessage(MqttDecoderUtils.decode(messageId,msg.array()));
     }
 }

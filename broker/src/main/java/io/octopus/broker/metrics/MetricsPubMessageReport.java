@@ -4,8 +4,8 @@ import com.codahale.metrics.*;
 import com.google.gson.Gson;
 import io.handler.codec.mqtt.*;
 import io.netty.buffer.Unpooled;
-import io.octopus.base.contants.ConstantsTopics;
-import io.octopus.scala.broker.PostOffice;
+import io.octopus.broker.PostOffice;
+import io.octopus.contants.ConstantsTopics;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -18,14 +18,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 public class MetricsPubMessageReport extends ScheduledReporter {
-    private PostOffice msgDispatcher;
+    private PostOffice postOffice;
     private OperatingSystemMXBean systemMXBean ;
-    private static final Runtime RUNTIME = Runtime.getRuntime();
+    private static final Runtime runtime = Runtime.getRuntime();
 
 
-    protected MetricsPubMessageReport(MetricRegistry registry, String name, MetricFilter filter, TimeUnit rateUnit, TimeUnit durationUnit, ScheduledExecutorService executor, boolean shutdownExecutorOnStop, Set<MetricAttribute> disabledMetricAttributes, PostOffice msgDispatcher) {
+    protected MetricsPubMessageReport(MetricRegistry registry, String name, MetricFilter filter, TimeUnit rateUnit, TimeUnit durationUnit, ScheduledExecutorService executor, boolean shutdownExecutorOnStop, Set<MetricAttribute> disabledMetricAttributes, PostOffice postOffice) {
         super(registry, name, filter, rateUnit, durationUnit, executor, shutdownExecutorOnStop, disabledMetricAttributes);
-        this.msgDispatcher = msgDispatcher;
+        this.postOffice = postOffice;
         this.systemMXBean = ManagementFactory.getOperatingSystemMXBean();
     }
 
@@ -56,14 +56,14 @@ public class MetricsPubMessageReport extends ScheduledReporter {
             mqttPublishMessage = wrappMessage(timers);
         }
         if(null!=mqttPublishMessage){
-            msgDispatcher.internalPublish(mqttPublishMessage);
+            postOffice.internalPublish(mqttPublishMessage);
             mqttPublishMessage.payload().release();
         }
     }
 
 
     public MqttPublishMessage wrappMessage(SortedMap metricSortedMap) {
-        MqttPublishVariableHeader variableHeader = new MqttPublishVariableHeader(ConstantsTopics.SYS_METRICS, ThreadLocalRandom.current().nextInt(10000));
+        MqttPublishVariableHeader variableHeader = new MqttPublishVariableHeader(ConstantsTopics.$SYS_METRICS, ThreadLocalRandom.current().nextInt(10000));
         Gson gson = new Gson();
         byte[] bytes1 = gson.toJson(variableHeader).getBytes(StandardCharsets.UTF_8);
         byte[] bytes = gson.toJson(metricSortedMap).getBytes(StandardCharsets.UTF_8);
@@ -83,7 +83,7 @@ public class MetricsPubMessageReport extends ScheduledReporter {
         return new MetricsPubMessageReport.Builder(registry);
     }
 
-    final public static class Builder {
+    public static class Builder {
         private final MetricRegistry registry;
         private TimeUnit rateUnit;
         private TimeUnit durationUnit;
@@ -140,8 +140,8 @@ public class MetricsPubMessageReport extends ScheduledReporter {
             return this;
         }
 
-        public MetricsPubMessageReport build(PostOffice msgDispatcher) {
-            return new MetricsPubMessageReport(this.registry, this.name, this.filter, this.rateUnit, this.durationUnit, this.executor, this.shutdownExecutorOnStop, this.disabledMetricAttributes, msgDispatcher);
+        public MetricsPubMessageReport build(PostOffice postOffice) {
+            return new MetricsPubMessageReport(this.registry, this.name, this.filter, this.rateUnit, this.durationUnit, this.executor, this.shutdownExecutorOnStop, this.disabledMetricAttributes, postOffice);
         }
     }
 }

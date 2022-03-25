@@ -343,46 +343,43 @@ public class ClientState {
                     // The inbound messages that we have persisted will be QoS 2
                     inboundQoS2.put(Integer.valueOf(message.getMessageId()), message);
                 } else if (key.startsWith(PERSISTENCE_SENT_PREFIX)) {
-                    if(message instanceof  MqttPublish){
-                        MqttPublish sendMessage = (MqttPublish) message;
-                        highestMsgId = Math.max(sendMessage.getMessageId(), highestMsgId);
-                        if (persistence.containsKey(getSendConfirmPersistenceKey(sendMessage))) {
-                            MqttPersistable persistedConfirm = persistence.get(getSendConfirmPersistenceKey(sendMessage));
-                            // QoS 2, and CONFIRM has already been sent...
-                            // NO DUP flag is allowed for 3.1.1 spec while it's not clear for 3.1 spec
-                            // So we just remove DUP
-                            MqttPubRel confirmMessage = (MqttPubRel) restoreMessage(key, persistedConfirm);
-                            if (confirmMessage != null) {
-                                // confirmMessage.setDuplicate(true); // REMOVED
-                                //@TRACE 605=outbound QoS 2 pubrel key={0} message={1}
-                                log.fine(CLASS_NAME, methodName, "605", new Object[]{key, message});
+                    MqttPublish sendMessage = (MqttPublish) message;
+                    highestMsgId = Math.max(sendMessage.getMessageId(), highestMsgId);
+                    if (persistence.containsKey(getSendConfirmPersistenceKey(sendMessage))) {
+                        MqttPersistable persistedConfirm = persistence.get(getSendConfirmPersistenceKey(sendMessage));
+                        // QoS 2, and CONFIRM has already been sent...
+                        // NO DUP flag is allowed for 3.1.1 spec while it's not clear for 3.1 spec
+                        // So we just remove DUP
+                        MqttPubRel confirmMessage = (MqttPubRel) restoreMessage(key, persistedConfirm);
+                        if (confirmMessage != null) {
+                            // confirmMessage.setDuplicate(true); // REMOVED
+                            //@TRACE 605=outbound QoS 2 pubrel key={0} message={1}
+                            log.fine(CLASS_NAME, methodName, "605", new Object[]{key, message});
 
-                                outboundQoS2.put(Integer.valueOf(confirmMessage.getMessageId()), confirmMessage);
-                            } else {
-                                //@TRACE 606=outbound QoS 2 completed key={0} message={1}
-                                log.fine(CLASS_NAME, methodName, "606", new Object[]{key, message});
-                            }
+                            outboundQoS2.put(Integer.valueOf(confirmMessage.getMessageId()), confirmMessage);
                         } else {
-                            // QoS 1 or 2, with no CONFIRM sent...
-                            // Put the SEND to the list of pending messages, ensuring message ID ordering...
-                            sendMessage.setDuplicate(true);
-                            if (sendMessage.getMessage().getQos() == 2) {
-                                //@TRACE 607=outbound QoS 2 publish key={0} message={1}
-                                log.fine(CLASS_NAME, methodName, "607", new Object[]{key, message});
-
-                                outboundQoS2.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
-                            } else {
-                                //@TRACE 608=outbound QoS 1 publish key={0} message={1}
-                                log.fine(CLASS_NAME, methodName, "608", new Object[]{key, message});
-
-                                outboundQoS1.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
-                            }
+                            //@TRACE 606=outbound QoS 2 completed key={0} message={1}
+                            log.fine(CLASS_NAME, methodName, "606", new Object[]{key, message});
                         }
-                        MqttDeliveryToken tok = tokenStore.restoreToken(sendMessage);
-                        tok.internalTok.setClient(clientComms.getClient());
-                        inUseMsgIds.put(Integer.valueOf(sendMessage.getMessageId()), Integer.valueOf(sendMessage.getMessageId()));
-                    }
+                    } else {
+                        // QoS 1 or 2, with no CONFIRM sent...
+                        // Put the SEND to the list of pending messages, ensuring message ID ordering...
+                        sendMessage.setDuplicate(true);
+                        if (sendMessage.getMessage().getQos() == 2) {
+                            //@TRACE 607=outbound QoS 2 publish key={0} message={1}
+                            log.fine(CLASS_NAME, methodName, "607", new Object[]{key, message});
 
+                            outboundQoS2.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
+                        } else {
+                            //@TRACE 608=outbound QoS 1 publish key={0} message={1}
+                            log.fine(CLASS_NAME, methodName, "608", new Object[]{key, message});
+
+                            outboundQoS1.put(Integer.valueOf(sendMessage.getMessageId()), sendMessage);
+                        }
+                    }
+                    MqttDeliveryToken tok = tokenStore.restoreToken(sendMessage);
+                    tok.internalTok.setClient(clientComms.getClient());
+                    inUseMsgIds.put(Integer.valueOf(sendMessage.getMessageId()), Integer.valueOf(sendMessage.getMessageId()));
                 } else if (key.startsWith(PERSISTENCE_SENT_BUFFERED_PREFIX)) {
 
                     // Buffered outgoing messages that have not yet been sent at all
@@ -538,9 +535,6 @@ public class ClientState {
                         persistence.put(getSendPersistenceKey(message), (MqttPublish) message);
                         tokenStore.saveToken(token, message);
                         break;
-
-                    default:
-                        break;
                 }
                 pendingMessages.addElement(message);
                 queueLock.notifyAll();
@@ -568,9 +562,6 @@ public class ClientState {
                         outboundQoS1.put(Integer.valueOf(message.getMessageId()), message);
                         persistence.put(getSendPersistenceKey(message), (MqttCustomerMessage) message);
                         tokenStore.saveToken(token, message);
-                        break;
-
-                    default:
                         break;
                 }
                 pendingMessages.addElement(message);

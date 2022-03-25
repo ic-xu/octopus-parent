@@ -1,6 +1,6 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.config.FileResourceLoader;
+import io.octopus.broker.config.FileResourceLoader;
 
 /**
  * Load user credentials from a text file. Each line of the file is formatted as
@@ -15,7 +15,7 @@ import io.octopus.base.config.FileResourceLoader;
  * NB -n is important because echo append a newline by default at the of string. -n avoid this
  * behaviour.
  *
-// * @deprecated user {@link ResourceAuthenticator} instead
+ * @deprecated user {@link ResourceAuthenticator} instead
  */
 public class FileAuthenticator extends ResourceAuthenticator {
 

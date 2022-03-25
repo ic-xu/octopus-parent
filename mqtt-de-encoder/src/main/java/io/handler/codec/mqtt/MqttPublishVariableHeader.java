@@ -8,7 +8,7 @@ import io.netty.util.internal.StringUtil;
 public final class MqttPublishVariableHeader {
 
     private final String topicName;
-    private int packetId;
+    private final int packetId;
     private final MqttProperties properties;
 
     public MqttPublishVariableHeader(String topicName, int packetId) {
@@ -35,10 +35,6 @@ public final class MqttPublishVariableHeader {
 
     public int packetId() {
         return packetId;
-    }
-
-    public void setPacketId(int packetId){
-        this.packetId = packetId;
     }
 
     public MqttProperties properties() {

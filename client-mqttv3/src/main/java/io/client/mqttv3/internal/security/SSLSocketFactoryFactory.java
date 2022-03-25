@@ -135,7 +135,7 @@ public class SSLSocketFactoryFactory {
 
 	public static final String DEFAULT_PROTOCOL = "TLS";  // "SSL_TLS" is not supported by DesktopEE
 
-    private static final String[] PROPERTY_KEYS = {SSLPROTOCOL, JSSEPROVIDER,
+    private static final String[] propertyKeys = {SSLPROTOCOL, JSSEPROVIDER,
             KEYSTORE, KEYSTOREPWD, KEYSTORETYPE, KEYSTOREPROVIDER, KEYSTOREMGR,
             TRUSTSTORE, TRUSTSTOREPWD, TRUSTSTORETYPE, TRUSTSTOREPROVIDER,
             TRUSTSTOREMGR, CIPHERSUITES, CLIENTAUTH};
@@ -144,10 +144,10 @@ public class SSLSocketFactoryFactory {
 
 	private Properties defaultProperties;
 
-	private static final byte[] KEY = { (byte) 0x9d, (byte) 0xa7, (byte) 0xd9,
+	private static final byte[] key = { (byte) 0x9d, (byte) 0xa7, (byte) 0xd9,
 		(byte) 0x80, (byte) 0x05, (byte) 0xb8, (byte) 0x89, (byte) 0x9c };
 
-	private static final String XOR_TAG = "{xor}";
+	private static final String xorTag = "{xor}";
 	
 	private Logger logger = null;
 
@@ -201,13 +201,13 @@ public class SSLSocketFactoryFactory {
 	 */
 	private boolean keyValid(String key) {
 		int i = 0;
-		while (i < PROPERTY_KEYS.length) {
-			if (PROPERTY_KEYS[i].equals(key)) {
+		while (i < propertyKeys.length) {
+			if (propertyKeys[i].equals(key)) {
 				break;
 			}
 			++i;
 		}
-		return i < PROPERTY_KEYS.length;
+		return i < propertyKeys.length;
 	}
 
 	/**
@@ -283,9 +283,9 @@ public class SSLSocketFactoryFactory {
 			return null;
 		byte[] bytes = toByte(password);
 		for (int i = 0; i < bytes.length; i++) {
-			bytes[i] = (byte) ((bytes[i] ^ KEY[i % KEY.length]) & 0x00ff);
+			bytes[i] = (byte) ((bytes[i] ^ key[i % key.length]) & 0x00ff);
 		}
-		String encryptedValue = XOR_TAG
+		String encryptedValue = xorTag
 				+ new String(SimpleBase64Encoder.encode(bytes));
 		return encryptedValue;
 	}
@@ -305,14 +305,14 @@ public class SSLSocketFactoryFactory {
 			return null;
 		byte[] bytes = null;
 		try {
-			bytes = SimpleBase64Encoder.decode(ePassword.substring(XOR_TAG
+			bytes = SimpleBase64Encoder.decode(ePassword.substring(xorTag
 					.length()));
 		} catch (Exception e) {
 			return null;
 		}
 
 		for (int i = 0; i < bytes.length; i++) {
-			bytes[i] = (byte) ((bytes[i] ^ KEY[i % KEY.length]) & 0x00ff);
+			bytes[i] = (byte) ((bytes[i] ^ key[i % key.length]) & 0x00ff);
 		}
 		return toChar(bytes);
 	}
@@ -377,12 +377,12 @@ public class SSLSocketFactoryFactory {
 	 */
 	private void convertPassword(Properties p) {
 		String pw = p.getProperty(KEYSTOREPWD);
-		if (pw != null && !pw.startsWith(XOR_TAG)) {
+		if (pw != null && !pw.startsWith(xorTag)) {
 			String epw = obfuscate(pw.toCharArray());
 			p.put(KEYSTOREPWD, epw);
 		}
 		pw = p.getProperty(TRUSTSTOREPWD);
-		if (pw != null && !pw.startsWith(XOR_TAG)) {
+		if (pw != null && !pw.startsWith(xorTag)) {
 			String epw = obfuscate(pw.toCharArray());
 			p.put(TRUSTSTOREPWD, epw);
 		}
@@ -952,7 +952,7 @@ public class SSLSocketFactoryFactory {
 		String pw = getProperty(configID, KEYSTOREPWD, SYSKEYSTOREPWD);
 		char[] r=null;
 		if (pw!=null) {
-			if (pw.startsWith(XOR_TAG)) {
+			if (pw.startsWith(xorTag)) {
 				r = deObfuscate(pw);
 			} else {
 				r = pw.toCharArray();
@@ -1029,7 +1029,7 @@ public class SSLSocketFactoryFactory {
 		String pw = getProperty(configID, TRUSTSTOREPWD, SYSTRUSTSTOREPWD);
 		char[] r=null;
 		if (pw!=null) {
-			if(pw.startsWith(XOR_TAG)) {
+			if(pw.startsWith(xorTag)) {
 				r = deObfuscate(pw);
 			} else {
 				r = pw.toCharArray();

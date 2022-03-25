@@ -78,13 +78,13 @@ public class ScheduledExecutorPingSender implements MqttPingSender {
 	}
 
 	private class PingRunnable implements Runnable {
-		private static final String METHOD_NAME = "PingTask.run";
+		private static final String methodName = "PingTask.run";
 
 		public void run() {
 			String originalThreadName = Thread.currentThread().getName();
 			Thread.currentThread().setName("MQTT Ping: " + clientid);
 			//@Trace 660=Check schedule at {0}
-			log.fine(CLASS_NAME, METHOD_NAME, "660", new Object[]{ Long.valueOf(System.nanoTime()) });
+			log.fine(CLASS_NAME, methodName, "660", new Object[]{ Long.valueOf(System.nanoTime()) });
 			comms.checkForActivity();
 			Thread.currentThread().setName(originalThreadName);
 		}

@@ -133,7 +133,5 @@ JAVA_OPTS="$JAVA_OPTS -Xlog:task*=debug"
 JAVA_OPTS="$JAVA_OPTS -XX:+NeverTenure"
 #字符串去重
 JAVA_OPTS="$JAVA_OPTS -XX:+UseStringDeduplication"
-JAVA_OPTS="$JAVA_OPTS -Dio.netty.tryReflectionSetAccessible=true"
-JAVA_OPTS="$JAVA_OPTS --add-exports java.base/jdk.internal.misc=ALL-UNNAMED"
 echo "java home is $JAVA"
 $JAVA -server $JAVA_OPTS $JAVA_OPTS_SCRIPT -Dlog4j.configuration="file:$LOG_FILE" -Doctopus.path="$OCTOPUS_PATH" -cp "$OCTOPUS_HOME/broker/target/*" io.octopus.broker.Server

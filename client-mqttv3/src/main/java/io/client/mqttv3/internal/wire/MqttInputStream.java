@@ -15,13 +15,18 @@
  */
 package io.client.mqttv3.internal.wire;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.SocketTimeoutException;
+
 import io.client.mqttv3.MqttException;
 import io.client.mqttv3.internal.ClientState;
+import io.client.mqttv3.internal.ExceptionHelper;
 import io.client.mqttv3.logging.Logger;
 import io.client.mqttv3.logging.LoggerFactory;
-
-import java.io.*;
-import java.net.SocketTimeoutException;
 
 
 /**
@@ -29,7 +34,7 @@ import java.net.SocketTimeoutException;
  * <code>MqttWireMessage</code>. 
  */
 public class MqttInputStream extends InputStream {
-	private static final String CLASS_NAME = MqttInputStream.class.getName();
+	private final String CLASS_NAME = MqttInputStream.class.getName();
 	private final Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 
 	private ClientState clientState = null;

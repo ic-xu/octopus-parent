@@ -71,11 +71,11 @@ public class TimerPingSender implements MqttPingSender {
 	}
 	
 	private class PingTask extends TimerTask {
-		private static final String METHOD_NAME = "PingTask.run";
+		private static final String methodName = "PingTask.run";
 		
 		public void run() {
 			//@Trace 660=Check schedule at {0}
-			log.fine(CLASS_NAME, METHOD_NAME, "660", new Object[]{Long.valueOf(System.nanoTime())});
+			log.fine(CLASS_NAME, methodName, "660", new Object[]{Long.valueOf(System.nanoTime())});
 			comms.checkForActivity();			
 		}
 	}

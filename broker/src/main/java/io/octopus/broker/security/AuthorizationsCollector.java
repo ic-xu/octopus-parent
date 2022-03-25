@@ -1,7 +1,6 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.interfaces.IRWController;
-import io.octopus.base.subscriptions.Topic;
+import io.octopus.broker.subscriptions.Topic;
 
 import java.text.ParseException;
 import java.util.*;
@@ -12,20 +11,20 @@ import java.util.*;
  * <p>
  * Not thread safe.
  */
-class AuthorizationsCollector implements IRWController {
+class AuthorizationsCollector implements IAuthorizatorPolicy {
 
-    private List<Authorization> authorizationArrayList = new ArrayList<>();
-    private List<Authorization> mPatternAuthorizations = new ArrayList<>();
-    private Map<String, List<Authorization>> mUserAuthorizations = new HashMap<>();
-    private boolean mParsingUsersSpecificSection;
-    private boolean mParsingPatternSpecificSection;
-    private String mCurrentUser = "";
+    private List<Authorization> m_globalAuthorizations = new ArrayList<>();
+    private List<Authorization> m_patternAuthorizations = new ArrayList<>();
+    private Map<String, List<Authorization>> m_userAuthorizations = new HashMap<>();
+    private boolean m_parsingUsersSpecificSection;
+    private boolean m_parsingPatternSpecificSection;
+    private String m_currentUser = "";
 
     static final AuthorizationsCollector emptyImmutableCollector() {
         AuthorizationsCollector coll = new AuthorizationsCollector();
-        coll.authorizationArrayList = Collections.emptyList();
-        coll.mPatternAuthorizations = Collections.emptyList();
-        coll.mUserAuthorizations = Collections.emptyMap();
+        coll.m_globalAuthorizations = Collections.emptyList();
+        coll.m_patternAuthorizations = Collections.emptyList();
+        coll.m_userAuthorizations = Collections.emptyMap();
         return coll;
     }
 
@@ -35,14 +34,14 @@ class AuthorizationsCollector implements IRWController {
             // skip it's a user
             return;
         }
-        if (mParsingUsersSpecificSection) {
-            mUserAuthorizations.putIfAbsent(mCurrentUser, new ArrayList<>());
-            List<Authorization> userAuths = mUserAuthorizations.get(mCurrentUser);
+        if (m_parsingUsersSpecificSection) {
+            m_userAuthorizations.putIfAbsent(m_currentUser, new ArrayList<>());
+            List<Authorization> userAuths = m_userAuthorizations.get(m_currentUser);
             userAuths.add(acl);
-        } else if (mParsingPatternSpecificSection) {
-            mPatternAuthorizations.add(acl);
+        } else if (m_parsingPatternSpecificSection) {
+            m_patternAuthorizations.add(acl);
         } else {
-            authorizationArrayList.add(acl);
+            m_globalAuthorizations.add(acl);
         }
     }
 
@@ -53,14 +52,14 @@ class AuthorizationsCollector implements IRWController {
             case "topic":
                 return createAuthorization(line, tokens);
             case "user":
-                mParsingUsersSpecificSection = true;
-                mCurrentUser = tokens[1];
-                mParsingPatternSpecificSection = false;
+                m_parsingUsersSpecificSection = true;
+                m_currentUser = tokens[1];
+                m_parsingPatternSpecificSection = false;
                 return null;
             case "pattern":
-                mParsingUsersSpecificSection = false;
-                mCurrentUser = "";
-                mParsingPatternSpecificSection = true;
+                m_parsingUsersSpecificSection = false;
+                m_currentUser = "";
+                m_parsingPatternSpecificSection = true;
                 return createAuthorization(line, tokens);
             default:
                 throw new ParseException(String.format("invalid line definition found %s", line), 1);
@@ -95,12 +94,12 @@ class AuthorizationsCollector implements IRWController {
     }
 
     private boolean canDoOperation(Topic topic, Authorization.Permission permission, String username, String client) {
-        if (matchACL(authorizationArrayList, topic, permission)) {
+        if (matchACL(m_globalAuthorizations, topic, permission)) {
             return true;
         }
 
         if (isNotEmpty(client) || isNotEmpty(username)) {
-            for (Authorization auth : mPatternAuthorizations) {
+            for (Authorization auth : m_patternAuthorizations) {
                 if (auth.grant(permission)) {
                     Topic substitutedTopic = new Topic(auth.topic.toString().replace("%c", client).replace("%u", username));
                     if (topic.match(substitutedTopic)) {
@@ -111,8 +110,8 @@ class AuthorizationsCollector implements IRWController {
         }
 
         if (isNotEmpty(username)) {
-            if (mUserAuthorizations.containsKey(username)) {
-                List<Authorization> auths = mUserAuthorizations.get(username);
+            if (m_userAuthorizations.containsKey(username)) {
+                List<Authorization> auths = m_userAuthorizations.get(username);
                 if (matchACL(auths, topic, permission)) {
                     return true;
                 }
@@ -140,6 +139,6 @@ class AuthorizationsCollector implements IRWController {
     }
 
     public boolean isEmpty() {
-        return authorizationArrayList.isEmpty();
+        return m_globalAuthorizations.isEmpty();
     }
 }

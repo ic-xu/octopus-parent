@@ -27,7 +27,7 @@ import io.client.mqttv3.internal.wire.MqttWireMessage;
 
 public class DisconnectedMessageBuffer implements Runnable {
 
-	private  static  final String CLASS_NAME = DisconnectedMessageBuffer.class.getName();
+	private final String CLASS_NAME = DisconnectedMessageBuffer.class.getName();
 	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT, CLASS_NAME);
 	private DisconnectedBufferOptions bufferOpts;
 	private ArrayList<BufferedMessage> buffer;

@@ -12,9 +12,12 @@
     <resources>
       <resource>
         <targetPath>.</targetPath>
-        <directory>src/main/resources</directory>
+        <directory>${basedir}/src/main/resource</directory>
         <includes>
-          <include>**</include>
+          <include>configuration.xml</include>
+          <include>**/*.properties</include>
+          <include>**/*.conf</include>
+          <include>**/*.jks</include>
         </includes>
       </resource>
     </resources>
@@ -23,7 +26,10 @@
         <targetPath>META-INF</targetPath>
         <directory>${basedir}/src/main</directory>
         <includes>
-          <include>**</include>
+          <include>configuration.xml</include>
+          <include>**/*.properties</include>
+          <include>**/*.conf</include>
+          <include>**/*.jks</include>
         </includes>
       </testResource>
     </testResources>
@@ -76,7 +82,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.2.0</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
@@ -105,7 +110,9 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <resource>*</resource>
+                  <resource>reference.conf</resource>
+                  <resource>**.conf</resource>
+                  <resource>acl.config</resource>
                 </transformer>
               </transformers>
             </configuration>
@@ -167,7 +174,7 @@
     <dependency>
       <groupId>org.fusesource.mqtt-client</groupId>
       <artifactId>mqtt-client</artifactId>
-      <version>1.16</version>
+      <version>1.12</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -207,16 +214,22 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.199</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-tcnative</artifactId>
-      <version>2.0.46.Final</version>
+      <version>2.0.40.Final</version>
       <classifier>linux-x86_64</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.2</version>
+      <version>4.13.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -228,29 +241,41 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.1.0</version>
+      <version>1.9.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <artifactId>objenesis</artifactId>
           <groupId>org.objenesis</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.21.0</version>
+      <version>2.6.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.1.1</version>
+      <version>3.0.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <artifactId>hamcrest</artifactId>
+          <artifactId>hamcrest-library</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>objenesis</artifactId>
+          <groupId>org.objenesis</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
           <groupId>org.hamcrest</groupId>
         </exclusion>
       </exclusions>
@@ -260,10 +285,13 @@
     <maven.compiler.target>11</maven.compiler.target>
     <bintray.package>io.octopus.octopus-broker</bintray.package>
     <maven.compiler.source>11</maven.compiler.source>
-    <version.template.file>src/main/resources/tmp/Version.java</version.template.file>
+    <version.template.file>src/main/resource/tmp/Version.java</version.template.file>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <aeron.version>1.33.1</aeron.version>
     <version.file>src/main/java/io/octopus/Version.java</version.file>
+    <h2.version>1.4.199</h2.version>
     <redission.version>3.15.5</redission.version>
+    <scala.version>2.13.5</scala.version>
     <paho.version>1.2.5</paho.version>
   </properties>
 </project>

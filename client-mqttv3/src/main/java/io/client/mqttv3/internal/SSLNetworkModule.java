@@ -15,14 +15,24 @@
  */
 package io.client.mqttv3.internal;
 
+import java.io.IOException;
+import java.lang.NoClassDefFoundError;
+import java.lang.NoSuchMethodError;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import io.client.mqttv3.MqttException;
 import io.client.mqttv3.logging.Logger;
 import io.client.mqttv3.logging.LoggerFactory;
-
-import javax.net.ssl.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A network module for connecting over SSL.

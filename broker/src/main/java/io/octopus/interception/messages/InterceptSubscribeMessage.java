@@ -1,6 +1,7 @@
 package io.octopus.interception.messages;
+
+import io.octopus.broker.subscriptions.Subscription;
 import io.handler.codec.mqtt.MqttQoS;
-import io.octopus.base.subscriptions.Subscription;
 
 public class InterceptSubscribeMessage implements InterceptMessage {
 

@@ -52,7 +52,7 @@ import io.client.mqttv3.logging.LoggerFactory;
 public class ClientComms {
 	public static String 		VERSION = "${project.version}";
 	public static String 		BUILD_LEVEL = "L${build.level}";
-	private static final String CLASS_NAME = ClientComms.class.getName();
+	private final String CLASS_NAME = ClientComms.class.getName();
 	private final Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT,CLASS_NAME);
 
 	private static final byte CONNECTED	= 0;

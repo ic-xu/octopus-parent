@@ -109,7 +109,7 @@ public class MqttAsyncClient implements IMqttAsyncClient {
 	private static int reconnectDelay = 1000; // Reconnect delay, starts at 1
 												// second
 	private boolean reconnecting = false;
-	private static final Object CLIENT_LOCK = new Object(); // Simple lock
+	private static final Object clientLock = new Object(); // Simple lock
 
 	private ScheduledExecutorService executorService;
 
@@ -559,7 +559,7 @@ public class MqttAsyncClient implements IMqttAsyncClient {
 		// Count characters, surrogate pairs count as one character.
 		int clientIdLength = 0;
 		for (int i = 0; i < clientId.length() - 1; i++) {
-			if (characterIsHighSurrogate(clientId.charAt(i)))
+			if (Character_isHighSurrogate(clientId.charAt(i)))
 				i++;
 			clientIdLength++;
 		}
@@ -598,7 +598,7 @@ public class MqttAsyncClient implements IMqttAsyncClient {
 	 *            the character to check.
 	 * @return returns 'true' if the character is a high-surrogate code unit
 	 */
-	protected static boolean characterIsHighSurrogate(char ch) {
+	protected static boolean Character_isHighSurrogate(char ch) {
 		return (ch >= MIN_HIGH_SURROGATE) && (ch <= MAX_HIGH_SURROGATE);
 	}
 
@@ -1457,7 +1457,7 @@ public class MqttAsyncClient implements IMqttAsyncClient {
 		String methodName = "stopReconnectCycle";
 		// @Trace 504=Stop reconnect timer for client: {0}
 		log.fine(CLASS_NAME, methodName, "504", new Object[] { this.clientId });
-		synchronized (CLIENT_LOCK) {
+		synchronized (clientLock) {
 			if (this.connOpts.isAutomaticReconnect()) {
 				if (reconnectTimer != null) {
 					reconnectTimer.cancel();
@@ -1469,11 +1469,11 @@ public class MqttAsyncClient implements IMqttAsyncClient {
 	}
 
 	private class ReconnectTask extends TimerTask {
-		private static final String METHOD_NAME = "ReconnectTask.run";
+		private static final String methodName = "ReconnectTask.run";
 
 		public void run() {
 			// @Trace 506=Triggering Automatic Reconnect attempt.
-			log.fine(CLASS_NAME, METHOD_NAME, "506");
+			log.fine(CLASS_NAME, methodName, "506");
 			attemptReconnect();
 		}
 	}
@@ -1537,7 +1537,7 @@ public class MqttAsyncClient implements IMqttAsyncClient {
 			// {1}
 			log.fine(CLASS_NAME, reschedulemethodName, "505",
 					new Object[] { MqttAsyncClient.this.clientId, String.valueOf(reconnectDelay) });
-			synchronized (CLIENT_LOCK) {
+			synchronized (clientLock) {
 				if (MqttAsyncClient.this.connOpts.isAutomaticReconnect()) {
 					if (reconnectTimer != null) {
 						reconnectTimer.schedule(new ReconnectTask(), delay);

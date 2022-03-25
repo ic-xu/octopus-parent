@@ -1,7 +1,6 @@
 
 package io.handler.codec.mqtt;
 
-import io.handler.codec.mqtt.id.SnowflakeIdWorker;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -105,7 +104,6 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
                     checkpoint(DecoderState.READ_FIXED_HEADER);
                     MqttMessage message = MqttMessageFactory.newMessage(
                             mqttFixedHeader, variableHeader, decodedPayload.value);
-                    message.setMessageId(SnowflakeIdWorker.getInstance().nextId());
                     mqttFixedHeader = null;
                     variableHeader = null;
                     out.add(message);

@@ -3,7 +3,7 @@ package io.octopus.broker;
 import java.util.Objects;
 
 /**
- * client descriptor
+ * 客户端连接信息
  */
 public class ClientDescriptor {
 
@@ -11,7 +11,7 @@ public class ClientDescriptor {
     private final String address;
     private final int port;
 
-    public ClientDescriptor(String clientID, String address, int port) {
+    ClientDescriptor(String clientID, String address, int port) {
         this.clientID = clientID;
         this.address = address;
         this.port = port;

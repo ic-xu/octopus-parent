@@ -3,7 +3,7 @@ package io.game.logic.game;
 import java.util.List;
 
 public class GameData {
-    public String player;
+    public String player_d;
     public String direction;
     public String nick;
     public Integer kills;
@@ -11,28 +11,28 @@ public class GameData {
     public int skin;
     public int index;
     public String id;
-    public String playerId;
+    public String player_id;
     public String damage;
 
-    public String playerIdAttack;
+    public String player_id_attack;
     public Position position;
     public List<Player> playersON;
 
 
-    public String getPlayerIdAttack() {
-        return playerIdAttack;
+    public String getPlayer_id_attack() {
+        return player_id_attack;
     }
 
-    public void setPlayerIdAttack(String playerIdAttack) {
-        this.playerIdAttack = playerIdAttack;
+    public void setPlayer_id_attack(String player_id_attack) {
+        this.player_id_attack = player_id_attack;
     }
 
-    public String getPlayer() {
-        return player;
+    public String getPlayer_d() {
+        return player_d;
     }
 
-    public void setPlayer(String player) {
-        this.player = player;
+    public void setPlayer_d(String player_d) {
+        this.player_d = player_d;
     }
 
     public String getDirection() {
@@ -91,12 +91,12 @@ public class GameData {
         this.id = id;
     }
 
-    public String getPlayerId() {
-        return playerId;
+    public String getPlayer_id() {
+        return player_id;
     }
 
-    public void setPlayerId(String playerId) {
-        this.playerId = playerId;
+    public void setPlayer_id(String player_id) {
+        this.player_id = player_id;
     }
 
     public String getDamage() {

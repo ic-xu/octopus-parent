@@ -3,12 +3,12 @@ package io.octopus.interception;
 import io.handler.codec.mqtt.MqttConnectMessage;
 import io.handler.codec.mqtt.MqttCustomerMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
+import io.octopus.broker.config.IConfig;
+import io.octopus.broker.subscriptions.Subscription;
+import io.octopus.contants.BrokerConstants;
 import io.octopus.interception.messages.*;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import io.octopus.base.subscriptions.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static io.octopus.base.utils.LoggingUtils.getInterceptorIds;
+import static io.octopus.utils.LoggingUtils.getInterceptorIds;
 
 /**
  * An interceptor that execute the interception tasks asynchronously.
@@ -128,20 +128,19 @@ public final class BrokerNotifyInterceptor implements NotifyInterceptor {
 
     @Override
     public void notifyTopicPublished(final MqttPublishMessage msg, final String clientID, final String username) {
-        final MqttPublishMessage copyBuf = msg.copy();
-
+        msg.retain();
 
         executor.execute(() -> {
             try {
-                int messageId = copyBuf.variableHeader().packetId();
-                String topic = copyBuf.variableHeader().topicName();
+                int messageId = msg.variableHeader().packetId();
+                String topic = msg.variableHeader().topicName();
                 for (InterceptHandler handler : handlers.get(InterceptPublishMessage.class)) {
                     LOGGER.debug("Notifying MQTT PUBLISH message to interceptor. CId={}, messageId={}, topic={}, "
                             + "interceptorId={}", clientID, messageId, topic, handler.getID());
-                    handler.onPublish(new InterceptPublishMessage(copyBuf, clientID, username));
+                    handler.onPublish(new InterceptPublishMessage(msg.retainedDuplicate(), clientID, username));
                 }
             } finally {
-                ReferenceCountUtil.release(copyBuf);
+                ReferenceCountUtil.release(msg);
             }
         });
     }

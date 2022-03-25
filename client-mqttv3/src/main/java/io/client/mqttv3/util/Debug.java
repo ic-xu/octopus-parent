@@ -35,8 +35,8 @@ public class Debug {
 	
 	private static final String CLASS_NAME = ClientComms.class.getName();
 	private Logger log = LoggerFactory.getLogger(LoggerFactory.MQTT_CLIENT_MSG_CAT,CLASS_NAME);
-	private static final String SEPARATOR = "==============";
-	private static final String LINE_SEP = System.getProperty("line.separator","\n");
+	private static final String separator = "==============";
+	private static final String lineSep = System.getProperty("line.separator","\n");
 	
 	private String clientID;
 	private ClientComms comms;
@@ -89,10 +89,10 @@ public class Debug {
 	 */
 	protected void dumpVersion() {
 		StringBuffer vInfo = new StringBuffer();
-    	vInfo.append(LINE_SEP + SEPARATOR +" Version Info "+ SEPARATOR + LINE_SEP);
-    	vInfo.append(left("Version",20,' ') + ":  "+ ClientComms.VERSION + LINE_SEP);
-    	vInfo.append(left("Build Level",20,' ') + ":  "+ ClientComms.BUILD_LEVEL + LINE_SEP);
-    	vInfo.append(SEPARATOR + SEPARATOR + SEPARATOR + LINE_SEP);
+    	vInfo.append(lineSep+separator+" Version Info "+ separator+lineSep);
+    	vInfo.append(left("Version",20,' ') + ":  "+ ClientComms.VERSION + lineSep);
+    	vInfo.append(left("Build Level",20,' ') + ":  "+ ClientComms.BUILD_LEVEL + lineSep);
+    	vInfo.append(separator+separator+separator+lineSep);
     	log.fine(CLASS_NAME,"dumpVersion", vInfo.toString());
 	}
 
@@ -149,12 +149,12 @@ public class Debug {
 		
 		StringBuffer propStr = new StringBuffer();
 	    Enumeration propsE = props.propertyNames();
-    	propStr.append(LINE_SEP + SEPARATOR +" "+name+" "+ SEPARATOR + LINE_SEP);
+    	propStr.append(lineSep+separator+" "+name+" "+ separator+lineSep);
 	    while (propsE.hasMoreElements()) {
 	    	String key = (String)propsE.nextElement();
-	    	propStr.append(left(key,28,' ') + ":  "+ props.get(key)+ LINE_SEP);
+	    	propStr.append(left(key,28,' ') + ":  "+ props.get(key)+lineSep);
 	    }
-    	propStr.append(SEPARATOR + SEPARATOR + SEPARATOR + LINE_SEP);
+    	propStr.append(separator+separator+separator+lineSep);
 
     	return propStr.toString();
 	}

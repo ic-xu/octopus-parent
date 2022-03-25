@@ -1,6 +1,6 @@
 package io.octopus.broker.handler;
 
-import io.octopus.base.utils.NettyUtils;
+import io.octopus.utils.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
@@ -118,8 +118,6 @@ public class InflictReSenderHandler extends ChannelDuplexHandler {
             case 1:
             case 2:
                 return;
-
-            default:break;
         }
 
         state = 1;

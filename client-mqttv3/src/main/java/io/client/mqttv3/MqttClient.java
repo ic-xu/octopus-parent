@@ -18,12 +18,14 @@
  */
 package io.client.mqttv3;
 
-import io.client.mqttv3.persist.MqttDefaultFilePersistence;
-import io.client.mqttv3.util.Debug;
-
-import javax.net.SocketFactory;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
+
+import javax.net.SocketFactory;
+
+import io.client.mqttv3.internal.wire.MqttCustomerMessage;
+import io.client.mqttv3.util.Debug;
+import io.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 /**
  * Lightweight client for talking to an MQTT server using methods that block

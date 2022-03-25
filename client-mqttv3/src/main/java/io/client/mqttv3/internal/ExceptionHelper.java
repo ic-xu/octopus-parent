@@ -21,7 +21,7 @@ import io.client.mqttv3.MqttSecurityException;
 /**
  * Utility class to help create exceptions of the correct type.
  */
-final public class ExceptionHelper {
+public class ExceptionHelper {
 	public static MqttException createMqttException(int reasonCode) {
 		if ((reasonCode == MqttException.REASON_CODE_FAILED_AUTHENTICATION) || 
 			(reasonCode == MqttException.REASON_CODE_NOT_AUTHORIZED)) {

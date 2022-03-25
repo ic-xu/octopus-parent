@@ -2,22 +2,22 @@ package io.octopus.broker.metrics;
 
 public class BytesMetrics {
 
-    private long mReadBytes;
-    private long mWroteBytes;
+    private long m_readBytes;
+    private long m_wroteBytes;
 
-    public void incrementRead(long numBytes) {
-        mReadBytes += numBytes;
+    void incrementRead(long numBytes) {
+        m_readBytes += numBytes;
     }
 
-    public void incrementWrote(long numBytes) {
-        mWroteBytes += numBytes;
+    void incrementWrote(long numBytes) {
+        m_wroteBytes += numBytes;
     }
 
     public long readBytes() {
-        return mReadBytes;
+        return m_readBytes;
     }
 
     public long wroteBytes() {
-        return mWroteBytes;
+        return m_wroteBytes;
     }
 }

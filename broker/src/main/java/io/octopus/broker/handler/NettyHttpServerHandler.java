@@ -2,7 +2,7 @@ package io.octopus.broker.handler;
 
 import com.google.gson.Gson;
 import io.netty.util.internal.StringUtil;
-import io.octopus.base.interfaces.ISessionResistor;
+import io.octopus.broker.SessionRegistry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -10,23 +10,23 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
-import io.octopus.base.utils.HttpParseUtils;
-import io.octopus.base.subscriptions.ISubscriptionsDirectory;
-import io.octopus.base.subscriptions.Subscription;
-import io.octopus.base.subscriptions.Topic;
+import io.octopus.broker.subscriptions.ISubscriptionsDirectory;
+import io.octopus.broker.subscriptions.Subscription;
+import io.octopus.broker.subscriptions.Topic;
+import io.octopus.utils.HttpParseUtils;
 
 import java.util.*;
 
 
 public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
 
-    private final ISessionResistor sessions;
+    private final SessionRegistry sessions;
 
     private final ISubscriptionsDirectory subscriptionsDirectory;
 
     private final Random random = new Random();
 
-    public NettyHttpServerHandler(ISessionResistor sessions, ISubscriptionsDirectory subscriptionsDirectory) {
+    public NettyHttpServerHandler(SessionRegistry sessions, ISubscriptionsDirectory subscriptionsDirectory) {
         this.sessions = sessions;
         this.subscriptionsDirectory = subscriptionsDirectory;
     }
@@ -58,12 +58,12 @@ public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
                     if(!StringUtil.isNullOrEmpty(topic)){
                         Set<Subscription> subscriptions = subscriptionsDirectory.matchWithoutQosSharpening(new Topic(topic));
                         List<Map<String,Object>> dataList = new ArrayList<>();
-                        for (Subscription subscription:subscriptions) {
+                        subscriptions.forEach(subscription -> {
                             HashMap<String, Object> userInfo = new HashMap<>();
                             userInfo.put("clientId",subscription.getClientId());
                             userInfo.put("id",random.nextInt(10000));
                             dataList.add(userInfo);
-                        }
+                        });
                         send(ctx, dataList, HttpResponseStatus.OK);
                     }
                     break;

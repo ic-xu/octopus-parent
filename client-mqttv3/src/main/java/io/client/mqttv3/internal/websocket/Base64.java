@@ -20,18 +20,18 @@ import java.util.prefs.BackingStoreException;
 
 public class Base64 {
 	
-	private static final Base64 INSTANCE = new Base64();
-	private static final Base64Encoder ENCODER = INSTANCE.new Base64Encoder();
+	private static final Base64 instance = new Base64();
+	private static final Base64Encoder encoder = instance.new Base64Encoder();
 	
 	public static String encode (String s){
-		ENCODER.putByteArray("akey", s.getBytes());
-		String result = ENCODER.getBase64String();
+		encoder.putByteArray("akey", s.getBytes());
+		String result = encoder.getBase64String();
 		return result;
 	}
 	
 	public static String encodeBytes (byte[] b){
-		ENCODER.putByteArray("aKey", b);
-		String result = ENCODER.getBase64String();
+		encoder.putByteArray("aKey", b);
+		String result = encoder.getBase64String();
 		return result;
 		
 	}

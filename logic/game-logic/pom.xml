@@ -19,12 +19,4 @@
     </properties>
 
 
-    <dependencies>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-        </dependency>
-    </dependencies>
-
-
 </project>

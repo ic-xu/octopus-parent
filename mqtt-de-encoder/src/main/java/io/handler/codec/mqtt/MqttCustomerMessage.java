@@ -1,6 +1,7 @@
 package io.handler.codec.mqtt;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.util.internal.StringUtil;
 
@@ -23,8 +24,8 @@ public class MqttCustomerMessage extends MqttMessage {
     }
 
     public MqttCustomerMessage(Long messageId,
-                               MqttFixedHeader mqttFixedHeader, MqttCustomerVariableHeader variableHeader,
-                               ByteBuf payload, byte messageType) {
+            MqttFixedHeader mqttFixedHeader, MqttCustomerVariableHeader variableHeader,
+            ByteBuf payload,byte messageType) {
         super(messageId,mqttFixedHeader, variableHeader, payload);
         this.messageType = messageType;
     }

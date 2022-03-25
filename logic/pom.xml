@@ -27,17 +27,20 @@
     <dependencies>
         <dependency>
             <groupId>io.octopus</groupId>
-            <artifactId>broker-rpc</artifactId>
+            <artifactId>udp-rpc</artifactId>
+            <version>${version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.octopus</groupId>
             <artifactId>mqtt-de-encoder</artifactId>
+            <version>${version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
+            <version>1.2.76</version>
         </dependency>
 
     </dependencies>

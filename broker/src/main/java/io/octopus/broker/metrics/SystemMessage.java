@@ -11,6 +11,7 @@ import oshi.util.Util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,7 +37,6 @@ public class SystemMessage {
 
     /**
      * cpu信息
-     *
      * @param processor
      */
     private static void setCpuInfo(CentralProcessor processor) {   // CPU信息
@@ -65,9 +65,9 @@ public class SystemMessage {
      * 内存信息
      */
     private static void setMemInfo(GlobalMemory memory) {
-        System.out.println("内存大小字节KB=====>>>" + memory.getTotal());
-        System.out.println("已使用内存大小=====>>>" + (memory.getTotal() - memory.getAvailable()));
-        System.out.println("剩余内存大小G=====>>>" + memory.getAvailable() / 1024 / 1024 / 1024); //G
+        System.out.println("内存大小字节KB=====>>>"+memory.getTotal());
+        System.out.println("已使用内存大小=====>>>"+(memory.getTotal() - memory.getAvailable()));
+        System.out.println("剩余内存大小G=====>>>"+memory.getAvailable()/1024/1024/1024); //G
     }
 
     /**
@@ -78,22 +78,22 @@ public class SystemMessage {
         props.getProperty("os.name");
         props.getProperty("os.arch");
         props.getProperty("user.dir");
-        System.out.println("系统版本======>>" + props.getProperty("os.name"));
-        System.out.println("位数======>>" + props.getProperty("os.arch"));
-        System.out.println("项目地址======>>" + props.getProperty("user.dir"));
+        System.out.println("系统版本======>>"+ props.getProperty("os.name"));
+        System.out.println("位数======>>"+props.getProperty("os.arch"));
+        System.out.println("项目地址======>>"+props.getProperty("user.dir"));
     }
 
 
     /**
      * Java虚拟机
      */
-    private static void setJvmInfo() {
+    private  static  void setJvmInfo() {
         Properties props = System.getProperties();
-        System.out.println("当前JVM占用的内存总数(M)=====>>>>" + div(Runtime.getRuntime().totalMemory(), 1024 * 1024, 100));
-        System.out.println("JVM最大可用内存总数(M)=====>>>>" + div(Runtime.getRuntime().maxMemory(), 1024 * 1024, 100));
-        System.out.println("JVM空闲内存(M)=====>>>>" + div(Runtime.getRuntime().freeMemory(), 1024 * 1024, 100));
-        System.out.println("JDK版本=====>>>>" + props.getProperty("java.version"));
-        System.out.println("JDK路径=====>>>>" + props.getProperty("java.home"));
+        System.out.println("当前JVM占用的内存总数(M)=====>>>>"+div(Runtime.getRuntime().totalMemory(),1024*1024,100));
+        System.out.println("JVM最大可用内存总数(M)=====>>>>"+div(Runtime.getRuntime().maxMemory(),1024*1024,100));
+        System.out.println("JVM空闲内存(M)=====>>>>"+div(Runtime.getRuntime().freeMemory(),1024*1024,100));
+        System.out.println("JDK版本=====>>>>"+props.getProperty("java.version"));
+        System.out.println("JDK路径=====>>>>"+props.getProperty("java.home"));
     }
 
     /**
@@ -106,13 +106,13 @@ public class SystemMessage {
             long free = fs.getUsableSpace();
             long total = fs.getTotalSpace();
             long used = total - free;
-            System.out.println("盘符路径======>>>>" + fs.getMount());
-            System.out.println("盘符类型======>>>>" + fs.getType());
-            System.out.println("文件类型======>>>>" + fs.getName());
-            System.out.println("总大小======>>>>" + convertFileSize(total));
-            System.out.println("剩余大小======>>>>" + convertFileSize(free));
-            System.out.println("已经使用量======>>>>" + convertFileSize(used));
-            System.out.println("资源的使用率======>>>>" + div(used, total, 4));
+            System.out.println("盘符路径======>>>>"+fs.getMount());
+            System.out.println("盘符类型======>>>>"+fs.getType());
+            System.out.println("文件类型======>>>>"+fs.getName());
+            System.out.println("总大小======>>>>"+convertFileSize(total));
+            System.out.println("剩余大小======>>>>"+convertFileSize(free));
+            System.out.println("已经使用量======>>>>"+convertFileSize(used));
+            System.out.println("资源的使用率======>>>>"+div(used, total, 4));
             System.out.println("=======================================");
         }
     }
@@ -123,7 +123,7 @@ public class SystemMessage {
      * @param size 字节大小
      * @return 转换后值
      */
-    public static String convertFileSize(long size) {
+    public  static String convertFileSize(long size) {
         long kb = 1024;
         long mb = kb * 1024;
         long gb = mb * 1024;
@@ -143,20 +143,22 @@ public class SystemMessage {
     /**
      * 提供（相对）精确的除法运算。当发生除不尽的情况时，由scale参数指
      * 定精度，以后的数字四舍五入。
-     *
-     * @param v1    被除数
-     * @param v2    除数
+     * @param v1 被除数
+     * @param v2 除数
      * @param scale 表示表示需要精确到小数点以后几位。
      * @return 两个参数的商
      */
-    public static double div(double v1, double v2, int scale) {
-        if (scale < 0) {
+    public static double div(double v1, double v2, int scale)
+    {
+        if (scale < 0)
+        {
             throw new IllegalArgumentException(
-                    "The scale must be a positive integer or zero");
+                "The scale must be a positive integer or zero");
         }
         BigDecimal b1 = new BigDecimal(Double.toString(v1));
         BigDecimal b2 = new BigDecimal(Double.toString(v2));
-        if (b1.compareTo(BigDecimal.ZERO) == 0) {
+        if (b1.compareTo(BigDecimal.ZERO) == 0)
+        {
             return BigDecimal.ZERO.doubleValue();
         }
         return b1.divide(b2, scale, RoundingMode.HALF_UP).doubleValue();

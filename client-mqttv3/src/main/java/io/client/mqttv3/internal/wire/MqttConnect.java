@@ -58,9 +58,9 @@ public class MqttConnect extends MqttWireMessage {
 		ByteArrayInputStream bais = new ByteArrayInputStream(data);
 		DataInputStream dis = new DataInputStream(bais);
 
-		String protocolName = decodeUTF8(dis);
-		int protocolVersion = dis.readByte();
-		byte connectFlags = dis.readByte();
+		String protocol_name = decodeUTF8(dis);
+		int protocol_version = dis.readByte();
+		byte connect_flags = dis.readByte();
 		keepAliveInterval = dis.readUnsignedShort();
 		clientId = decodeUTF8(dis);
 		dis.close();

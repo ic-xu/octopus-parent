@@ -1,7 +1,7 @@
 package io.octopus.broker.handler;
 
 import io.netty.channel.ChannelHandler;
-import io.octopus.base.utils.NettyUtils;
+import io.octopus.utils.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
@@ -88,8 +88,6 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
             case 1:
             case 2:
                 return;
-            default:
-                break;
         }
 
         state = 1;
@@ -120,7 +118,6 @@ public class AutoFlushHandler extends ChannelDuplexHandler {
             LOG.trace("Flushing idle Netty channel {} Cid: {}", ctx.channel(), NettyUtils.clientID(ctx.channel()));
         }
         ctx.channel().flush();
-        NettyUtils.getMQTTConnection2Channel(ctx.channel()).readCompleted();
     }
 
     private final class WriterIdleTimeoutTask implements Runnable {

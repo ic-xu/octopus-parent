@@ -17,16 +17,14 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Objects;
 
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
+import io.octopus.contants.BrokerConstants;
+import io.octopus.broker.config.IConfig;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-
-import io.octopus.base.interfaces.ISslContextCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

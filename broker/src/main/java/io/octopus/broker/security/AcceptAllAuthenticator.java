@@ -1,7 +1,5 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.interfaces.IAuthenticator;
-
 public class AcceptAllAuthenticator implements IAuthenticator {
 
     @Override

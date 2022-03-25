@@ -17,7 +17,7 @@ import java.util.Random;
  * 加起来刚好64位，为一个Long型。<br>
  * SnowFlake的优点是，整体上按照时间自增排序，并且整个分布式系统内不会产生ID碰撞(由数据中心ID和机器ID作区分)，并且效率较高，经测试，SnowFlake每秒能够产生26万ID左右。
  */
-final public class SnowflakeIdWorker {
+public class SnowflakeIdWorker {
 
 
     // ==============================Fields===========================================
@@ -103,10 +103,10 @@ final public class SnowflakeIdWorker {
                     try {
                          code = Objects.requireNonNull(HostUtils.getPath()).hashCode();
                     }catch (Exception e){
-                        code = Math.max(new Random().nextInt(30),1);
+                        code = new Random().nextInt(30);
                     }
 
-                    instance = new SnowflakeIdWorker(2,  29);
+                    instance = new SnowflakeIdWorker(new Random().nextInt(30)+1,  new Random().nextInt(30)+1);
                 }
             }
         }

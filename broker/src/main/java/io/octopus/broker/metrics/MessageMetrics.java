@@ -2,22 +2,22 @@ package io.octopus.broker.metrics;
 
 public class MessageMetrics {
 
-    private long mMessagesRead;
-    private long mMessageWrote;
+    private long m_messagesRead;
+    private long m_messageWrote;
 
-    public void incrementRead(long numMessages) {
-        mMessagesRead += numMessages;
+    void incrementRead(long numMessages) {
+        m_messagesRead += numMessages;
     }
 
-    public void incrementWrote(long numMessages) {
-        mMessageWrote += numMessages;
+    void incrementWrote(long numMessages) {
+        m_messageWrote += numMessages;
     }
 
     public long messagesRead() {
-        return mMessagesRead;
+        return m_messagesRead;
     }
 
     public long messagesWrote() {
-        return mMessageWrote;
+        return m_messageWrote;
     }
 }

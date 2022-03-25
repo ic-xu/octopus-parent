@@ -10,54 +10,54 @@ public class InterceptAcknowledgedMessage implements InterceptMessage {
     class StoredMessage implements Serializable {
 
         private static final long serialVersionUID = 1755296138639817304L;
-        private MqttQoS mqttQoS;
-        final byte[] mPayload;
-        final String mTopic;
-        private boolean mRetained;
-        private String mClientId;
+        private MqttQoS m_qos;
+        final byte[] m_payload;
+        final String m_topic;
+        private boolean m_retained;
+        private String m_clientID;
 
         public StoredMessage(byte[] message, MqttQoS qos, String topic) {
-            mqttQoS = qos;
-            mPayload = message;
-            mTopic = topic;
+            m_qos = qos;
+            m_payload = message;
+            m_topic = topic;
         }
 
         public void setQos(MqttQoS qos) {
-            this.mqttQoS = qos;
+            this.m_qos = qos;
         }
 
         public MqttQoS getQos() {
-            return mqttQoS;
+            return m_qos;
         }
 
         public String getTopic() {
-            return mTopic;
+            return m_topic;
         }
 
         public String getClientID() {
-            return mClientId;
+            return m_clientID;
         }
 
-        public void setClientID(String mClientId) {
-            this.mClientId = mClientId;
+        public void setClientID(String m_clientID) {
+            this.m_clientID = m_clientID;
         }
 
         public ByteBuf getPayload() {
-            return Unpooled.copiedBuffer(mPayload);
+            return Unpooled.copiedBuffer(m_payload);
         }
 
         public void setRetained(boolean retained) {
-            this.mRetained = retained;
+            this.m_retained = retained;
         }
 
         public boolean isRetained() {
-            return mRetained;
+            return m_retained;
         }
 
         @Override
         public String toString() {
-            return "PublishEvent{clientID='" + mClientId + '\'' + ", m_retain="
-                + mRetained + ", m_qos=" + mqttQoS + ", m_topic='" + mTopic + '\'' + '}';
+            return "PublishEvent{clientID='" + m_clientID + '\'' + ", m_retain="
+                + m_retained + ", m_qos=" + m_qos + ", m_topic='" + m_topic + '\'' + '}';
         }
     }
 

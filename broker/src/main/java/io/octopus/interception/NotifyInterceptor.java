@@ -3,8 +3,8 @@ package io.octopus.interception;
 import io.handler.codec.mqtt.MqttConnectMessage;
 import io.handler.codec.mqtt.MqttCustomerMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
+import io.octopus.broker.subscriptions.Subscription;
 import io.octopus.interception.messages.InterceptAcknowledgedMessage;
-import io.octopus.base.subscriptions.Subscription;
 
 /**
  * This interface is to be used internally by the broker components.

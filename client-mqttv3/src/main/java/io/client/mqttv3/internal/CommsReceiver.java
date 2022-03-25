@@ -40,8 +40,8 @@ public class CommsReceiver implements Runnable {
 
 	private enum State {STOPPED, RUNNING, STARTING, RECEIVING}
 
-	private State currentState = State.STOPPED;
-	private State targetState = State.STOPPED;
+	private State current_state = State.STOPPED;
+	private State target_state = State.STOPPED;
 	private final Object lifecycle = new Object();
 	private String threadName;
 	private Future<?> receiverFuture;
@@ -71,8 +71,8 @@ public class CommsReceiver implements Runnable {
 		//@TRACE 855=starting
 		log.fine(CLASS_NAME,methodName, "855");
 		synchronized (lifecycle) {
-			if (currentState == State.STOPPED && targetState == State.STOPPED) {
-				targetState = State.RUNNING;
+			if (current_state == State.STOPPED && target_state == State.STOPPED) {
+				target_state = State.RUNNING;
 				if (executorService == null) {
 					new Thread(this).start();
 				} else {
@@ -97,7 +97,7 @@ public class CommsReceiver implements Runnable {
 			//@TRACE 850=stopping
 			log.fine(CLASS_NAME,methodName, "850");
 			if (isRunning()) {
-				targetState = State.STOPPED;
+				target_state = State.STOPPED;
 			}
 		}
 		while (isRunning()) {
@@ -117,28 +117,28 @@ public class CommsReceiver implements Runnable {
 		MqttToken token = null;
 
 		synchronized (lifecycle) {
-			currentState = State.RUNNING;
+			current_state = State.RUNNING;
 		}
 		
 		try {
-			State myTarget;
+			State my_target;
 			synchronized (lifecycle) {
-				myTarget = targetState;
+				my_target = target_state;
 			}
-			while (myTarget == State.RUNNING && (in != null)) {
+			while (my_target == State.RUNNING && (in != null)) {
 				try {
 					//@TRACE 852=network read message
 					log.fine(CLASS_NAME,methodName,"852");
 					if (in.available() > 0) {
 						synchronized (lifecycle) {
-							currentState = State.RECEIVING;
+							current_state = State.RECEIVING;
 						}
 					}else {
 					    continue;
                     }
 					MqttWireMessage message = in.readMqttWireMessage();
 					synchronized (lifecycle) {
-						currentState = State.RUNNING;
+						current_state = State.RUNNING;
 					}
 
 					// instanceof checks if message is null
@@ -180,7 +180,7 @@ public class CommsReceiver implements Runnable {
 					//@TRACE 856=Stopping, MQttException
 					log.fine(CLASS_NAME,methodName,"856",null,ex);
 					synchronized (lifecycle) {
-						targetState = State.STOPPED;
+						target_state = State.STOPPED;
 					}
 					// Token maybe null but that is handled in shutdown
 					clientComms.shutdownConnection(token, ex);
@@ -188,9 +188,9 @@ public class CommsReceiver implements Runnable {
 				catch (IOException ioe) {
 					//@TRACE 853=Stopping due to IOException
 					log.fine(CLASS_NAME,methodName,"853");
-					if (targetState != State.STOPPED) {
+					if (target_state != State.STOPPED) {
 						synchronized (lifecycle) {
-							targetState = State.STOPPED;
+							target_state = State.STOPPED;
 						}
 						// An EOFException could be raised if the broker processes the
 						// DISCONNECT and ends the socket before we complete. As such,
@@ -202,16 +202,16 @@ public class CommsReceiver implements Runnable {
 				}
 				finally {
 					synchronized (lifecycle) {
-						currentState = State.RUNNING;
+						current_state = State.RUNNING;
 					}
 				}
 				synchronized (lifecycle) {
-					myTarget = targetState;
+					my_target = target_state;
 				}
 			} // end while
 		} finally {
 			synchronized (lifecycle) {
-				currentState = State.STOPPED;
+				current_state = State.STOPPED;
 			}
 		} // end try
 
@@ -223,8 +223,8 @@ public class CommsReceiver implements Runnable {
 	public boolean isRunning() {
 		boolean result;
 		synchronized (lifecycle) {
-			result = ((currentState == State.RUNNING || currentState == State.RECEIVING) &&
-					targetState == State.RUNNING);
+			result = ((current_state == State.RUNNING || current_state == State.RECEIVING) && 
+					target_state == State.RUNNING);
 		}
 		return result;
 	}
@@ -237,7 +237,7 @@ public class CommsReceiver implements Runnable {
 	public boolean isReceiving() {
 		boolean result;
 		synchronized (lifecycle) {
-			result = (currentState == State.RECEIVING);
+			result = (current_state == State.RECEIVING);
 		}
 		return result;
 	}

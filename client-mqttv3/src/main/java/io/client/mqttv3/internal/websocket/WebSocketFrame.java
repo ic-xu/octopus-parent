@@ -22,7 +22,7 @@ import java.security.SecureRandom;
 
 public class WebSocketFrame {
 
-	public static final int FRAME_LENGTH_OVERHEAD = 6;
+	public static final int frameLengthOverhead = 6;
 
 	private byte opcode;
 	private boolean fin;
@@ -201,7 +201,7 @@ public class WebSocketFrame {
 	 * @return byte array
 	 */
 	public byte[] encodeFrame() {
-		int length = this.payload.length + FRAME_LENGTH_OVERHEAD;
+		int length = this.payload.length + frameLengthOverhead;
 		// Calculating overhead
 		if (this.payload.length > 65535) {
 			length += 8;
