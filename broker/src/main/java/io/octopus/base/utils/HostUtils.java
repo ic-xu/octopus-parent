@@ -6,6 +6,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
+/**
+ * @author user
+ */
 public class HostUtils {
 
     public static String  getPath() {

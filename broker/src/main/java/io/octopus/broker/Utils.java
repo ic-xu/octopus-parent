@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * Utility static methods, like Map get with default value, or elvis operator.
+ * @author user
  */
 public final class Utils {
 
@@ -20,8 +21,9 @@ public final class Utils {
     }
 
     public static int messageId(MqttMessage msg) {
-        if(null==msg.variableHeader())
+        if(null==msg.variableHeader()){
             return 0;
+        }
         return ((MqttMessageIdVariableHeader) msg.variableHeader()).messageId();
     }
 

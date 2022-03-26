@@ -5,6 +5,9 @@ import io.netty.util.ReferenceCountUtil;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * @author user
+ */
 public final class DebugUtils {
 
     public static String payload2Str(ByteBuf content) {

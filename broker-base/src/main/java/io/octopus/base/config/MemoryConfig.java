@@ -5,6 +5,7 @@ import java.util.Properties;
 
 /**
  * Configuration backed by memory.
+ * @author user
  */
 public class MemoryConfig extends IConfig {
 

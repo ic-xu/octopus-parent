@@ -13,6 +13,9 @@ import io.octopus.broker.metrics.BytesMetricsCollector;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
+/**
+ * @author user
+ */
 public class BytesMetricsHandler extends ChannelDuplexHandler {
 
     private static final AttributeKey<BytesMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("BytesMetrics");

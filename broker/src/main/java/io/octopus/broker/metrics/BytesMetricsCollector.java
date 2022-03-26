@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Collects all the metrics from the various pipeline.
+ * @author user
  */
 public class BytesMetricsCollector {
 

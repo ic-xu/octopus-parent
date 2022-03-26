@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Resend inflight not ack'ed publish packets (QoS1 PUB and QoS2 PUB/PUBREL). It's inspired by IdleStateHandler but it's
  * specialized version, just invoking Session's resendInflightNotAcked by the channel after a period.
+ * @author user
  */
 public class InflictReSenderHandler extends ChannelDuplexHandler {
 

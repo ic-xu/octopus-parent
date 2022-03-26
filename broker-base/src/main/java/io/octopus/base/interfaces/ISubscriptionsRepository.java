@@ -4,6 +4,9 @@ import io.octopus.base.subscriptions.Subscription;
 
 import java.util.Set;
 
+/**
+ * @author user
+ */
 public interface ISubscriptionsRepository {
 
     Set<Subscription> listAllSubscriptions();

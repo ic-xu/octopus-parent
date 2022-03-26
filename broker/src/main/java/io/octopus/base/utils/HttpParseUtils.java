@@ -12,9 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author user
+ */
 public class HttpParseUtils {
 
-    public static Map<String, String> parse(FullHttpRequest request) {
+    public static Map<String, String> parseParams(FullHttpRequest request) {
         HttpMethod method = request.method();
         Map<String, String> parmMap = new HashMap<>();
         if (method == HttpMethod.GET) {

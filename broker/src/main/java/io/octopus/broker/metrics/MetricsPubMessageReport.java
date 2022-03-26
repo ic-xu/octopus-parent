@@ -17,6 +17,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author user
+ */
 public class MetricsPubMessageReport extends ScheduledReporter {
     private PostOffice msgDispatcher;
     private OperatingSystemMXBean systemMXBean ;

@@ -2,6 +2,9 @@ package io.octopus.base.config;
 
 import java.io.Reader;
 
+/**
+ * @author user
+ */
 public interface IResourceLoader {
 
     Reader loadDefaultResource();

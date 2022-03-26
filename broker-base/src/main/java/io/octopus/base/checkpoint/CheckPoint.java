@@ -1,5 +1,8 @@
 package io.octopus.base.checkpoint;
 
+/**
+ * @author user
+ */
 public class CheckPoint {
 
     private Long saveTime;

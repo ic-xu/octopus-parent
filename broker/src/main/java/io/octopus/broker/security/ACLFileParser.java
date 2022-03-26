@@ -17,6 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Parses the acl configuration file. If a line starts with # it's comment. Blank lines are skipped.
  * The format is "topic [read|write|readwrite] {topic name}"
+ * @author user
  */
 public final class ACLFileParser {
 

@@ -51,7 +51,7 @@ public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
 //            HttpMethod method = httpRequest.method();//获取请求方法
 //            DefaultHttpHeaders headers = (DefaultHttpHeaders)httpRequest.headers();
 //            String authorization = headers.get("Authorization");
-            Map<String, String> parse = HttpParseUtils.parse(httpRequest);
+            Map<String, String> parse = HttpParseUtils.parseParams(httpRequest);
             switch (path) {
                 case "/users":
                     String topic = parse.get("topic");

@@ -352,7 +352,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
         return false
       }
       val userNameString = msg.payload.userName
-      if (!authenticator.checkValid(clientId, userNameString, pwd)) {
+      if (!authenticator.checkUsername(clientId, userNameString, pwd)) {
         logger.info("Authenticator has rejected the MQTT credentials CId={}, username={}", clientId, userNameString)
         return false
       }

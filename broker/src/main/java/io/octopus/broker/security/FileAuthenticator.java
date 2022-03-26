@@ -16,6 +16,8 @@ import io.octopus.base.config.FileResourceLoader;
  * behaviour.
  *
 // * @deprecated user {@link ResourceAuthenticator} instead
+
+ * @author user
  */
 public class FileAuthenticator extends ResourceAuthenticator {
 

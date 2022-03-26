@@ -3,6 +3,9 @@ package io.octopus.base.utils;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * @author user
+ */
 public class HashUtils {
 
     public static int strToHashKey(String k) {

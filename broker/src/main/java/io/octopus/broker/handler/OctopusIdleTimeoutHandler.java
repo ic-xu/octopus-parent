@@ -13,6 +13,7 @@ import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 /**
  * timeoutHandler
+ * @author user
  */
 @Sharable
 public class OctopusIdleTimeoutHandler extends ChannelDuplexHandler {

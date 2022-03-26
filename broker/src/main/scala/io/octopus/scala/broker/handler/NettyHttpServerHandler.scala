@@ -42,7 +42,7 @@ class NettyHttpServerHandler(sessions: SessionResistor, subscriptionsDirectory: 
       //            HttpMethod method = httpRequest.method();//获取请求方法
       //            DefaultHttpHeaders headers = (DefaultHttpHeaders)httpRequest.headers();
       //            String authorization = headers.get("Authorization");
-      val parse = HttpParseUtils.parse(httpRequest)
+      val parse = HttpParseUtils.parseParams(httpRequest)
       path match {
         case "/users" =>
           val topic = parse.get("topic")

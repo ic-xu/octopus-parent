@@ -2,6 +2,9 @@ package io.octopus.base.contants;
 
 import java.io.File;
 
+/**
+ * @author user
+ */
 public interface BrokerConstants {
 
     String INTERCEPT_HANDLER_PROPERTY_NAME = "intercept.handler";

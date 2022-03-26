@@ -6,6 +6,7 @@ import java.io.IOException;
  * container life cycle
  *
  *
+ * @author user
  */
 public interface LifeCycle {
 

@@ -3,6 +3,7 @@ import io.octopus.base.contants.BrokerConstants;
 
 /**
  * Base interface for all configuration
+ * @author user
  */
 public abstract class IConfig {
 

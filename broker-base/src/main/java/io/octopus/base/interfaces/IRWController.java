@@ -21,7 +21,12 @@ public interface IRWController {
     boolean canWrite(Topic topic, String user, String client);
 
 
-
-
+    /**
+     *
+     * @param topic
+     * @param user
+     * @param client
+     * @return
+     */
     boolean canRead(Topic topic, String user, String client);
 }
