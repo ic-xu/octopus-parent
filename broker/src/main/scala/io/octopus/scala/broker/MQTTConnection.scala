@@ -83,7 +83,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    * @param msg message
    */
   private def processCustomer(msg: MqttCustomerMessage): Unit = {
-    CustomerHandler.processMessage(msg, null, sessionFactory)
+    CustomerHandler.processMessage(msg, this, sessionFactory)
   }
 
   private def processConnect(msg: MqttConnectMessage): Unit = {

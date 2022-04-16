@@ -9,6 +9,9 @@ import io.octopus.scala.broker.session.SessionResistor
 import io.octopus.scala.casep.{ChatMessage, SdpMessage}
 import org.slf4j.{Logger, LoggerFactory}
 
+/**
+ *
+ */
 object CustomerHandler {
 
   val LOGGER: Logger = LoggerFactory.getLogger(this.getClass)

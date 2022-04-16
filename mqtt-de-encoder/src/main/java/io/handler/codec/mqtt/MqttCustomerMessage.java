@@ -6,18 +6,20 @@ import io.netty.util.internal.StringUtil;
 
 /**
  * 1byte (MQTT Control Packet type)
- * 1 .. 4 byte (Remaining Length)
+ * 1 -> 4 byte (Remaining Length)
  * 2byte (packageId)
  * 1byte (customer message type,)
  * payload (message body)
+ *
+ * @author user
  */
 public class MqttCustomerMessage extends MqttMessage {
 
     private byte messageType;
 
     public MqttCustomerMessage(
-        MqttFixedHeader mqttFixedHeader, MqttCustomerVariableHeader variableHeader,
-        ByteBuf payload,byte messageType) {
+            MqttFixedHeader mqttFixedHeader, MqttCustomerVariableHeader variableHeader,
+            ByteBuf payload, byte messageType) {
         super(mqttFixedHeader, variableHeader, payload);
         this.messageType = messageType;
     }
@@ -25,7 +27,7 @@ public class MqttCustomerMessage extends MqttMessage {
     public MqttCustomerMessage(Long messageId,
                                MqttFixedHeader mqttFixedHeader, MqttCustomerVariableHeader variableHeader,
                                ByteBuf payload, byte messageType) {
-        super(messageId,mqttFixedHeader, variableHeader, payload);
+        super(messageId, mqttFixedHeader, variableHeader, payload);
         this.messageType = messageType;
     }
 
@@ -46,10 +48,10 @@ public class MqttCustomerMessage extends MqttMessage {
     @Override
     public String toString() {
         return new StringBuilder(StringUtil.simpleClassName(this))
-            .append('[')
-            .append("fixedHeader=").append(fixedHeader() != null ? fixedHeader().toString() : "")
-            .append(", variableHeader=").append(variableHeader() != null ? variableHeader().toString() : "")
-            .append(']')
-            .toString();
+                .append('[')
+                .append("fixedHeader=").append(fixedHeader() != null ? fixedHeader().toString() : "")
+                .append(", variableHeader=").append(variableHeader() != null ? variableHeader().toString() : "")
+                .append(']')
+                .toString();
     }
 }
