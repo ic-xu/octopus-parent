@@ -6,5 +6,5 @@ public class Version {
 
     public static final String VERSION = "0.2.0-SNAPSHOT";
 
-    public static final String TIMESTAMP = "2022-01-21T08:11:23Z";
+    public static final String TIMESTAMP = "2022-04-20T08:28:56Z";
 }

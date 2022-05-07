@@ -5,6 +5,7 @@ import io.handler.codec.mqtt._
 import io.netty.buffer.{ByteBuf, Unpooled}
 import io.octopus.broker.customer.MqttCustomerMessageType
 import io.octopus.scala.broker.MQTTConnection
+import io.octopus.scala.broker.handler.signalling.SignallingMsg
 import io.octopus.scala.broker.session.SessionResistor
 import io.octopus.scala.casep.{ChatMessage, SdpMessage}
 import org.slf4j.{Logger, LoggerFactory}
@@ -16,8 +17,13 @@ object CustomerHandler {
 
   val LOGGER: Logger = LoggerFactory.getLogger(this.getClass)
 
+  
+
   def processMessage(message: MqttCustomerMessage, connect: MQTTConnection, sessionRegister: SessionResistor): Unit = {
     message.getMessageType match {
+
+      // 信息令牌服务器
+      case MqttCustomerMessageType.SIGNALLING => processSignallingMsg(JSON.parseObject(message.payload().toString(), classOf[SignallingMsg]))
 
       case MqttCustomerMessageType.LIST_CLIENT_IDS => processListClientIdsMessage(connect, sessionRegister)
 
@@ -32,6 +38,10 @@ object CustomerHandler {
     }
   }
 
+
+  private def processSignallingMsg(msg: SignallingMsg): Unit = {
+    println(msg)
+  }
 
   /**
    * get all clientId
@@ -63,8 +73,8 @@ object CustomerHandler {
     session.sendCustomerMessage(wrapperCustomerMessage(connect.boundSession.nextPacketId(), wrapperByteBuf(sdpMessage.sdp), customerMessageType))
   }
 
-  private def wrapperByteBuf(objects: String): ByteBuf = {
-    Unpooled.wrappedBuffer(objects.getBytes("UTF-8"))
+  private def wrapperByteBuf(str: String): ByteBuf = {
+    Unpooled.wrappedBuffer(str.getBytes("UTF-8"))
   }
 
 
