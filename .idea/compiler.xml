@@ -9,21 +9,19 @@
         <module name="mqtt-de-encoder" />
         <module name="cluster" />
         <module name="game-logic" />
-        <module name="broker-agent" />
+        <module name="agent-metrics" />
+        <module name="udp-rpc" />
         <module name="broker" />
-        <module name="broker-store" />
-        <module name="proxy" />
         <module name="webrtc-signaler" />
-        <module name="broker-base" />
+        <module name="mqtt-client" />
         <module name="client-mqttv3" />
-        <module name="broker-route" />
-        <module name="client" />
-        <module name="broker-rpc" />
+        <module name="message-route" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="agent-metrics" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
       <module name="broker" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
       <module name="broker-agent" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
       <module name="broker-base" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
@@ -31,12 +29,12 @@
       <module name="broker-rpc" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
       <module name="broker-store" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
       <module name="client" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
-      <module name="client-mqttv3" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
-      <module name="cluster" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
-      <module name="game-logic" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
+      <module name="client-mqttv3" options="" />
+      <module name="cluster" options="" />
+      <module name="game-logic" options="" />
       <module name="mqtt-de-encoder" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
       <module name="proxy" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
-      <module name="webrtc-signaler" options="-verbose -bootclasspath $PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/rt.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jce.jar:$PROJECT_DIR$/../../utils/jdk-11.0.11.jdk/Contents/Home/lib/jsse.jar --add-exports=java.base/sun.security.pkcs=ALL-UNNAMED" />
+      <module name="webrtc-signaler" options="" />
     </option>
   </component>
 </project>
