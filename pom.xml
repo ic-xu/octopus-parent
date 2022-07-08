@@ -46,12 +46,9 @@
         <module>broker-kernel</module>
         <module>broker-route</module>
         <module>broker-agent</module>
-        <module>mqtt-de-encoder</module>
-        <module>client</module>
-        <module>client-mqttv3</module>
-        <module>cluster</module>
+        <module>broker-mqtt-de-encoder</module>
         <module>broker-rpc</module>
-        <module>logic</module>
+        <module>broker-example</module>
         <module>broker-console</module>
     </modules>
 
@@ -315,7 +312,7 @@
 
             <dependency>
                 <groupId>io.octopus</groupId>
-                <artifactId>mqtt-de-encoder</artifactId>
+                <artifactId>broker-mqtt-de-encoder</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

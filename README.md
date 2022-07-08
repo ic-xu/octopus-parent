@@ -26,8 +26,6 @@
 - broker-route :服务之间路由模块
 - broker-rpc: 自定义udp实现的rpc模块，目前实验阶段，还没有正式使用
 - broker-store: 存储模块，提供了多种存储插件方式，如H2，levelDB等各种存储方式
-- broker-client: client开头的都是客户端相关的，这部分有的是源码，有的还没有实现，后续即将删除
-- cluster: 后续即将删除
 - mqtt-de-encoder：mqtt协议的编码解码器，增强netty 内置的编码解码器模块。
 
 

@@ -16,7 +16,7 @@
 
     <dependency>
         <groupId>io.octopus</groupId>
-        <artifactId>mqtt-de-encoder</artifactId>
+        <artifactId>broker-mqtt-de-encoder</artifactId>
     </dependency>
 </dependencies>
 </project>

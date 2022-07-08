@@ -31,7 +31,7 @@
 
         <dependency>
             <groupId>io.octopus</groupId>
-            <artifactId>mqtt-de-encoder</artifactId>
+            <artifactId>broker-mqtt-de-encoder</artifactId>
         </dependency>
 
         <dependency>
@@ -66,12 +66,6 @@
         <dependency>
             <groupId>org.fusesource.mqtt-client</groupId>
             <artifactId>mqtt-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.octopus</groupId>
-            <artifactId>client-mqttv3</artifactId>
             <scope>test</scope>
         </dependency>
 
