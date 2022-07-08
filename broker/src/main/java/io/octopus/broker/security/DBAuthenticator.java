@@ -1,9 +1,9 @@
 package io.octopus.broker.security;
 
 import com.zaxxer.hikari.HikariDataSource;
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.interfaces.IAuthenticator;
+import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.kernel.kernel.security.IAuthenticator;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class DBAuthenticator implements IAuthenticator {
     }
 
     @Override
-    public synchronized boolean checkUsername(String clientId, String username, byte[] password) {
+    public synchronized boolean checkValid(String clientId, String username, byte[] password) {
         // Check Username / Password in DB using sqlQuery
         if (username == null || password == null) {
             LOGGER.info("username or password was null");

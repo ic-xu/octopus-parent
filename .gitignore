@@ -35,7 +35,7 @@ data
 .classpath
 /*/bin/
 *.swp
-**/**.iml
+
 *.class
 gilog.log
 .mvn/*
@@ -48,8 +48,6 @@ gilog.log
 logs
 logs/
 /data
-data
-data/
 */data
 */data/*
 *.log

@@ -1,11 +1,11 @@
 package io.octopus.udp.receiver.nio;
 
-import io.handler.codec.mqtt.utils.HostUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import io.octopus.kernel.utils.HostUtils;
+import io.octopus.udp.config.TransportConfig;
 import io.octopus.udp.message.DelayMessage;
 import io.octopus.udp.message.MessageReceiverListener;
-import io.octopus.udp.config.TransportConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class Receiver2 {
         // 获取一个DatagramChannel，并设置为非阻塞模式,绑定ip和port
         datagramChannel = DatagramChannel.open();
         datagramChannel.configureBlocking(false);
-        InetSocketAddress inetSocketAddress = new InetSocketAddress(Objects.requireNonNull(HostUtils.getPath()), listenerPort);
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(Objects.requireNonNull(HostUtils.getAnyIpv4Address()), listenerPort);
         datagramChannel.bind(inetSocketAddress);
 //        datagramChannel.connect(inetSocketAddress);
         // 获取注册 Selector，并将 datagramChannel 的读事件（不需要连接）通道注册到 Selector

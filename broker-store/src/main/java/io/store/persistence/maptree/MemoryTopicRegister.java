@@ -1,6 +1,6 @@
 package io.store.persistence.maptree;
-import io.octopus.base.subscriptions.Subscription;
-import io.octopus.base.subscriptions.TopicRegister;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
+import io.octopus.kernel.kernel.subscriptions.TopicRegister;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author user
+ */
 public class MemoryTopicRegister implements TopicRegister {
 
     private final String topicStringName;
@@ -17,6 +20,7 @@ public class MemoryTopicRegister implements TopicRegister {
     private Map<String, TopicRegister> children;
 
 
+    @Override
     public Map<String, TopicRegister> getChildren() {
         return children;
     }
@@ -26,10 +30,12 @@ public class MemoryTopicRegister implements TopicRegister {
         this.topicStringName = topicStringName;
     }
 
+    @Override
     public String getTopicStringName() {
         return topicStringName;
     }
 
+    @Override
     public void cleanSubscriptions() {
         if (subscriptions != null) {
             this.subscriptions.clear();
@@ -37,6 +43,7 @@ public class MemoryTopicRegister implements TopicRegister {
         }
     }
 
+    @Override
     public void cleanChildren() {
         if (this.children != null) {
             this.children.clear();
@@ -44,11 +51,13 @@ public class MemoryTopicRegister implements TopicRegister {
         }
     }
 
+    @Override
     public void registerTopic(Subscription subscription, String... topics) {
 
         if (topics.length < 1) {
-            if (null == subscriptions)
+            if (null == subscriptions){
                 subscriptions = ConcurrentHashMap.newKeySet();
+            }
             boolean add = subscriptions.add(subscription);
             if (add) {
                 TopicMapSubscriptionDirectory.size.incrementAndGet();
@@ -75,6 +84,7 @@ public class MemoryTopicRegister implements TopicRegister {
      * @param subscription s
      * @param topics       topic
      */
+    @Override
     public void unRegisterTopic(Subscription subscription, String... topics) {
 
         if (topics.length < 1) {
@@ -120,6 +130,7 @@ public class MemoryTopicRegister implements TopicRegister {
     }
 
 
+    @Override
     public Set<Subscription> getSubscriptions(String... topics) {
         if (topics.length == 0) {
             return subscriptions;
@@ -133,16 +144,18 @@ public class MemoryTopicRegister implements TopicRegister {
                 TopicRegister topicRegister = children.get(topics[0].trim());
                 if (null != topicRegister) {
                     Set<Subscription> subscriptions = topicRegister.getSubscriptions();
-                    if (null != subscriptions)
+                    if (null != subscriptions){
                         subscriptionsResult.addAll(subscriptions);
+                    }
 
                     if (null != topicRegister.getChildren()) {
                         /** 当前层级下的多层结构 */
                         TopicRegister multiLevelMemoryTopicRegister = topicRegister.getChildren().get("#");
                         if (null != multiLevelMemoryTopicRegister) {
                             Set<Subscription> multiLevelSubscription = multiLevelMemoryTopicRegister.getSubscriptions();
-                            if (null != multiLevelSubscription)
+                            if (null != multiLevelSubscription){
                                 subscriptionsResult.addAll(multiLevelSubscription);
+                            }
                         }
                     }
                 }
@@ -151,16 +164,18 @@ public class MemoryTopicRegister implements TopicRegister {
                 TopicRegister currentLevel = children.get("+");
                 if (null != currentLevel) {
                     Set<Subscription> subscriptions = currentLevel.getSubscriptions();
-                    if (null != subscriptions)
+                    if (null != subscriptions){
                         subscriptionsResult.addAll(subscriptions);
+                    }
                 }
 
                 /** 订阅当前层级下所有的情况 # */
                 TopicRegister currentLevelAll = children.get("#");
                 if (null != currentLevelAll) {
                     Set<Subscription> subscriptions = currentLevelAll.getSubscriptions();
-                    if (null != subscriptions)
+                    if (null != subscriptions){
                         subscriptionsResult.addAll(subscriptions);
+                    }
                 }
             }
             return subscriptionsResult;

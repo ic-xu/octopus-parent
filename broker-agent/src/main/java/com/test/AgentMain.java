@@ -7,6 +7,9 @@ import net.bytebuddy.matcher.ElementMatchers;
 
 import java.lang.instrument.Instrumentation;
 
+/**
+ * @author user
+ */
 public class AgentMain {
 
     public static void premain(String agentArgs, Instrumentation inst){

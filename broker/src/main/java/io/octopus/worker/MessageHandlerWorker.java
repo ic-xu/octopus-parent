@@ -1,7 +1,7 @@
 package io.octopus.worker;
 
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.octopus.scala.broker.PostOffice;
+import io.octopus.scala.broker.mqtt.server.PostOffice;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -31,7 +31,7 @@ public class MessageHandlerWorker extends Thread{
         for ( ; ; ) {
             try {
                 MqttPublishMessage take = messageQueue.take();
-                postOffice.internalPublish(take);
+//                TODO postOffice.internalPublish(take);
                 take.payload().release();
             } catch (InterruptedException e) {
                 e.printStackTrace();

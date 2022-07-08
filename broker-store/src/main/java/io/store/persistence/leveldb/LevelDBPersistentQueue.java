@@ -1,8 +1,8 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.base.queue.MsgIndex;
-import io.octopus.base.utils.ByteUtils;
-import io.octopus.base.utils.ObjectUtils;
+import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.utils.ByteUtils;
+import io.octopus.kernel.utils.ObjectUtils;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.WriteOptions;
 

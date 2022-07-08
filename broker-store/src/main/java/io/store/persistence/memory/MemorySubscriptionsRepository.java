@@ -1,16 +1,19 @@
 package io.store.persistence.memory;
 
-import io.handler.codec.mqtt.MqttQoS;
-import io.octopus.base.interfaces.ISubscriptionsRepository;
-import io.octopus.base.subscriptions.Subscription;
-import io.octopus.base.subscriptions.Topic;
-import io.octopus.base.subscriptions.TopicRegister;
+import io.octopus.kernel.kernel.message.MsgQos;
+import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
+import io.octopus.kernel.kernel.subscriptions.Topic;
+import io.octopus.kernel.kernel.subscriptions.TopicRegister;
+import io.octopus.kernel.utils.TopicUtils;
 import io.store.persistence.maptree.MemoryTopicRegister;
-import io.octopus.base.utils.TopicUtils;
 
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author 陈旭
+ */
 public class MemorySubscriptionsRepository implements ISubscriptionsRepository {
 
     private final TopicRegister rootTopicRegisterMap = new MemoryTopicRegister("ROOT");
@@ -26,8 +29,8 @@ public class MemorySubscriptionsRepository implements ISubscriptionsRepository {
     }
 
     @Override
-    public void removeSubscription(String topic, String clientID) {
-        rootTopicRegisterMap.unRegisterTopic(new Subscription(clientID, new Topic(topic), MqttQoS.AT_MOST_ONCE), TopicUtils.getTopicLevelArr(topic));
+    public void removeSubscription(String topic, String clientId) {
+        rootTopicRegisterMap.unRegisterTopic(new Subscription(clientId, new Topic(topic), MsgQos.AT_MOST_ONCE), TopicUtils.getTopicLevelArr(topic));
     }
 
     @Override

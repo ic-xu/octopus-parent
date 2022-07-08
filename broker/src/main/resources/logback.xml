@@ -92,7 +92,7 @@
 
 
     <!-- 日志输出级别 -->
-    <root level="INFO"  additivity="true">
+    <root level="ALL"  additivity="true">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="file"/>
     </root>

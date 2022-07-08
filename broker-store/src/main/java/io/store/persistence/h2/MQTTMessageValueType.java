@@ -1,11 +1,11 @@
 package io.store.persistence.h2;
 
 
-import io.handler.codec.mqtt.MqttQoS;
 import io.netty.buffer.ByteBuf;
-import io.store.message.PubRelMarker;
-import io.store.message.PublishedMessage;
-import io.octopus.base.subscriptions.Topic;
+import io.octopus.kernel.kernel.message.MsgQos;
+import io.octopus.kernel.kernel.message.PubRelMarker;
+import io.octopus.kernel.kernel.message.PublishedMessage;
+import io.octopus.kernel.kernel.subscriptions.Topic;
 import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.StringDataType;
 
@@ -43,7 +43,7 @@ public final class MQTTMessageValueType implements org.h2.mvstore.type.DataType 
             buff.put((byte) MessageType.PUBLISHED_MESSAGE.ordinal());
             buff.putShort((short) casted.getPackageId());
 
-            buff.put((byte) casted.getPublishingQos().value());
+            buff.put((byte) casted.getPublishingQos().getValue());
             final String token = casted.getTopic().toString();
             topicDataType.write(buff, token);
             payloadDataType.write(buff, casted.getPayload().copy());
@@ -69,7 +69,7 @@ public final class MQTTMessageValueType implements org.h2.mvstore.type.DataType 
         if (messageType == MessageType.PUB_REL_MARKER.ordinal()) {
             return new PubRelMarker(messageId);
         } else if (messageType == MessageType.PUBLISHED_MESSAGE.ordinal()) {
-            final MqttQoS qos = MqttQoS.valueOf(buff.get());
+            final MsgQos qos = MsgQos.valueOf(buff.get());
             final String topicStr = topicDataType.read(buff);
             final ByteBuf payload = payloadDataType.read(buff);
             return new PublishedMessage(messageId, Topic.asTopic(topicStr), qos, payload);

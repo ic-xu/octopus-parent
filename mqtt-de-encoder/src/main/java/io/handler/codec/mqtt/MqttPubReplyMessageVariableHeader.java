@@ -14,9 +14,10 @@ public final class MqttPubReplyMessageVariableHeader extends MqttMessageIdVariab
 
     public MqttPubReplyMessageVariableHeader(int messageId, byte reasonCode, MqttProperties properties) {
         super(messageId);
-        if (messageId < 1 || messageId > 0xffff) {
-            throw new IllegalArgumentException("messageId: " + messageId + " (expected: 1 ~ 65535)");
-        }
+        /// 兼容EMQX 客户端，EMQX 客户端会发送一个packageID=0 的pubAck 包
+//        if (messageId < 1 || messageId > 0xffff) {
+//            throw new IllegalArgumentException("messageId: " + messageId + " (expected: 1 ~ 65535)");
+//        }
         this.reasonCode = reasonCode;
         this.properties = MqttProperties.withEmptyDefaults(properties);
     }

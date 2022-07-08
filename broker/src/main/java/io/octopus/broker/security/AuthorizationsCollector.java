@@ -1,7 +1,7 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.interfaces.IRWController;
-import io.octopus.base.subscriptions.Topic;
+import io.octopus.kernel.kernel.security.IRWController;
+import io.octopus.kernel.kernel.subscriptions.Topic;
 
 import java.text.ParseException;
 import java.util.*;
@@ -121,6 +121,8 @@ class AuthorizationsCollector implements IRWController {
         return false;
     }
 
+
+    //TODO 权限匹配不完善，不能做到模糊匹配
     private boolean matchACL(List<Authorization> auths, Topic topic, Authorization.Permission permission) {
         for (Authorization auth : auths) {
             if (auth.grant(permission)) {

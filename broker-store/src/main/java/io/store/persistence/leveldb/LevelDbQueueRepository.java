@@ -1,7 +1,7 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.base.interfaces.IQueueRepository;
-import io.octopus.base.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.repository.IQueueRepository;
 import org.iq80.leveldb.DB;
 
 import java.util.Map;

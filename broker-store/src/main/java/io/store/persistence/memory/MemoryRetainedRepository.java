@@ -1,10 +1,10 @@
 package io.store.persistence.memory;
 
-import io.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.buffer.ByteBuf;
-import io.octopus.base.interfaces.IRetainedRepository;
-import io.octopus.base.subscriptions.RetainedMessage;
-import io.octopus.base.subscriptions.Topic;
+import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.repository.IRetainedRepository;
+import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
+import io.octopus.kernel.kernel.subscriptions.Topic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/*
+/**
+ * @author user
+ */ /*
 * In memory retained messages store
 * */
 public final class MemoryRetainedRepository implements IRetainedRepository {
@@ -25,12 +27,12 @@ public final class MemoryRetainedRepository implements IRetainedRepository {
     }
 
     @Override
-    public void retain(Topic topic, MqttPublishMessage msg) {
-        final ByteBuf payload = msg.content();
+    public boolean retain(Topic topic, KernelMsg msg) {
+        final ByteBuf payload = msg.getPayload();
         byte[] rawPayload = new byte[payload.readableBytes()];
         payload.getBytes(0, rawPayload);
-        final RetainedMessage toStore = new RetainedMessage(topic, msg.fixedHeader().qosLevel(), rawPayload);
-        storage.put(topic, toStore);
+        final RetainedMessage toStore = new RetainedMessage(topic, msg.getQos(), rawPayload);
+       return storage.put(topic, toStore)!=null;
     }
 
     @Override

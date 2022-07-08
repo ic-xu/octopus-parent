@@ -5,7 +5,6 @@ import io.netty.handler.codec.DecoderResult;
 
 /**
  * Utility class with factory methods to create different types of MQTT messages.
- * @author user
  */
 public final class MqttMessageFactory {
 
@@ -83,17 +82,9 @@ public final class MqttMessageFactory {
         }
     }
 
-
-
     public static MqttMessage newInvalidMessage(Throwable cause) {
-        return new MqttMessage(0L,null, null, null, DecoderResult.failure(cause));
+        return new MqttMessage(null, null, null, DecoderResult.failure(cause));
     }
-
-    public static MqttPubRelMessage newPubRelMessage(int packageId){
-        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_LEAST_ONCE, false, 0);
-        return new MqttPubRelMessage(mqttFixedHeader, MqttMessageIdVariableHeader.from(packageId));
-    }
-
 
     public static MqttMessage newInvalidMessage(MqttFixedHeader mqttFixedHeader, Object variableHeader,
                                                 Throwable cause) {

@@ -1,7 +1,7 @@
 package io.store.persistence.memory;
 
-import io.octopus.base.interfaces.IQueueRepository;
-import io.octopus.base.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.repository.IQueueRepository;
 
 import java.util.Map;
 import java.util.Queue;

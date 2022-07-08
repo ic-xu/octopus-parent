@@ -1,8 +1,6 @@
 package io.octopus.broker.handler;
 
 import com.google.gson.Gson;
-import io.netty.util.internal.StringUtil;
-import io.octopus.base.interfaces.ISessionResistor;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -10,10 +8,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
-import io.octopus.base.utils.HttpParseUtils;
-import io.octopus.base.subscriptions.ISubscriptionsDirectory;
-import io.octopus.base.subscriptions.Subscription;
-import io.octopus.base.subscriptions.Topic;
+import io.netty.util.internal.StringUtil;
+import io.octopus.kernel.kernel.session.ISessionResistor;
+import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
+import io.octopus.kernel.kernel.subscriptions.Topic;
+import io.octopus.utils.HttpParseUtils;
 
 import java.util.*;
 
@@ -51,7 +51,7 @@ public class NettyHttpServerHandler extends ChannelInboundHandlerAdapter {
 //            HttpMethod method = httpRequest.method();//获取请求方法
 //            DefaultHttpHeaders headers = (DefaultHttpHeaders)httpRequest.headers();
 //            String authorization = headers.get("Authorization");
-            Map<String, String> parse = HttpParseUtils.parseParams(httpRequest);
+            Map<String, String> parse = HttpParseUtils.parse(httpRequest);
             switch (path) {
                 case "/users":
                     String topic = parse.get("topic");

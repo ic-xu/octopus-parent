@@ -1,10 +1,10 @@
 package io.store.persistence.flishdisk;
 
-import io.handler.codec.mqtt.IMessage;
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.queue.MsgQueue;
-import io.octopus.base.utils.ObjectUtils;
+import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.kernel.kernel.message.IMessage;
+import io.octopus.kernel.kernel.queue.MsgQueue;
+import io.octopus.kernel.utils.ObjectUtils;
 import io.store.persistence.disk.CheckPointServer;
 import org.h2.mvstore.MVStore;
 import org.slf4j.Logger;

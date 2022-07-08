@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author user
+ */
 public class ByteUtils {
     public static List<byte[]> copy(byte[] bytes, int capacity) {
         ArrayList<byte[]> bytesArray = new ArrayList<>();

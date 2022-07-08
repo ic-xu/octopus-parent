@@ -2,24 +2,20 @@ package io.store.persistence.disk;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.*;
 
 public class FileMappedByteBufferTest {
 
     private MappedByteBuffer mappedByteBuffer;
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         File dir = new File("data");
         if(!dir.exists()){

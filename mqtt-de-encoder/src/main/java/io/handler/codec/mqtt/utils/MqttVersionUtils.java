@@ -2,6 +2,9 @@ package io.handler.codec.mqtt.utils;
 
 import io.handler.codec.mqtt.MqttVersion;
 
+/**
+ * @author user
+ */
 public class MqttVersionUtils {
 
 

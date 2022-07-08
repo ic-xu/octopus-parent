@@ -1,9 +1,9 @@
 package io.octopus.persistence.zookeeper;
 
 
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.interfaces.IRouterRegister;
+import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.kernel.kernel.router.IRouterRegister;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;

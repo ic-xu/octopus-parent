@@ -16,19 +16,19 @@
 
 package io.octopus.broker.handler;
 
-import io.octopus.base.utils.NettyUtils;
+import io.handler.codec.mqtt.*;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.handler.codec.mqtt.*;
+import io.octopus.utils.NettyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static io.octopus.broker.Utils.messageId;
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+import static io.octopus.utils.Utils.messageId;
 
 /**
  * @author andrea

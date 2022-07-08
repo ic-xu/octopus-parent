@@ -1,8 +1,8 @@
 package io.store.persistence.disk;
 
-import io.octopus.base.checkpoint.CheckPoint;
-import org.junit.Before;
-import org.junit.Test;
+import io.octopus.kernel.checkpoint.CheckPoint;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -10,7 +10,7 @@ public class CheckPointServerTest {
 
     CheckPointServer checkPointServer;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         checkPointServer = new CheckPointServer();
     }

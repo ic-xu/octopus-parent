@@ -1,10 +1,10 @@
 package io.octopus.broker.handler;
 
-import io.netty.channel.ChannelHandler;
-import io.octopus.base.utils.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
+import io.octopus.utils.NettyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,8 +15,6 @@ import java.util.concurrent.TimeUnit;
  * Auto-flush data on channel after a read timeout. It's inspired by IdleStateHandler but it's
  * specialized version, just flushing data after no read is done on the channel after a period. It's
  * used to avoid aggressively flushing from the ProtocolProcessor.
- *
- * @author user
  */
 @ChannelHandler.Sharable
 public class AutoFlushHandler extends ChannelDuplexHandler {

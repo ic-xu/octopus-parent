@@ -14,9 +14,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * @author user
- */
 public class SystemMessage {
     public static void main(String[] args) {
         SystemInfo si = new SystemInfo();

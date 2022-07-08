@@ -1,7 +1,7 @@
 package io.store.util;
 
-import io.octopus.base.utils.ByteUtils;
-import org.junit.Test;
+import io.octopus.kernel.utils.ByteUtils;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 

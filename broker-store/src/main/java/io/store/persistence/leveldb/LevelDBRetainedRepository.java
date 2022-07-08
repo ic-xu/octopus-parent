@@ -1,9 +1,9 @@
 package io.store.persistence.leveldb;
 
-import io.handler.codec.mqtt.MqttPublishMessage;
-import io.octopus.base.interfaces.IRetainedRepository;
-import io.octopus.base.subscriptions.RetainedMessage;
-import io.octopus.base.subscriptions.Topic;
+import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.repository.IRetainedRepository;
+import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
+import io.octopus.kernel.kernel.subscriptions.Topic;
 import org.iq80.leveldb.DB;
 
 import java.nio.charset.StandardCharsets;
@@ -30,8 +30,8 @@ public class LevelDBRetainedRepository implements IRetainedRepository {
     }
 
     @Override
-    public void retain(Topic topic, MqttPublishMessage msg) {
-
+    public boolean retain(Topic topic, KernelMsg msg) {
+        return true;
     }
 
     @Override

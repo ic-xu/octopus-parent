@@ -1,8 +1,8 @@
 package io.store.persistence.disk;
 
-import io.octopus.base.checkpoint.CheckPoint;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.utils.ObjectUtils;
+import io.octopus.kernel.checkpoint.CheckPoint;
+import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.kernel.utils.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +17,7 @@ import java.nio.channels.FileChannel;
  * read position
  * write position
  * write limit
+ * @author user
  */
 public class CheckPointServer {
 

@@ -1,9 +1,7 @@
 package io.store;
 
-import io.handler.codec.mqtt.*;
-import io.netty.buffer.ByteBuf;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.redisson.Redisson;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
@@ -19,7 +17,7 @@ public class RedisTest {
     RMap<Integer, String> testQueue;
 
 
-    @Before
+    @BeforeEach
     public void before(){
         Config redisSionConfig  = new Config();
         redisSionConfig.useSingleServer().setAddress("redis://172.20.73.93:6379");
@@ -62,12 +60,6 @@ public class RedisTest {
         }
         System.err.println(System.currentTimeMillis() - startTime);
 
-    }
-
-    private MqttPublishMessage publishNotRetainedDuplicated(int packetId, String topic, MqttQoS qos, ByteBuf payload) {
-        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, 0);
-        MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(topic.toString(), packetId);
-        return new MqttPublishMessage(fixedHeader, varHeader, payload);
     }
 
 }

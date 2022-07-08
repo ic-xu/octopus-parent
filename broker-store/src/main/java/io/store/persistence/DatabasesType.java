@@ -1,6 +1,6 @@
 package io.store.persistence;
 
-import io.octopus.base.contants.BrokerConstants;
+import io.octopus.kernel.kernel.contants.BrokerConstants;
 
 /**
  * @author chenxu

@@ -1,9 +1,9 @@
 package io.octopus.broker.handler;
 
-import io.octopus.base.utils.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
+import io.octopus.utils.NettyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Resend inflight not ack'ed publish packets (QoS1 PUB and QoS2 PUB/PUBREL). It's inspired by IdleStateHandler but it's
  * specialized version, just invoking Session's resendInflightNotAcked by the channel after a period.
- * @author user
  */
 public class InflictReSenderHandler extends ChannelDuplexHandler {
 

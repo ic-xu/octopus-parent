@@ -4,6 +4,7 @@ import io.netty.util.internal.StringUtil;
 
 /**
  * Variable Header of the {@link MqttPublishMessage}
+ * @author user
  */
 public final class MqttPublishVariableHeader {
 

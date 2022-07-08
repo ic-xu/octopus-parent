@@ -1,7 +1,10 @@
 package io.store.persistence.memory;
 
-import io.octopus.base.interfaces.*;
-import io.store.persistence.*;
+import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IRetainedRepository;
+import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
+import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.router.IRouterRegister;
 
 /**
  * @author chenxu

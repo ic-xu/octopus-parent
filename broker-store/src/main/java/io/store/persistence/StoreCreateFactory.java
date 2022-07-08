@@ -1,11 +1,15 @@
 package io.store.persistence;
 
 import io.netty.util.internal.ObjectUtil;
-import io.octopus.base.config.IConfig;
-import io.octopus.base.contants.BrokerConstants;
-import io.octopus.base.interfaces.*;
-import io.octopus.base.interfaces.LifeCycle;
-import io.octopus.base.utils.ObjectUtils;
+import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.kernel.kernel.lifecycle.Lifecycle;
+import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IRetainedRepository;
+import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
+import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.router.IRouterRegister;
+import io.octopus.kernel.utils.ObjectUtils;
 import io.store.persistence.h2.H2Builder;
 import io.store.persistence.leveldb.LevelDbBuilder;
 import io.store.persistence.memory.MemoryBuilder;
@@ -21,7 +25,7 @@ import java.io.IOException;
  * @author chenxu
  * @version 1
  */
-public class StoreCreateFactory implements IStoreCreateFactory, LifeCycle {
+public class StoreCreateFactory implements IStoreCreateFactory, Lifecycle {
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final IConfig config;
@@ -35,6 +39,11 @@ public class StoreCreateFactory implements IStoreCreateFactory, LifeCycle {
         String dataBasesType = config.getProperty(BrokerConstants.DATABASES_TYPE, "");
         this.dbType = DatabasesType.getDB(dataBasesType);
         start();
+    }
+
+    @Override
+    public void init() throws Exception {
+
     }
 
     @Override
@@ -64,8 +73,13 @@ public class StoreCreateFactory implements IStoreCreateFactory, LifeCycle {
 
 
     @Override
-    public void stop() {
-        LifeCycle.super.stop();
+    public void stop() throws Exception {
+        Lifecycle.super.stop();
+    }
+
+    @Override
+    public void destroy() {
+
     }
 
     @Override

@@ -1,10 +1,11 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.config.IResourceLoader;
-import io.octopus.base.interfaces.IAuthenticator;
+import io.octopus.kernel.kernel.config.IResourceLoader;
+import io.octopus.kernel.kernel.security.IAuthenticator;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -97,7 +98,7 @@ public class ResourceAuthenticator implements IAuthenticator {
     }
 
     @Override
-    public boolean checkUsername(String clientId, String username, byte[] password) {
+    public boolean checkValid(String clientId, String username, byte[] password) {
         if (username == null || password == null) {
             LOGGER.info("username or password was null");
             return false;

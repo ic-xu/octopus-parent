@@ -1,11 +1,7 @@
 package io.octopus.broker.security;
+import io.octopus.kernel.kernel.security.IRWController;
+import io.octopus.kernel.kernel.subscriptions.Topic;
 
-import io.octopus.base.interfaces.IRWController;
-import io.octopus.base.subscriptions.Topic;
-
-/**
- * @author user
- */
 public class PermitAllAuthorityController implements IRWController {
 
     @Override

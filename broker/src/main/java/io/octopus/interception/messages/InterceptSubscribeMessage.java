@@ -1,6 +1,6 @@
 package io.octopus.interception.messages;
 import io.handler.codec.mqtt.MqttQoS;
-import io.octopus.base.subscriptions.Subscription;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
 
 public class InterceptSubscribeMessage implements InterceptMessage {
 
@@ -17,7 +17,7 @@ public class InterceptSubscribeMessage implements InterceptMessage {
     }
 
     public MqttQoS getRequestedQos() {
-        return subscription.getRequestedQos();
+        return MqttQoS.AT_MOST_ONCE;
     }
 
     public String getTopicFilter() {

@@ -1,8 +1,8 @@
 
 package io.store.persistence.h2;
 
-import io.octopus.base.interfaces.IQueueRepository;
-import io.octopus.base.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.repository.IQueueRepository;
 import org.h2.mvstore.MVStore;
 
 import java.util.HashMap;

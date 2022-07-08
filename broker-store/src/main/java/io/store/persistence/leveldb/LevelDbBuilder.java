@@ -1,8 +1,11 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.base.config.IConfig;
-import io.octopus.base.interfaces.*;
-import io.store.persistence.*;
+import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IRetainedRepository;
+import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
+import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.router.IRouterRegister;
 import io.store.persistence.memory.MemoryRetainedRepository;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.DBFactory;

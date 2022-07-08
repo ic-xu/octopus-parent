@@ -7,9 +7,9 @@ import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttMessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.octopus.base.config.IConfig;
-import io.octopus.base.utils.NettyUtils;
-import io.octopus.scala.broker.PostOffice;
+import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.scala.broker.mqtt.server.PostOffice;
+import io.octopus.utils.NettyUtils;
 
 import static io.netty.channel.ChannelHandler.Sharable;
 

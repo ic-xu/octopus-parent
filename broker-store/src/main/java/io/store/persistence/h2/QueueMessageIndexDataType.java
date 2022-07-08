@@ -1,7 +1,7 @@
 package io.store.persistence.h2;
 
 
-import io.octopus.base.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.MsgIndex;
 import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.StringDataType;
 import org.slf4j.Logger;

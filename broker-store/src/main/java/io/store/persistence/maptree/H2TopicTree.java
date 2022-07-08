@@ -1,6 +1,6 @@
 package io.store.persistence.maptree;
 
-import io.octopus.base.subscriptions.Subscription;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
 import org.h2.mvstore.MVMap;
 
 import java.util.HashSet;

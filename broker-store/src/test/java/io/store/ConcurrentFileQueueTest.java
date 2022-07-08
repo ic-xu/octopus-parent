@@ -1,13 +1,9 @@
 package io.store;
 
-import io.handler.codec.mqtt.*;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.octopus.base.queue.StoreMsg;
 import io.store.persistence.disk.CheckPointServer;
 import io.store.persistence.disk.ConcurrentFileQueue;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ConcurrentFileQueueTest {
     ConcurrentFileQueue concurrentFileQueue;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         concurrentFileQueue = new ConcurrentFileQueue(null,0,new CheckPointServer());
 //        MqttPublishMessage mqttPublishMessage = publishNotRetainedDuplicated(1, "test/bb/cc" + 1, MqttQoS.AT_LEAST_ONCE, Unpooled.wrappedBuffer(("hhhh-ggg-ddd" + 1).getBytes(StandardCharsets.UTF_8)));
@@ -54,19 +50,19 @@ public class ConcurrentFileQueueTest {
         }
 
         long startTime = System.currentTimeMillis();
-        for (int i = 2; i < 100000; i++) {
-            MqttPublishMessage mqttPublishMessage = publishNotRetainedDuplicated(i % 65535 + 1, "test/bb/cc" + i, MqttQoS.AT_LEAST_ONCE, Unpooled.wrappedBuffer(("ff" + i).getBytes(StandardCharsets.UTF_8)));
-            concurrentFileQueue.offer(mqttPublishMessage);
-        }
-
-        for (int i = 2; i < 120000; i++) {
-            StoreMsg<IMessage> poll =  concurrentFileQueue.poll();
-            if (null != poll) {
-                System.out.println(((MqttPublishMessage)poll.getMsg()).variableHeader().topicName());
-            }
-
-        }
+//        for (int i = 2; i < 100000; i++) {
+//            MqttPublishMessage mqttPublishMessage = publishNotRetainedDuplicated(i % 65535 + 1, "test/bb/cc" + i, MqttQoS.AT_LEAST_ONCE, Unpooled.wrappedBuffer(("ff" + i).getBytes(StandardCharsets.UTF_8)));
+//            concurrentFileQueue.offer(mqttPublishMessage);
+//        }
 //
+//        for (int i = 2; i < 120000; i++) {
+//            StoreMsg<IMessage> poll =  concurrentFileQueue.poll();
+//            if (null != poll) {
+//                System.out.println(((MqttPublishMessage)poll.getMsg()).variableHeader().topicName());
+//            }
+//
+//        }
+////
 //        System.out.println("-------------------------------------");
 //        MqttPublishMessage mqttPublishMessage = publishNotRetainedDuplicated(23, "test/bb/cc" + 1000001, MqttQoS.AT_LEAST_ONCE, Unpooled.wrappedBuffer((testMessage).getBytes(StandardCharsets.UTF_8)));
 //        concurrentFileQueue.offer(mqttPublishMessage);
@@ -80,11 +76,6 @@ public class ConcurrentFileQueueTest {
 
     }
 
-    private MqttPublishMessage publishNotRetainedDuplicated(int packetId, String topic, MqttQoS qos, ByteBuf payload) {
-        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, 0);
-        MqttPublishVariableHeader varHeader = new MqttPublishVariableHeader(topic.toString(), packetId);
-        return new MqttPublishMessage(fixedHeader, varHeader, payload);
-    }
 
     @Test
     public void poll() throws IOException {

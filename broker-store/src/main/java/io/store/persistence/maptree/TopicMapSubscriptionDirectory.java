@@ -1,16 +1,17 @@
 package io.store.persistence.maptree;
 
 
-import io.octopus.base.contants.ConstantsTopics;
-import io.octopus.base.interfaces.ISubscriptionsRepository;
-import io.octopus.base.subscriptions.ISubscriptionsDirectory;
-import io.octopus.base.subscriptions.Subscription;
-import io.octopus.base.subscriptions.Topic;
-import io.octopus.base.subscriptions.plugin.TopicsFilter;
-import io.octopus.base.subscriptions.plugin.imp.DefaultTopics;
-import io.octopus.base.subscriptions.plugin.imp.IntersectionTopics;
+import io.octopus.kernel.kernel.contants.ConstantsTopics;
+import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
+import io.octopus.kernel.kernel.subscriptions.Topic;
+import io.octopus.kernel.kernel.subscriptions.plugin.TopicsFilter;
+import io.octopus.kernel.kernel.subscriptions.plugin.imp.DefaultTopics;
+import io.octopus.kernel.kernel.subscriptions.plugin.imp.IntersectionTopics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -77,6 +78,7 @@ public class TopicMapSubscriptionDirectory implements ISubscriptionsDirectory {
      * @return the list of matching subscriptions, or empty if not matching.
      */
 
+    @Override
     public Set<Subscription> matchWithoutQosSharpening(Topic topic) {
         for (TopicsFilter chain : chains) {
             if (chain.support(topic))

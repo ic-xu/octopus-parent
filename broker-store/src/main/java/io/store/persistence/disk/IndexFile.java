@@ -1,6 +1,6 @@
 package io.store.persistence.disk;
 
-import io.octopus.base.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.MsgIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

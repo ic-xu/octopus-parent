@@ -1,6 +1,6 @@
 package io.octopus.broker.security;
 
-import io.octopus.base.config.FileResourceLoader;
+import io.octopus.kernel.kernel.config.FileResourceLoader;
 
 /**
  * Load user credentials from a text file. Each line of the file is formatted as
@@ -16,8 +16,6 @@ import io.octopus.base.config.FileResourceLoader;
  * behaviour.
  *
 // * @deprecated user {@link ResourceAuthenticator} instead
-
- * @author user
  */
 public class FileAuthenticator extends ResourceAuthenticator {
 

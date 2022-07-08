@@ -1,19 +1,18 @@
 package io.octopus.broker.handler;
 
-import io.octopus.base.utils.NettyUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.octopus.utils.NettyUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 /**
  * timeoutHandler
- * @author user
  */
 @Sharable
 public class OctopusIdleTimeoutHandler extends ChannelDuplexHandler {

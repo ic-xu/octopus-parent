@@ -9,6 +9,7 @@
     </parent>
     <artifactId>mqtt-de-encoder</artifactId>
     <name>mqtt-de-encoder</name>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

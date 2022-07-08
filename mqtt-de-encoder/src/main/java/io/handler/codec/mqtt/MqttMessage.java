@@ -5,23 +5,9 @@ import io.netty.util.internal.StringUtil;
 
 /**
  * Base class for all MQTT message types.
+ * @author user
  */
-public class MqttMessage implements IMessage {
-
-    /**
-     * message id
-     */
-    private long messageId;
-
-    @Override
-    public long getMessageId() {
-        return messageId;
-    }
-
-    @Override
-    public void setMessageId(long messageId) {
-        this.messageId = messageId;
-    }
+public class MqttMessage {
 
     /**
      * header
@@ -42,6 +28,8 @@ public class MqttMessage implements IMessage {
      * decoderResult
      */
     private final DecoderResult decoderResult;
+
+    private Long longId = System.currentTimeMillis();
 
     // Constants for fixed-header only message types with all flags set to 0 (see
     // https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Table_2.2_-)
@@ -76,10 +64,6 @@ public class MqttMessage implements IMessage {
         this(mqttFixedHeader, variableHeader, payload, DecoderResult.SUCCESS);
     }
 
-    public MqttMessage(Long messageId, MqttFixedHeader mqttFixedHeader, Object variableHeader, Object payload) {
-        this(messageId, mqttFixedHeader, variableHeader, payload, DecoderResult.SUCCESS);
-    }
-
     public MqttMessage(
             MqttFixedHeader mqttFixedHeader,
             Object variableHeader,
@@ -90,19 +74,6 @@ public class MqttMessage implements IMessage {
         this.variableHeader = variableHeader;
         this.payload = payload;
         this.decoderResult = decoderResult;
-    }
-
-    public MqttMessage(Long messageId,
-                       MqttFixedHeader mqttFixedHeader,
-                       Object variableHeader,
-                       Object payload,
-                       DecoderResult decoderResult) {
-        this.messageId = messageId;
-        this.mqttFixedHeader = mqttFixedHeader;
-        this.variableHeader = variableHeader;
-        this.payload = payload;
-        this.decoderResult = decoderResult;
-
     }
 
     public MqttFixedHeader fixedHeader() {
@@ -130,5 +101,9 @@ public class MqttMessage implements IMessage {
                 .append(", payload=").append(payload() != null ? payload.toString() : "")
                 .append(']')
                 .toString();
+    }
+
+    public Long longId() {
+        return longId;
     }
 }

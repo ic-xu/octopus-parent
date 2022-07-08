@@ -18,9 +18,14 @@
 
     <dependencies>
 
+<!--        <dependency>-->
+<!--            <groupId>io.octopus</groupId>-->
+<!--            <artifactId>mqtt-de-encoder</artifactId>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>io.octopus</groupId>
-            <artifactId>mqtt-de-encoder</artifactId>
+            <artifactId>broker-kernel</artifactId>
         </dependency>
     </dependencies>
 

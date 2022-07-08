@@ -43,7 +43,7 @@
     <modules>
         <module>broker</module>
         <module>broker-store</module>
-        <module>broker-base</module>
+        <module>broker-kernel</module>
         <module>broker-route</module>
         <module>broker-agent</module>
         <module>mqtt-de-encoder</module>
@@ -52,7 +52,7 @@
         <module>cluster</module>
         <module>broker-rpc</module>
         <module>logic</module>
-        <module>proxy</module>
+        <module>broker-console</module>
     </modules>
 
     <dependencies>
@@ -102,11 +102,10 @@
 
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
         </dependency>
-
 
         <!-- needs extra dependencies: objenesis & hamcrest -->
         <dependency>
@@ -157,10 +156,20 @@
             <artifactId>byte-buddy-agent</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
+
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
         </dependency>
 
     </dependencies>
@@ -220,10 +229,11 @@
             </dependency>
 
 
+            <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.2</version>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>5.8.2</version>
                 <scope>test</scope>
             </dependency>
 
@@ -290,11 +300,18 @@
                 <version>${scala.version}</version>
             </dependency>
 
-<!--            <dependency>-->
-<!--                <groupId>org.scala-lang</groupId>-->
-<!--                <artifactId>scala-reflect</artifactId>-->
-<!--                <version>${scala.version}</version>-->
-<!--            </dependency>-->
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-reflect</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-compiler</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>io.octopus</groupId>
@@ -318,7 +335,7 @@
 
             <dependency>
                 <groupId>io.octopus</groupId>
-                <artifactId>broker-base</artifactId>
+                <artifactId>broker-kernel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -452,13 +469,6 @@
                 <artifactId>commons-codec</artifactId>
                 <version>1.10</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-compiler</artifactId>
-                <version>2.13.5</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 

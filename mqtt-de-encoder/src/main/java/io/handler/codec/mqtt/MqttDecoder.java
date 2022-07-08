@@ -1,7 +1,7 @@
 
 package io.handler.codec.mqtt;
 
-import io.handler.codec.mqtt.id.SnowflakeIdWorker;
+import io.handler.codec.mqtt.MqttProperties.IntegerProperty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -12,8 +12,6 @@ import io.netty.util.CharsetUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import io.handler.codec.mqtt.MqttProperties.IntegerProperty;
 
 import static io.handler.codec.mqtt.MqttCodecUtil.*;
 
@@ -105,7 +103,6 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
                     checkpoint(DecoderState.READ_FIXED_HEADER);
                     MqttMessage message = MqttMessageFactory.newMessage(
                             mqttFixedHeader, variableHeader, decodedPayload.value);
-                    message.setMessageId(SnowflakeIdWorker.getInstance().nextId());
                     mqttFixedHeader = null;
                     variableHeader = null;
                     out.add(message);
@@ -410,9 +407,10 @@ public final class MqttDecoder extends ReplayingDecoder<MqttDecoder.DecoderState
      */
     private static int decodeMessageId(ByteBuf buffer) {
         final int messageId = decodeMsbLsb(buffer);
-        if (!isValidMessageId(messageId)) {
-            throw new DecoderException("invalid messageId: " + messageId);
-        }
+        /// 兼容EMQX 客户端，EMQX 客户端会发送一个packageID=0 的pubAck 包
+//        if (!isValidMessageId(messageId)) {
+//            throw new DecoderException("invalid messageId: " + messageId);
+//        }
         return messageId;
     }
 

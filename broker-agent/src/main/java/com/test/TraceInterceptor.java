@@ -2,11 +2,11 @@ package com.test;
 
 import com.test.track.Span;
 import com.test.track.TrackManager;
-import io.handler.codec.mqtt.IMessage;
 import io.handler.codec.mqtt.MqttCustomerMessage;
 import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.octopus.base.queue.StoreMsg;
+import io.octopus.kernel.kernel.message.IMessage;
+import io.octopus.kernel.kernel.queue.StoreMsg;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
+/**
+ * @author user
+ */
 public class TraceInterceptor {
 
     static Logger logger = LoggerFactory.getLogger(TraceInterceptor.class);
@@ -31,10 +34,9 @@ public class TraceInterceptor {
         for (Object arg : allArguments) {
             if (arg instanceof MqttPublishMessage || arg instanceof MqttCustomerMessage) {
                 MqttMessage message = (MqttMessage) arg;
-                if (message.getMessageId() > 0) {
                     Span span = TrackManager.getSpan();
                     if (null == span) {
-                        span = new Span(message.getMessageId(), method);
+                        span = new Span(message.longId(), method);
                         TrackManager.setSpan(span);
                     }
                     try {
@@ -55,15 +57,15 @@ public class TraceInterceptor {
                             TrackManager.clear();
                         }
                     }
-                }
+
 
             }
             else if(arg instanceof StoreMsg){
                 MqttMessage message = (MqttMessage) ((StoreMsg<IMessage>) arg).getMsg();
-                if (message.getMessageId() > 0) {
+                if (message.longId() > 0) {
                     Span span = TrackManager.getSpan();
                     if (null == span) {
-                        span = new Span(message.getMessageId(), method);
+                        span = new Span(message.longId(), method);
                         TrackManager.setSpan(span);
                     }
                     try {

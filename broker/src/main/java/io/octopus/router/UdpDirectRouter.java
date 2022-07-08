@@ -2,10 +2,9 @@ package io.octopus.router;
 
 import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.handler.codec.mqtt.utils.MessageEncoderUtils;
+import io.octopus.kernel.kernel.router.IRouterRegister;
 import io.octopus.udp.message.MessageSendListener;
 import io.octopus.udp.sender.Sender;
-import io.octopus.base.interfaces.IRouterRegister;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,7 +28,7 @@ public class UdpDirectRouter implements RouteMessage2OtherBrokerServer {
                 Set<InetSocketAddress> inetSocketAddresses = searchTargetAddress(message.variableHeader().topicName());
                 if (null != inetSocketAddresses) {
                     for (InetSocketAddress address : inetSocketAddresses) {
-                        sender.send(MessageEncoderUtils.decodeMessage(mqttMessage), message.getMessageId(), address, messageSendListener);
+//                        sender.send(MessageEncoderUtils.decodeMessage(mqttMessage), message.getLongId(), address, messageSendListener);
                     }
                 }
                 break;

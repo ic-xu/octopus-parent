@@ -1,8 +1,8 @@
 package io.store.persistence.h2;
 
 
-import io.octopus.base.interfaces.ISubscriptionsRepository;
-import io.octopus.base.subscriptions.Subscription;
+import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.subscriptions.Subscription;
 import org.h2.mvstore.Cursor;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;

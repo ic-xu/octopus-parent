@@ -1,8 +1,5 @@
 package io.octopus.broker.metrics;
 
-/**
- * @author user
- */
 public class MessageMetrics {
 
     private long mMessagesRead;

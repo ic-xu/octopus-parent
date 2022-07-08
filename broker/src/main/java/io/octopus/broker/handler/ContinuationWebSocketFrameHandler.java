@@ -8,11 +8,6 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
-/**
- *
- * webSocket
- * @author user
- */
 public class ContinuationWebSocketFrameHandler extends ChannelInboundHandlerAdapter {
 
     private ByteBuf data = null;

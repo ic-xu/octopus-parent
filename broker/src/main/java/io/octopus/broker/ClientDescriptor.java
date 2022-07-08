@@ -4,6 +4,7 @@ import java.util.Objects;
 
 /**
  * client descriptor
+ * @author user
  */
 public class ClientDescriptor {
 

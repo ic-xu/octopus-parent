@@ -346,6 +346,25 @@ public final class MqttMessageBuilders {
         }
     }
 
+    public static final class PubRelBuilder {
+        private short packetId;
+        PubRelBuilder() {
+        }
+
+        public PubRelBuilder packetId(short packetId) {
+            this.packetId = packetId;
+            return this;
+        }
+
+        public MqttMessage build() {
+            MqttFixedHeader mqttFixedHeader =
+                    new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_MOST_ONCE, false, 0);
+            MqttMessageIdVariableHeader mqttMessageIdVariableHeader =
+                    new MqttMessageIdVariableHeader(packetId);
+            return new MqttMessage(mqttFixedHeader, mqttMessageIdVariableHeader);
+        }
+    }
+
     public static final class SubAckBuilder {
 
         private short packetId;
@@ -511,6 +530,10 @@ public final class MqttMessageBuilders {
 
     public static PubAckBuilder pubAck() {
         return new PubAckBuilder();
+    }
+
+    public static PubRelBuilder pubRel() {
+        return new PubRelBuilder();
     }
 
     public static SubAckBuilder subAck() {

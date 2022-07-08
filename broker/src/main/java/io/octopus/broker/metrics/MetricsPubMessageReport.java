@@ -4,8 +4,9 @@ import com.codahale.metrics.*;
 import com.google.gson.Gson;
 import io.handler.codec.mqtt.*;
 import io.netty.buffer.Unpooled;
-import io.octopus.base.contants.ConstantsTopics;
-import io.octopus.scala.broker.PostOffice;
+import io.octopus.kernel.kernel.contants.ConstantsTopics;
+import io.octopus.scala.broker.mqtt.server.PostOffice;
+import io.octopus.scala.broker.mqtt.utils.MqttPublishMsg2Message;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -26,7 +27,10 @@ public class MetricsPubMessageReport extends ScheduledReporter {
     private static final Runtime RUNTIME = Runtime.getRuntime();
 
 
-    protected MetricsPubMessageReport(MetricRegistry registry, String name, MetricFilter filter, TimeUnit rateUnit, TimeUnit durationUnit, ScheduledExecutorService executor, boolean shutdownExecutorOnStop, Set<MetricAttribute> disabledMetricAttributes, PostOffice msgDispatcher) {
+    protected MetricsPubMessageReport(MetricRegistry registry, String name, MetricFilter filter,
+                                      TimeUnit rateUnit, TimeUnit durationUnit,
+                                      ScheduledExecutorService executor, boolean shutdownExecutorOnStop,
+                                      Set<MetricAttribute> disabledMetricAttributes, PostOffice msgDispatcher) {
         super(registry, name, filter, rateUnit, durationUnit, executor, shutdownExecutorOnStop, disabledMetricAttributes);
         this.msgDispatcher = msgDispatcher;
         this.systemMXBean = ManagementFactory.getOperatingSystemMXBean();
@@ -59,7 +63,7 @@ public class MetricsPubMessageReport extends ScheduledReporter {
             mqttPublishMessage = wrappMessage(timers);
         }
         if(null!=mqttPublishMessage){
-            msgDispatcher.internalPublish(mqttPublishMessage);
+            msgDispatcher.internalPublish(MqttPublishMsg2Message.mqttPublishMessage2Message(mqttPublishMessage));
             mqttPublishMessage.payload().release();
         }
     }

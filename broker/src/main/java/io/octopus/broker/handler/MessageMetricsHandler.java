@@ -11,9 +11,6 @@ import io.octopus.broker.metrics.MessageMetricsCollector;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
-/**
- * @author user
- */
 public class MessageMetricsHandler extends ChannelDuplexHandler {
 
     private static final AttributeKey<MessageMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("MessageMetrics");
