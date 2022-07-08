@@ -36,7 +36,6 @@ public class ProxyInboundHandler extends ChannelInboundHandlerAdapter {
                 .handler(new ProxyOutboundHandler(inboundChannel))
 
                 .option(ChannelOption.AUTO_READ, false);
-        ;
         SocketAddress address = new InetSocketAddress(remoteHost, remotePort);
         ChannelFuture f = b.connect(address);
         outboundChannel = f.channel();
