@@ -50,6 +50,7 @@
         <module>broker-rpc</module>
         <module>broker-example</module>
         <module>broker-console</module>
+        <module>broker-proxy</module>
     </modules>
 
     <dependencies>
