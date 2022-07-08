@@ -20,6 +20,7 @@
 
 # 模块分析
 - broker-agent：全链路追踪日志收起agent，目前还没实现，只是跑通流程
+- broker: 代理转发服务，目前实现了部分mqtt协议消息的代理转发
 - broker-console：ssh 与 broker服务交互的sshd服务
 - broker-kernel: 内核服务，对应上面的 kernel 内核模块
 - broker-route :服务之间路由模块
