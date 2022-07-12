@@ -8,8 +8,8 @@ import io.handler.codec.mqtt.MqttMessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.scala.broker.mqtt.server.PostOffice;
-import io.octopus.utils.NettyUtils;
+import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.utils.NettyUtils;
 
 import static io.netty.channel.ChannelHandler.Sharable;
 
@@ -22,10 +22,10 @@ public final class DropWizardMetricsHandler extends ChannelInboundHandlerAdapter
     private Meter publishesMetrics;
     private Meter subscribeMetrics;
     private Counter connectedClientsMetrics;
-    private PostOffice msgDispatcher;
+    private IPostOffice msgDispatcher;
 
 
-    public DropWizardMetricsHandler(PostOffice msgDispatcher) {
+    public DropWizardMetricsHandler(IPostOffice msgDispatcher) {
         this.msgDispatcher = msgDispatcher;
     }
 

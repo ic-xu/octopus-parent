@@ -4,14 +4,14 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.socket.ServerSocketChannel
 import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{AdaptiveRecvByteBufAllocator, ChannelOption, EventLoopGroup}
-import io.octopus.broker.security.ReadWriteControl
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
-import io.octopus.kernel.kernel.security.IAuthenticator
+import io.octopus.kernel.kernel.postoffice.IPostOffice
+import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
-import io.octopus.scala.broker.mqtt.server.PostOffice
+import io.octopus.kernel.kernel.transport.ITransport
 import io.octopus.scala.broker.mqtt.server.handler.UdpMQTTHandler
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -28,7 +28,7 @@ class UDPTransportTransport extends ITransport {
   override def initProtocol(bossGroup: EventLoopGroup, workerGroup: EventLoopGroup, channelClass: Class[_ <: ServerSocketChannel],
                             config: IConfig, sessionRegistry: ISessionResistor,
                             subscriptionsDirectory: ISubscriptionsDirectory,
-                            msgDispatcher: PostOffice, ports: Map[String, Int],
+                            msgDispatcher: IPostOffice, ports: java.util.Map[String, Integer],
                             authenticator: IAuthenticator, interceptor: NotifyInterceptor,
                             readWriteControl: ReadWriteControl): Unit = {
 

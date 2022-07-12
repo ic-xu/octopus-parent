@@ -141,9 +141,9 @@ public class Topic implements Serializable, Comparable<Topic> {
     }
 
     public boolean isValid() {
-        if (tokens == null)
+        if (tokens == null){
             getTokens();
-
+        }
         return valid;
     }
 

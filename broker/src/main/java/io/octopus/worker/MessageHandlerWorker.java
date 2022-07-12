@@ -1,7 +1,7 @@
 package io.octopus.worker;
 
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.octopus.scala.broker.mqtt.server.PostOffice;
+import io.octopus.kernel.kernel.postoffice.IPostOffice;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -12,9 +12,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageHandlerWorker extends Thread{
     private final LinkedBlockingQueue<MqttPublishMessage> messageQueue = new LinkedBlockingQueue<>();
-    private final PostOffice postOffice;
+    private final IPostOffice postOffice;
 
-    public MessageHandlerWorker(PostOffice postOffice) {
+    public MessageHandlerWorker(IPostOffice postOffice) {
         this.postOffice = postOffice;
     }
 

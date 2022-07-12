@@ -1,28 +1,21 @@
-package io.octopus.broker.metrics;
+package io.octopus.kernel.kernel.metrics;
 
 import com.codahale.metrics.*;
-import com.google.gson.Gson;
-import io.handler.codec.mqtt.*;
-import io.netty.buffer.Unpooled;
-import io.octopus.kernel.kernel.contants.ConstantsTopics;
-import io.octopus.scala.broker.mqtt.server.PostOffice;
-import io.octopus.scala.broker.mqtt.utils.MqttPublishMsg2Message;
+import io.octopus.kernel.kernel.postoffice.IPostOffice;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author user
  */
 public class MetricsPubMessageReport extends ScheduledReporter {
-    private PostOffice msgDispatcher;
+    private IPostOffice msgDispatcher;
     private OperatingSystemMXBean systemMXBean ;
     private static final Runtime RUNTIME = Runtime.getRuntime();
 
@@ -30,7 +23,7 @@ public class MetricsPubMessageReport extends ScheduledReporter {
     protected MetricsPubMessageReport(MetricRegistry registry, String name, MetricFilter filter,
                                       TimeUnit rateUnit, TimeUnit durationUnit,
                                       ScheduledExecutorService executor, boolean shutdownExecutorOnStop,
-                                      Set<MetricAttribute> disabledMetricAttributes, PostOffice msgDispatcher) {
+                                      Set<MetricAttribute> disabledMetricAttributes, IPostOffice msgDispatcher) {
         super(registry, name, filter, rateUnit, durationUnit, executor, shutdownExecutorOnStop, disabledMetricAttributes);
         this.msgDispatcher = msgDispatcher;
         this.systemMXBean = ManagementFactory.getOperatingSystemMXBean();
@@ -43,47 +36,11 @@ public class MetricsPubMessageReport extends ScheduledReporter {
                        SortedMap<String, Histogram> histograms,
                        SortedMap<String, Meter> meters,
                        SortedMap<String, Timer> timers) {
-        MqttPublishMessage mqttPublishMessage = null;
-        if (!gauges.isEmpty()) {
-            mqttPublishMessage = wrappMessage(gauges);
-        }
-        if (!counters.isEmpty()) {
-            mqttPublishMessage = wrappMessage(counters);
-        }
 
-        if (!histograms.isEmpty()) {
-            mqttPublishMessage = wrappMessage(histograms);
-        }
-
-        if (!meters.isEmpty()) {
-            mqttPublishMessage = wrappMessage(meters);
-        }
-
-        if (!timers.isEmpty()) {
-            mqttPublishMessage = wrappMessage(timers);
-        }
-        if(null!=mqttPublishMessage){
-            msgDispatcher.internalPublish(MqttPublishMsg2Message.mqttPublishMessage2Message(mqttPublishMessage));
-            mqttPublishMessage.payload().release();
-        }
-    }
-
-
-    public MqttPublishMessage wrappMessage(SortedMap metricSortedMap) {
-        MqttPublishVariableHeader variableHeader = new MqttPublishVariableHeader(ConstantsTopics.SYS_METRICS, ThreadLocalRandom.current().nextInt(10000));
-        Gson gson = new Gson();
-        byte[] bytes1 = gson.toJson(variableHeader).getBytes(StandardCharsets.UTF_8);
-        byte[] bytes = gson.toJson(metricSortedMap).getBytes(StandardCharsets.UTF_8);
-        MqttFixedHeader header = new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.AT_MOST_ONCE, false, bytes1.length + bytes.length);
-        return new MqttPublishMessage(header, variableHeader, Unpooled.copiedBuffer(bytes));
     }
 
 
 
-
-    private MqttPublishMessage jvmInfo(){
-        return null;
-    }
 
 
     public static MetricsPubMessageReport.Builder forRegistry(MetricRegistry registry) {
@@ -147,7 +104,7 @@ public class MetricsPubMessageReport extends ScheduledReporter {
             return this;
         }
 
-        public MetricsPubMessageReport build(PostOffice msgDispatcher) {
+        public MetricsPubMessageReport build(IPostOffice msgDispatcher) {
             return new MetricsPubMessageReport(this.registry, this.name, this.filter, this.rateUnit, this.durationUnit, this.executor, this.shutdownExecutorOnStop, this.disabledMetricAttributes, msgDispatcher);
         }
     }

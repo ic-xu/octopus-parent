@@ -31,4 +31,14 @@ public class MemoryBuilder implements IStoreCreateFactory {
     public IRouterRegister createIRouterRegister() {
         return null;
     }
+
+    @Override
+    public void init() throws Exception {
+
+    }
+
+    @Override
+    public void destroy() throws Exception {
+
+    }
 }

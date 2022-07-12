@@ -11,7 +11,7 @@
 //import io.octopus.base.interfaces.ISessionResistor;
 //import io.octopus.broker.ClientDescriptor;
 //import io.octopus.exception.SessionCorruptedException;
-//import io.octopus.broker.security.ReadWriteControl;
+//import io.octopus.kernel.kernel.security.ReadWriteControl;
 //import io.octopus.base.queue.MsgQueue;
 //import io.octopus.base.queue.MsgIndex;
 //import io.octopus.base.subscriptions.ISubscriptionsDirectory;

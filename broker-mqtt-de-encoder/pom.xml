@@ -8,7 +8,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>broker-mqtt-de-encoder</artifactId>
-    <name>broker-mqtt-de-encoder</name>
+<!--    <name>broker-mqtt-de-encoder</name>-->
     <packaging>jar</packaging>
 
     <properties>

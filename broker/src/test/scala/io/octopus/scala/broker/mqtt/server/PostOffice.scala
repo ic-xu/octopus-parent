@@ -1,13 +1,12 @@
 package io.octopus.scala.broker.mqtt.server
 
 import io.netty.buffer.Unpooled
-import io.netty.util.ReferenceCountUtil
-import io.octopus.broker.security.ReadWriteControl
 import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
 import io.octopus.kernel.kernel.message.{KernelMsg, MsgQos, MsgRouter, PacketIPackageId}
 import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.queue.StoreMsg
 import io.octopus.kernel.kernel.repository.IRetainedRepository
+import io.octopus.kernel.kernel.security.ReadWriteControl
 import io.octopus.kernel.kernel.session.{ISession, ISessionResistor}
 import io.octopus.kernel.kernel.subscriptions.{ISubscriptionsDirectory, Subscription, Topic}
 import io.octopus.kernel.utils.ObjectUtils
@@ -35,17 +34,17 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
   private var adminUser: java.util.List[String] = _
 
 
-  /**
-   * public to only clientId
-   *
-   * @param storeMsg storeMsg
-   * @param clientId clientId
-   */
-  def publishMessage2ClientId(storeMsg: StoreMsg[KernelMsg], clientId: String): Unit = {
-    val msg = storeMsg.getMsg
-    publish2ClientId(clientId, msg.getTopic, msg.getQos, storeMsg, directPublish = true)
-    ReferenceCountUtil.release(storeMsg.getMsg)
-  }
+//  /**
+//   * public to only clientId
+//   *
+//   * @param storeMsg storeMsg
+//   * @param clientId clientId
+//   */
+//  def publishMessage2ClientId(storeMsg: StoreMsg[KernelMsg], clientId: String): Unit = {
+//    val msg = storeMsg.getMsg
+//    publish2ClientId(clientId, msg.getTopic, msg.getQos, storeMsg, directPublish = true)
+//    ReferenceCountUtil.release(storeMsg.getMsg)
+//  }
 
 
   /**
@@ -177,7 +176,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
   }
 
 
-  def addRegisterUserName(registerUser: Array[String]): Unit = {
+  def addAdminUser(registerUser: Array[String]): Unit = {
     adminUser = new util.ArrayList[String]
     registerUser.foreach(userName => {
       adminUser.add(userName)
@@ -284,5 +283,4 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
       subscriptionsDirectory.removeSubscription(new Topic(topicStr), session.getClientId)
     })
   }
-
 }

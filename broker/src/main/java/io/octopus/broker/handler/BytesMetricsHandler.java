@@ -8,8 +8,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-import io.octopus.broker.metrics.BytesMetrics;
-import io.octopus.broker.metrics.BytesMetricsCollector;
+import io.octopus.kernel.kernel.metrics.BytesMetrics;
+import io.octopus.kernel.kernel.metrics.BytesMetricsCollector;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 

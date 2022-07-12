@@ -21,7 +21,8 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.octopus.utils.NettyUtils;
+import io.octopus.kernel.utils.NettyUtils;
+import io.octopus.utils.MqttMessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,7 @@ public class MQTTMessageLoggerHandler extends ChannelDuplexHandler {
         if (!(message instanceof MqttMessage)) {
             return;
         }
-        MqttMessage msg = NettyUtils.validateMessage(message);
+        MqttMessage msg = MqttMessageUtils.validateMessage(message);
         String clientID = NettyUtils.clientID(ctx.channel());
         MqttMessageType messageType = msg.fixedHeader().messageType();
         switch (messageType) {

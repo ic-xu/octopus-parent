@@ -91,4 +91,6 @@ public abstract class AbstractConnection {
     public void flush() {
         channel.flush();
     }
+
+    public abstract void readCompleted();
 }

@@ -1,12 +1,12 @@
 package io.octopus.scala.broker.mqtt.factory
 
 import io.netty.channel.Channel
-import io.octopus.broker.security.ReadWriteControl
 import io.octopus.kernel.kernel.config.BrokerConfiguration
 import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
-import io.octopus.kernel.kernel.security.IAuthenticator
+import io.octopus.kernel.kernel.postoffice.IPostOffice
+import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
-import io.octopus.scala.broker.mqtt.server.{MQTTConnection, PostOffice}
+import io.octopus.scala.broker.mqtt.server.MQTTConnection
 
 /**
  * connection create Factory
@@ -17,7 +17,7 @@ import io.octopus.scala.broker.mqtt.server.{MQTTConnection, PostOffice}
  * @param interceptor interceptor
  */
 class MQTTConnectionFactory(brokerConfig: BrokerConfiguration, authenticator: IAuthenticator, sessionFactory: ISessionResistor,
-                            postOffice: PostOffice, interceptor: NotifyInterceptor, readWriteControl:ReadWriteControl){
+                            postOffice: IPostOffice, interceptor: NotifyInterceptor, readWriteControl:ReadWriteControl){
 
   def create(channel: Channel): MQTTConnection = new MQTTConnection(channel,brokerConfig,authenticator, sessionFactory,interceptor)
 

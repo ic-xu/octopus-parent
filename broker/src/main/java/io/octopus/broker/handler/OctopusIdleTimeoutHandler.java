@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.octopus.utils.NettyUtils;
+import io.octopus.kernel.utils.NettyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

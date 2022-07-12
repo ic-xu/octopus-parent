@@ -3,7 +3,6 @@ package io.store.persistence;
 import io.netty.util.internal.ObjectUtil;
 import io.octopus.kernel.kernel.config.IConfig;
 import io.octopus.kernel.kernel.contants.BrokerConstants;
-import io.octopus.kernel.kernel.lifecycle.Lifecycle;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
@@ -25,7 +24,7 @@ import java.io.IOException;
  * @author chenxu
  * @version 1
  */
-public class StoreCreateFactory implements IStoreCreateFactory, Lifecycle {
+public class StoreCreateFactory implements IStoreCreateFactory {
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final IConfig config;
@@ -69,12 +68,6 @@ public class StoreCreateFactory implements IStoreCreateFactory, Lifecycle {
                 break;
         }
         logger.info("start db {}", dbType);
-    }
-
-
-    @Override
-    public void stop() throws Exception {
-        Lifecycle.super.stop();
     }
 
     @Override

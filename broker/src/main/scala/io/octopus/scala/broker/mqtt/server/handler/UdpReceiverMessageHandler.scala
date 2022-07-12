@@ -3,7 +3,7 @@ package io.octopus.scala.broker.mqtt.server.handler
 import io.handler.codec.mqtt.MqttPublishMessage
 import io.handler.codec.mqtt.utils.MqttMessageDecoderUtils
 import io.netty.buffer.ByteBuf
-import io.octopus.scala.broker.mqtt.server.PostOffice
+import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.udp.message.MessageReceiverListener
 import io.octopus.worker.MessageHandlerWorker
 
@@ -18,10 +18,10 @@ class UdpReceiverMessageHandler extends MessageReceiverListener {
 
   private val worker = new Array[MessageHandlerWorker](1)
 
-  private var postOffice: PostOffice = _
+  private var postOffice: IPostOffice = _
 
 
-  def this(postOffice: PostOffice) {
+  def this(postOffice: IPostOffice) {
     this() //调用主构造函数
     this.postOffice = postOffice
     for (i <- worker.indices) {
@@ -42,7 +42,6 @@ class UdpReceiverMessageHandler extends MessageReceiverListener {
    * @return boolean
    */
   override def onMessage(messageId: lang.Long, msg: ByteBuf): lang.Boolean = {
-
     val decode = MqttMessageDecoderUtils.decode(messageId, msg.array)
     decode match {
       case publishMessage: MqttPublishMessage =>

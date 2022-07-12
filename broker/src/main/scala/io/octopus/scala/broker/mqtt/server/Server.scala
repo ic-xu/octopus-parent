@@ -2,20 +2,22 @@ package io.octopus.scala.broker.mqtt.server
 
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.DefaultThreadFactory
+import io.octopus.Version
 import io.octopus.broker.security._
 import io.octopus.interception.InterceptHandler
-import io.octopus.kernel.Version
 import io.octopus.kernel.kernel.config.{FileResourceLoader, IConfig, IResourceLoader, ResourceLoaderConfig}
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
 import io.octopus.kernel.kernel.listener.LifecycleListener
 import io.octopus.kernel.kernel.message.KernelMsg
-import io.octopus.kernel.kernel.repository.{IQueueRepository, IRetainedRepository, ISubscriptionsRepository}
+import io.octopus.kernel.kernel.postoffice.{DefaultPostOffice, IPostOffice}
+import io.octopus.kernel.kernel.repository.{IQueueRepository, IRetainedRepository, IStoreCreateFactory, ISubscriptionsRepository}
 import io.octopus.kernel.kernel.router.IRouterRegister
-import io.octopus.kernel.kernel.security.{IAuthenticator, IRWController}
+import io.octopus.kernel.kernel.security.{IAuthenticator, IRWController, ReadWriteControl}
 import io.octopus.kernel.kernel.server.{IServer, ServiceDetails}
 import io.octopus.kernel.kernel.session.DefaultSessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
+import io.octopus.kernel.kernel.transport.TransportBootstrap
 import io.octopus.kernel.utils.{ClassLoadUtils, HostUtils, ObjectUtils}
 import io.octopus.scala.broker.mqtt.persistence.MemoryQueue
 import io.octopus.utils.LoggingUtils
@@ -41,10 +43,10 @@ class Server extends IServer {
   private var interceptor: NotifyInterceptor = _
   private var authenticator: IAuthenticator = _
   private var reController: IRWController = _
-  private var store: StoreCreateFactory = _
+  private var store: IStoreCreateFactory = _
   private var checkPointServer: CheckPointServer = _
   private var sessionResistor: DefaultSessionResistor = _
-  private var postOffice: PostOffice = _
+  private var postOffice: IPostOffice = _
   private var acceptor: TransportBootstrap = _
   private var initialized = false
   private var routerRegister: IRouterRegister = _
@@ -116,14 +118,14 @@ class Server extends IServer {
     this.checkPointServer = new CheckPointServer
 
     sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryQueue(config, checkPointServer))
-    postOffice = new PostOffice(subscriptions, retainedRepository, sessionResistor, interceptor, readWriteControl)
+    postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, interceptor, readWriteControl)
     sessionResistor.setPostOffice(postOffice)
 
     //    this.sessionResistor = new SessionRegistry(subscriptions, queueRepository, authorizator, msgQueue)
     //    this.postOffice = new MsgDispatcher(subscriptions, retainedRepository, sessionResistor, interceptor, authorizator)
     val registerUser: String = config.getProperty(BrokerConstants.REGISTER_CENTER_USER, null)
     if (null != registerUser) {
-      this.postOffice.addRegisterUserName(registerUser.split(","))
+      this.postOffice.addAdminUser(registerUser.split(","))
     }
 
     acceptor = new TransportBootstrap(authenticator, interceptor, readWriteControl)

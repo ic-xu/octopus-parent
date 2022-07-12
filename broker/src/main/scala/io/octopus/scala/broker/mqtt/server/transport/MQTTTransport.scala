@@ -1,22 +1,30 @@
 package io.octopus.scala.broker.mqtt.server.transport
 
+import io.handler.codec.mqtt.{MqttDecoder, MqttEncoder}
 import io.netty.channel._
 import io.netty.channel.socket.{ServerSocketChannel, SocketChannel}
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpRequestDecoder, HttpResponseEncoder, HttpServerCodec}
+import io.netty.handler.logging.{LogLevel, LoggingHandler}
 import io.netty.handler.ssl.{SslContext, SslHandler}
+import io.netty.handler.timeout.IdleStateHandler
 import io.octopus.broker.handler._
-import io.octopus.broker.security.{DefaultOctopusSslContextCreator, ReadWriteControl}
+import io.octopus.kernel.kernel.metrics.{BytesMetricsCollector, MessageMetricsCollector}
+import io.octopus.broker.security.DefaultOctopusSslContextCreator
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
-import io.octopus.kernel.kernel.security.IAuthenticator
+import io.octopus.kernel.kernel.postoffice.IPostOffice
+import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.kernel.kernel.ssl.ISslContextCreator
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
-import io.octopus.scala.broker.mqtt.server.PostOffice
-import io.octopus.scala.broker.mqtt.server.handler.NettyMQTTHandler
+import io.octopus.kernel.kernel.transport.BaseTransport
+import io.octopus.scala.broker.mqtt.factory.MQTTConnectionFactory
+import io.octopus.scala.broker.mqtt.server.handler.{BeforeInterceptorHandler, NettyMQTTHandler}
 import org.slf4j.{Logger, LoggerFactory}
+
+import java.util.concurrent.TimeUnit
 
 /**
  * @author chenxu
@@ -27,20 +35,26 @@ class MQTTTransport extends BaseTransport {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[MQTTTransport])
 
-
+  private val beforeInterceptorHandler: BeforeInterceptorHandler = new BeforeInterceptorHandler()
+  private val bytesMetricsCollector = new BytesMetricsCollector
+  private val metricsCollector = new MessageMetricsCollector
+  protected var mqttHandler: NettyMQTTHandler = _
 
 
   override def initProtocol(bossGroup: EventLoopGroup, workerGroup: EventLoopGroup, channelClass: Class[_ <: ServerSocketChannel],
                             config: IConfig, sessionRegistry: ISessionResistor,
                             subscriptionsDirectory: ISubscriptionsDirectory,
-                            msgDispatcher: PostOffice,
-                            ports: Map[String, Int], authenticator: IAuthenticator,
+                            msgDispatcher: IPostOffice,
+                            ports: java.util.Map[String, Integer], authenticator: IAuthenticator,
                             interceptor: NotifyInterceptor, readWriteControl: ReadWriteControl): Unit = {
 
 
     val sslCtxCreator: ISslContextCreator = new DefaultOctopusSslContextCreator(config)
 
 
+    val connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessionRegistry, msgDispatcher, interceptor, readWriteControl)
+
+    mqttHandler = new NettyMQTTHandler(connectionFactory)
     /**
      * 初始化参数
      */
@@ -181,7 +195,29 @@ class MQTTTransport extends BaseTransport {
     })
   }
 
+  def configureMQTTPipeline(pipeline: ChannelPipeline, timeoutHandler: OctopusIdleTimeoutHandler, mqttHandler: NettyMQTTHandler): Unit = {
 
+    pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0))
+    pipeline.addAfter("idleStateHandler", "timeoutHandler", timeoutHandler)
+    if (brokerConfig.isOpenNettyLogger) {
+      pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.INFO))
+      logger.info("pipeline add NettyLogger Handler")
+    }
+    pipeline.addFirst("byteMetrics", new BytesMetricsHandler(bytesMetricsCollector))
+    if (!brokerConfig.isImmediateBufferFlush) {
+      pipeline.addLast("autoFlush", new AutoFlushHandler(10, TimeUnit.MILLISECONDS))
+      logger.info("pipeline add autoFlush Handler")
+    }
+    pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage))
+    pipeline.addLast("encoder", MqttEncoder.INSTANCE)
+    pipeline.addLast("metrics", new MessageMetricsHandler(metricsCollector))
+    pipeline.addLast("messageLogger", new MQTTMessageLoggerHandler)
+
+    metrics.ifPresent(channelInboundHandler => pipeline.addLast("wizardMetrics", channelInboundHandler))
+    pipeline.addLast("beforeInterceptor", beforeInterceptorHandler)
+
+    pipeline.addLast("handler", mqttHandler)
+  }
 
   private def createSslHandler(channel: SocketChannel, sslContext: SslContext, needsClientAuth: Boolean): ChannelHandler = {
     val sslEngine = sslContext.newEngine(channel.alloc, channel.remoteAddress.getHostString, channel.remoteAddress.getPort)

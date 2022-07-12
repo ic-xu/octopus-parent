@@ -1,13 +1,10 @@
-package io.octopus.utils;
+package io.octopus.kernel.utils;
 
-import io.handler.codec.mqtt.MqttMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-import io.octopus.scala.broker.mqtt.server.MQTTConnection;
-
-import java.io.IOException;
+import io.octopus.kernel.kernel.connect.AbstractConnection;
 
 /**
  * Some Netty's channels utilities.
@@ -28,12 +25,12 @@ public final class NettyUtils {
     private static final AttributeKey<Object> ATTR_KEY_CONNECTION = AttributeKey.valueOf(ATTR_CONNECTION);
 
 
-    public static void bindMqttConnection(Channel channel, MQTTConnection connection) {
+    public static void bindMqttConnection(Channel channel, AbstractConnection connection) {
         channel.attr(ATTR_KEY_CONNECTION).set(connection);
     }
 
-    public static MQTTConnection getMQTTConnection2Channel(Channel channel) {
-        return (MQTTConnection) channel.attr(ATTR_KEY_CONNECTION).get();
+    public static AbstractConnection getMQTTConnection2Channel(Channel channel) {
+        return (AbstractConnection) channel.attr(ATTR_KEY_CONNECTION).get();
     }
 
     public static Object getAttribute(ChannelHandlerContext ctx, AttributeKey<Object> key) {
@@ -69,24 +66,6 @@ public final class NettyUtils {
         return (String) channel.attr(NettyUtils.ATTR_KEY_USERNAME).get();
     }
 
-    /**
-	 * Validate that the provided message is an MqttMessage and that it does not contain a failed result.
-	 *
-	 * @param message to be validated
-	 * @return the casted provided message
-	 * @throws IOException in case of an fail message this will wrap the root cause
-	 * @throws ClassCastException if the provided message is no MqttMessage
-	 */
-	public static MqttMessage validateMessage(Object message) throws IOException, ClassCastException {
-		MqttMessage msg = (MqttMessage) message;
-		if (msg.decoderResult() != null && msg.decoderResult().isFailure()) {
-			throw new IOException("invalid massage", msg.decoderResult().cause());
-		}
-		if (msg.fixedHeader() == null) {
-			throw new IOException("Unknown packet, no fixedHeader present, no cause provided");
-		}
-		return msg;
-	}
 
 	private NettyUtils() {
     }

@@ -6,7 +6,7 @@
 //import io.octopus.base.queue.MsgQueue;
 //import io.octopus.base.queue.StoreMsg;
 //import io.octopus.broker.handler.InflictReSenderHandler;
-//import io.octopus.broker.security.ReadWriteControl;
+//import io.octopus.kernel.kernel.security.ReadWriteControl;
 //import io.octopus.base.interfaces.IAuthenticator;
 //import io.octopus.base.config.BrokerConfiguration;
 //import io.octopus.interception.BrokerNotifyInterceptor;

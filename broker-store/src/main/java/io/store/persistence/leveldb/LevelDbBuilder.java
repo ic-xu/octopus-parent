@@ -70,4 +70,13 @@ public class LevelDbBuilder implements IStoreCreateFactory {
     }
 
 
+    @Override
+    public void init() throws Exception {
+
+    }
+
+    @Override
+    public void destroy() throws Exception {
+
+    }
 }

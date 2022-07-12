@@ -4,7 +4,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.EventExecutor;
-import io.octopus.utils.NettyUtils;
+import io.octopus.kernel.utils.NettyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

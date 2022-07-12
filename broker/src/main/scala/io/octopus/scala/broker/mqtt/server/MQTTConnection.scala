@@ -14,9 +14,9 @@ import io.octopus.kernel.kernel.message._
 import io.octopus.kernel.kernel.security.IAuthenticator
 import io.octopus.kernel.kernel.session._
 import io.octopus.kernel.kernel.subscriptions.{Subscription, Topic}
-import io.octopus.kernel.utils.ObjectUtils
+import io.octopus.kernel.utils.{NettyUtils, ObjectUtils}
 import io.octopus.scala.broker.mqtt.server.handler.CustomerHandler
-import io.octopus.utils.{DebugUtils, NettyUtils, SubscriptionUtils}
+import io.octopus.utils.{DebugUtils, SubscriptionUtils}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.util
