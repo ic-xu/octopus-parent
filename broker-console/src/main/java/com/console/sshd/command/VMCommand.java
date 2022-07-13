@@ -8,10 +8,7 @@ import com.console.sshd.repl.DumpUtil;
 
 import java.lang.management.*;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,7 +65,7 @@ public class VMCommand extends ConsoleCommand {
         ThreadInfo tis[] = threadMXBean.getThreadInfo(threadIds);
         List<ThreadInfo> tList = new ArrayList<ThreadInfo>();
         tList.addAll(Arrays.asList(tis));
-        Collections.sort(tList, (o1, o2) -> o1.getThreadName().compareTo(o2.getThreadName()));
+        Collections.sort(tList, Comparator.comparing(ThreadInfo::getThreadName));
 
         TablePrinter tp = TablePrinter.create(out)
                 .length(5, 70, 20, 10, 10, 10, 10)
