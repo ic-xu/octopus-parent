@@ -17,12 +17,12 @@ public class SearchData {
     /**
      * clientId of channel
      */
-    private String clientId;
+    private final String clientId;
 
     /**
      * message index
      */
-    private MsgIndex index;
+    private final MsgIndex index;
 
 
     public SearchData(String clientId, MsgIndex index) {

@@ -18,7 +18,7 @@ public interface IServer extends Lifecycle {
      *
      * @return
      */
-    ServiceDetails serviceDetails();
+    Object serviceDetails();
 
     /**
      * 获取生命周期监听器
