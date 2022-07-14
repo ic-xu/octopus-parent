@@ -59,7 +59,7 @@ public class ResourceLoaderConfig extends IConfig {
         } catch (ParseException pex) {
             LOGGER.warn(
                     "Unable to parse configuration properties. Using default configuration. "
-                    + "ResourceLoader = {}, configName = {}, cause = {}, errorMessage = {}.",
+                            + "ResourceLoader = {}, configName = {}, cause = {}, errorMessage = {}.",
                     resourceLoader.getName(),
                     configName,
                     pex.getCause(),
@@ -85,8 +85,8 @@ public class ResourceLoaderConfig extends IConfig {
     @Override
     public Integer getIntegerProperty(String name, Integer defaultValue) {
         try {
-           return Integer.parseInt(getProperty(name));
-        }catch (Exception e){
+            return Integer.parseInt(getProperty(name));
+        } catch (Exception e) {
             return defaultValue;
         }
     }
@@ -95,7 +95,7 @@ public class ResourceLoaderConfig extends IConfig {
     public Long getLongProperty(String name, Long defaultValue) {
         try {
             return Long.parseLong(getProperty(name));
-        }catch (Exception e){
+        } catch (Exception e) {
             return defaultValue;
         }
     }
@@ -105,4 +105,13 @@ public class ResourceLoaderConfig extends IConfig {
         return resourceLoader;
     }
 
+    @Override
+    public void printEnvironment() {
+        LOGGER.info(" ");
+        LOGGER.info("begin printf environment");
+        LOGGER.info("*****************************************************************************");
+        propertiesStore.forEach((key,value)-> LOGGER.info("** [ {}  =  {} ]",key,value));
+        LOGGER.info("*****************************************************************************");
+        LOGGER.info("end printf environment");
+    }
 }

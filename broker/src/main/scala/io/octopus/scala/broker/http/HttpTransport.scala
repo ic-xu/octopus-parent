@@ -1,4 +1,4 @@
-package io.octopus.scala.broker.mqtt.server.transport
+package io.octopus.scala.broker.http
 
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.socket.ServerSocketChannel
@@ -7,13 +7,15 @@ import io.netty.handler.stream.ChunkedWriteHandler
 import io.octopus.broker.handler.NettyHttpServerHandler
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
 import io.octopus.kernel.kernel.transport.BaseTransport
 import org.slf4j.{Logger, LoggerFactory}
+
+import java.util
 
 /**
  * @author chenxu
@@ -30,7 +32,7 @@ class HttpTransport extends BaseTransport {
   override def initProtocol(bossGroup: EventLoopGroup, workerGroup: EventLoopGroup, channelClass: Class[_ <: ServerSocketChannel], config: IConfig,
                             sessionRegistry: ISessionResistor, subscriptionsDirectory: ISubscriptionsDirectory,
                             msgDispatcher: IPostOffice, ports: java.util.Map[String, Integer], authenticator: IAuthenticator,
-                            interceptor: NotifyInterceptor, readWriteControl: ReadWriteControl): Unit = {
+                            interceptor: util.List[ConnectionNotifyInterceptor], readWriteControl: ReadWriteControl): Unit = {
 
     initialize(bossGroup, workerGroup,channelClass, config, msgDispatcher, sessionRegistry, ports, authenticator, interceptor, readWriteControl)
 

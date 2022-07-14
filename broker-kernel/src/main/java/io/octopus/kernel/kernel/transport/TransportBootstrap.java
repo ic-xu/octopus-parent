@@ -10,7 +10,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.Future;
 import io.octopus.kernel.kernel.config.IConfig;
 import io.octopus.kernel.kernel.contants.BrokerConstants;
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor;
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.metrics.BytesMetrics;
 import io.octopus.kernel.kernel.metrics.BytesMetricsCollector;
 import io.octopus.kernel.kernel.metrics.MessageMetrics;
@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
@@ -46,10 +47,10 @@ public class TransportBootstrap {
     private final java.util.List<ITransport> protocolCovertHandlerList = new ArrayList<>();
 
     private final IAuthenticator authenticator;
-    private final NotifyInterceptor interceptor;
+    private final List<ConnectionNotifyInterceptor> interceptor;
     private final ReadWriteControl readWriteControl;
 
-    public TransportBootstrap(IAuthenticator authenticator, NotifyInterceptor interceptor, ReadWriteControl readWriteControl) {
+    public TransportBootstrap(IAuthenticator authenticator, List<ConnectionNotifyInterceptor> interceptor, ReadWriteControl readWriteControl) {
         this.authenticator = authenticator;
         this.interceptor = interceptor;
         this.readWriteControl = readWriteControl;

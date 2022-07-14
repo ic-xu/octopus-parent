@@ -3,7 +3,7 @@ package io.octopus.kernel.kernel.connect;
 
 import io.netty.channel.Channel;
 import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor;
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.postoffice.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;
 import io.octopus.kernel.kernel.session.ISessionResistor;
@@ -16,9 +16,9 @@ public class ConnectionFactory {
     private ISessionResistor sessionResistor;
     private IAuthenticator authenticator;
     private IConfig config;
-    private NotifyInterceptor interceptor;
+    private ConnectionNotifyInterceptor interceptor;
 
-    public ConnectionFactory(IPostOffice postOffice, ISessionResistor sessionResistor, IAuthenticator authenticator, IConfig config, NotifyInterceptor interceptor) {
+    public ConnectionFactory(IPostOffice postOffice, ISessionResistor sessionResistor, IAuthenticator authenticator, IConfig config, ConnectionNotifyInterceptor interceptor) {
         this.postOffice = postOffice;
         this.sessionResistor = sessionResistor;
         this.authenticator = authenticator;
@@ -39,7 +39,7 @@ public class ConnectionFactory {
             InstantiationException, IllegalAccessException {
         return clazz.asSubclass(AbstractConnection.class)
                 .getDeclaredConstructor(Channel.class, IConfig.class,IAuthenticator.class, ISessionResistor.class,
-                         NotifyInterceptor.class)
+                         ConnectionNotifyInterceptor.class)
                 .newInstance(channel,config,authenticator, sessionResistor, interceptor);
     }
 

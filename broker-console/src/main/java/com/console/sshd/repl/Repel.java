@@ -145,7 +145,7 @@ public class Repel {
                 }
             }
         });
-        commandThread.setName("JazminCommand-" + line);
+        commandThread.setName("Command-" + line);
         commandThread.start();
 
 

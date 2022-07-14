@@ -1,4 +1,4 @@
-package io.octopus.scala.broker.mqtt.server.transport
+package io.octopus.scala.broker.udp
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.socket.ServerSocketChannel
@@ -6,13 +6,12 @@ import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{AdaptiveRecvByteBufAllocator, ChannelOption, EventLoopGroup}
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
 import io.octopus.kernel.kernel.transport.ITransport
-import io.octopus.scala.broker.mqtt.server.handler.UdpMQTTHandler
 import org.slf4j.{Logger, LoggerFactory}
 
 /**
@@ -29,7 +28,7 @@ class UDPTransportTransport extends ITransport {
                             config: IConfig, sessionRegistry: ISessionResistor,
                             subscriptionsDirectory: ISubscriptionsDirectory,
                             msgDispatcher: IPostOffice, ports: java.util.Map[String, Integer],
-                            authenticator: IAuthenticator, interceptor: NotifyInterceptor,
+                            authenticator: IAuthenticator, interceptor: java.util.List[ConnectionNotifyInterceptor],
                             readWriteControl: ReadWriteControl): Unit = {
 
 
@@ -41,7 +40,7 @@ class UDPTransportTransport extends ITransport {
       .channel(classOf[NioDatagramChannel])
       .option(ChannelOption.SO_BROADCAST, boolean2Boolean(true))
       .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(64, 1024, 100 * 65536))
-      .handler(new UdpMQTTHandler(sessionRegistry, subscriptionsDirectory))
+      .handler(new UdpTransportHandler(sessionRegistry, subscriptionsDirectory))
       .bind(portProp)
       .sync
     logger.info("Server bound to host={}, port={}, protocol={}", host, portProp, "UDP")

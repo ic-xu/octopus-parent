@@ -9,7 +9,7 @@ import io.octopus.kernel.kernel.config.IConfig;
 import io.octopus.kernel.kernel.contants.BrokerConstants;
 import io.octopus.kernel.kernel.handler.DropWizardMetricsHandler;
 import io.octopus.kernel.kernel.handler.PipelineInitializer;
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor;
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.listener.BindLocalPortListener;
 import io.octopus.kernel.kernel.postoffice.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;
@@ -18,6 +18,7 @@ import io.octopus.kernel.kernel.session.ISessionResistor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -51,7 +52,7 @@ public abstract class BaseTransport implements ITransport {
                            IConfig config, IPostOffice msgDispatcher,
                            ISessionResistor sessionRegistry,
                            Map<String, Integer> ports, IAuthenticator authenticator,
-                           NotifyInterceptor interceptor,
+                           List<ConnectionNotifyInterceptor> interceptor,
                            ReadWriteControl readWriteControl) {
 
 

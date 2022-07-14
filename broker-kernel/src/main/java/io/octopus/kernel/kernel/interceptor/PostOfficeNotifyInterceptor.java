@@ -8,15 +8,9 @@ import io.octopus.kernel.kernel.subscriptions.Subscription;
  * @version 1
  * @date 2022/1/21 5:11 下午
  */
-public interface NotifyInterceptor {
+public interface PostOfficeNotifyInterceptor {
 
-    void notifyCustomer(KernelMsg msg);
-
-    void notifyClientConnected(KernelMsg msg);
-
-    void notifyClientDisconnected(String clientId, String username);
-
-    void notifyClientConnectionLost(String clientId, String username);
+    String getIdentity();
 
     void notifyTopicBeforePublished(KernelMsg msg);
 

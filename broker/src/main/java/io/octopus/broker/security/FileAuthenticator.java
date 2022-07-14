@@ -1,6 +1,7 @@
 package io.octopus.broker.security;
 
 import io.octopus.kernel.kernel.config.FileResourceLoader;
+import io.octopus.kernel.kernel.security.ResourceAuthenticator;
 
 /**
  * Load user credentials from a text file. Each line of the file is formatted as

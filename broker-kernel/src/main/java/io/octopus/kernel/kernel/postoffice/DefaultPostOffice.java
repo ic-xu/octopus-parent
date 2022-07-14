@@ -2,7 +2,7 @@ package io.octopus.kernel.kernel.postoffice;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor;
+import io.octopus.kernel.kernel.interceptor.PostOfficeNotifyInterceptor;
 import io.octopus.kernel.kernel.message.KernelMsg;
 import io.octopus.kernel.kernel.message.MsgQos;
 import io.octopus.kernel.kernel.message.MsgRouter;
@@ -40,15 +40,15 @@ public class DefaultPostOffice implements IPostOffice {
     private final ISubscriptionsDirectory subscriptionsDirectory;
     private final IRetainedRepository retainedRepository;
     private final ISessionResistor sessionResistor;
-    private final NotifyInterceptor interceptor;
+    private final List<PostOfficeNotifyInterceptor> interceptors;
     private final ReadWriteControl authorizator;
 
     public DefaultPostOffice(ISubscriptionsDirectory subscriptionsDirectory, IRetainedRepository retainedRepository,
-                             ISessionResistor sessionResistor, NotifyInterceptor interceptor, ReadWriteControl authorizator) {
+                             ISessionResistor sessionResistor, List<PostOfficeNotifyInterceptor> interceptors, ReadWriteControl authorizator) {
         this.subscriptionsDirectory = subscriptionsDirectory;
         this.retainedRepository = retainedRepository;
         this.sessionResistor = sessionResistor;
-        this.interceptor = interceptor;
+        this.interceptors = interceptors;
         this.authorizator = authorizator;
     }
 
@@ -80,7 +80,7 @@ public class DefaultPostOffice implements IPostOffice {
         Topic topic = new Topic(msg.getTopic());
         LOGGER.debug("Sending internal PUBLISH message Topic={}, qos={}", topic, qos);
         publish2Subscribers(topic, false, new StoreMsg<>(msg, null));
-        if (!msg.isRetain()){
+        if (!msg.isRetain()) {
             return;
         }
         // QoS == 0 && retain => clean old retained
@@ -121,8 +121,8 @@ public class DefaultPostOffice implements IPostOffice {
         // 发布保留的订阅消息
         publishRetainedMessagesForSubscriptions(fromSession.getClientId(), newSubscriptions);
         newSubscriptions.forEach(subscription -> {
-            if (!ObjectUtils.isEmpty(interceptor)) {
-                interceptor.notifyTopicSubscribed(subscription, fromSession.getUsername());
+            if (!ObjectUtils.isEmpty(interceptors)) {
+                interceptors.forEach(interceptor -> interceptor.notifyTopicSubscribed(subscription, fromSession.getUsername()));
             }
         });
         return newSubscriptions;
@@ -141,8 +141,8 @@ public class DefaultPostOffice implements IPostOffice {
             }
             LOGGER.trace("Removing subscription. CId={}, topic={}", clientID, topic);
             subscriptionsDirectory.removeSubscription(topic, clientID);
-            if (!ObjectUtils.isEmpty(interceptor)) {
-                interceptor.notifyTopicUnsubscribed(topic.toString(), clientID, fromSession.getUsername());
+            if (!ObjectUtils.isEmpty(interceptors)) {
+                interceptors.forEach(interceptor -> interceptor.notifyTopicUnsubscribed(topic.toString(), clientID, fromSession.getUsername()));
             }
         });
     }
@@ -162,7 +162,7 @@ public class DefaultPostOffice implements IPostOffice {
 
     @Override
     public void addAdminUser(String[] registerUser) {
-        if(!ObjectUtils.isEmpty(registerUser)){
+        if (!ObjectUtils.isEmpty(registerUser)) {
             adminUser.addAll(Arrays.asList(registerUser));
         }
     }

@@ -7,7 +7,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{AdaptiveRecvByteBufAllocator, ChannelOption, EventLoopGroup}
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
@@ -43,7 +43,7 @@ class UDPInternalTransportTransport extends ITransport {
                             subscriptionsDirectory: ISubscriptionsDirectory,
                             msgDispatcher: IPostOffice, ports: java.util.Map[String, Integer],
                             authenticator: IAuthenticator,
-                            interceptor: NotifyInterceptor,
+                            interceptor: java.util.List[ConnectionNotifyInterceptor],
                             readWriteControl: ReadWriteControl): Unit = {
 
 

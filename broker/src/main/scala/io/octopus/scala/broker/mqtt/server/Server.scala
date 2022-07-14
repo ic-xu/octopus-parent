@@ -4,16 +4,15 @@ import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.DefaultThreadFactory
 import io.octopus.Version
 import io.octopus.broker.security._
-import io.octopus.interception.InterceptHandler
 import io.octopus.kernel.kernel.config.{FileResourceLoader, IConfig, IResourceLoader, ResourceLoaderConfig}
 import io.octopus.kernel.kernel.contants.BrokerConstants
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
+import io.octopus.kernel.kernel.interceptor.{ConnectionNotifyInterceptor, PostOfficeNotifyInterceptor}
 import io.octopus.kernel.kernel.listener.LifecycleListener
 import io.octopus.kernel.kernel.message.KernelMsg
 import io.octopus.kernel.kernel.postoffice.{DefaultPostOffice, IPostOffice}
 import io.octopus.kernel.kernel.repository.{IQueueRepository, IRetainedRepository, IStoreCreateFactory, ISubscriptionsRepository}
 import io.octopus.kernel.kernel.router.IRouterRegister
-import io.octopus.kernel.kernel.security.{IAuthenticator, IRWController, ReadWriteControl}
+import io.octopus.kernel.kernel.security.{ACLFileParser, AcceptAllAuthenticator, DenyAllAuthorityController, IAuthenticator, IRWController, PermitAllAuthorityController, ReadWriteControl, ResourceAuthenticator}
 import io.octopus.kernel.kernel.server.{IServer, ServiceDetails}
 import io.octopus.kernel.kernel.session.DefaultSessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
@@ -38,9 +37,9 @@ import scala.jdk.CollectionConverters._
 class Server extends IServer {
 
   private val logger: Logger = LoggerFactory.getLogger(classOf[Server])
-  private var handlerList: List[InterceptHandler] = _
+  private var kernelInterceptor: List[PostOfficeNotifyInterceptor] = _
   private var flushDiskService: ScheduledExecutorService = _
-  private var interceptor: NotifyInterceptor = _
+  private var interceptors: List[ConnectionNotifyInterceptor] = _
   private var authenticator: IAuthenticator = _
   private var reController: IRWController = _
   private var store: IStoreCreateFactory = _
@@ -91,17 +90,19 @@ class Server extends IServer {
    * @param handlers           interceptorList
    * @param authorizatorPolicy authenticator
    */
-  def startServer(config: IConfig, handlers: List[_ <: InterceptHandler], authorizatorPolicy: IRWController): Unit = {
+  def startServer(config: IConfig, handlers: List[_ <: PostOfficeNotifyInterceptor], authorizatorPolicy: IRWController): Unit = {
     if (ObjectUtils.isEmpty(handlers)) {
-      this.handlerList = List.empty[InterceptHandler]
+      this.kernelInterceptor = List.empty[PostOfficeNotifyInterceptor]
     }
-    logger.trace("Starting Octopus Server. MQTT message interceptors={}", LoggingUtils.getInterceptorIds(this.handlerList.asJava))
+    logger.trace("Starting Octopus Server. MQTT message interceptors={}", LoggingUtils.getInterceptorIds(this.kernelInterceptor.asJava))
+
+
     flushDiskService = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("flush-disk-server"))
     val handlerProp = System.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME)
     if (!ObjectUtils.isEmpty(handlers)) {
       config.setProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME, handlerProp)
     }
-    initInterceptors(config, this.handlerList)
+    initInterceptors(config, this.kernelInterceptor)
     logger.debug("Initialized MQTT protocol processor")
 
     initializeAuthenticator(authenticator, config)
@@ -118,7 +119,7 @@ class Server extends IServer {
     this.checkPointServer = new CheckPointServer
 
     sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryQueue(config, checkPointServer))
-    postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, interceptor, readWriteControl)
+    postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.kernelInterceptor.asJava, readWriteControl)
     sessionResistor.setPostOffice(postOffice)
 
     //    this.sessionResistor = new SessionRegistry(subscriptions, queueRepository, authorizator, msgQueue)
@@ -128,7 +129,7 @@ class Server extends IServer {
       this.postOffice.addAdminUser(registerUser.split(","))
     }
 
-    acceptor = new TransportBootstrap(authenticator, interceptor, readWriteControl)
+    acceptor = new TransportBootstrap(authenticator, interceptors.asJava, readWriteControl)
     acceptor.initialize(config, postOffice, sessionResistor, subscriptions)
     //        initDispatchMsgServiceService()
     //        initFlushDiskService(config)
@@ -203,12 +204,12 @@ class Server extends IServer {
    * @param props             config
    * @param embeddedObservers listener
    */
-  private def initInterceptors(props: IConfig, embeddedObservers: List[InterceptHandler]): Unit = {
+  private def initInterceptors(props: IConfig, embeddedObservers: List[PostOfficeNotifyInterceptor]): Unit = {
     logger.info("Configuring message interceptors...")
     val interceptorClassName = props.getProperty(BrokerConstants.INTERCEPT_HANDLER_PROPERTY_NAME)
     var observers = embeddedObservers
     if (interceptorClassName != null && interceptorClassName.nonEmpty) {
-      val handler = ClassLoadUtils.loadClass(this.getClass.getClassLoader, interceptorClassName, classOf[InterceptHandler], classOf[Server], this)
+      val handler = ClassLoadUtils.loadClass(this.getClass.getClassLoader, interceptorClassName, classOf[PostOfficeNotifyInterceptor], classOf[Server], this)
       if (handler != null) {
         observers = embeddedObservers :+ handler
       }

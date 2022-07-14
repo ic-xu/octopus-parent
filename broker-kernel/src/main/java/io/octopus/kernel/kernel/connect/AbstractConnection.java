@@ -2,7 +2,7 @@ package io.octopus.kernel.kernel.connect;
 
 import io.netty.channel.Channel;
 import io.octopus.kernel.kernel.config.BrokerConfiguration;
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor;
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.message.KernelMsg;
 import io.octopus.kernel.kernel.security.IAuthenticator;
 import io.octopus.kernel.kernel.session.ISession;
@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * @author chenxu
@@ -26,16 +27,16 @@ public abstract class AbstractConnection {
     protected final IAuthenticator authenticator;
     protected final ISessionResistor sessionResistor;
     private volatile boolean connected;
-    protected final NotifyInterceptor interceptor;
+    protected final List<ConnectionNotifyInterceptor> interceptors;
 
     public AbstractConnection(Channel channel, BrokerConfiguration brokerConfig, IAuthenticator authenticator,
-                              ISessionResistor sessionResistor, NotifyInterceptor interceptor) {
+                              ISessionResistor sessionResistor, List<ConnectionNotifyInterceptor> interceptors) {
         this.channel = channel;
         this.brokerConfig = brokerConfig;
         this.authenticator = authenticator;
         this.sessionResistor = sessionResistor;
         this.connected = false;
-        this.interceptor = interceptor;
+        this.interceptors = interceptors;
     }
 
     /**

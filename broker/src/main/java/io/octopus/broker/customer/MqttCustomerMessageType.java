@@ -1,5 +1,8 @@
 package io.octopus.broker.customer;
 
+/**
+ * @author user
+ */
 public interface MqttCustomerMessageType {
 
     byte LIST_CLIENT_IDS = 0;

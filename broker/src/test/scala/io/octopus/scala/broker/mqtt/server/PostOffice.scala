@@ -1,7 +1,7 @@
 package io.octopus.scala.broker.mqtt.server
 
 import io.netty.buffer.Unpooled
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
+import io.octopus.kernel.kernel.interceptor.{ConnectionNotifyInterceptor, PostOfficeNotifyInterceptor}
 import io.octopus.kernel.kernel.message.{KernelMsg, MsgQos, MsgRouter, PacketIPackageId}
 import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.queue.StoreMsg
@@ -27,7 +27,7 @@ import java.util.stream.Collectors
 class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
                  retainedRepository: IRetainedRepository,
                  sessionResistor: ISessionResistor,
-                 interceptor: NotifyInterceptor, authorizator: ReadWriteControl) extends IPostOffice {
+                 interceptor: PostOfficeNotifyInterceptor, authorizator: ReadWriteControl) extends IPostOffice {
 
 
   private val LOGGER = LoggerFactory.getLogger(classOf[PostOffice])

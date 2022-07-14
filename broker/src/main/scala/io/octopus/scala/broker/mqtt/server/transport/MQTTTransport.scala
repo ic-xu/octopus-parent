@@ -9,11 +9,11 @@ import io.netty.handler.logging.{LogLevel, LoggingHandler}
 import io.netty.handler.ssl.{SslContext, SslHandler}
 import io.netty.handler.timeout.IdleStateHandler
 import io.octopus.broker.handler._
-import io.octopus.kernel.kernel.metrics.{BytesMetricsCollector, MessageMetricsCollector}
 import io.octopus.broker.security.DefaultOctopusSslContextCreator
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
+import io.octopus.kernel.kernel.metrics.{BytesMetricsCollector, MessageMetricsCollector}
 import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
 import io.octopus.kernel.kernel.session.ISessionResistor
@@ -46,19 +46,19 @@ class MQTTTransport extends BaseTransport {
                             subscriptionsDirectory: ISubscriptionsDirectory,
                             msgDispatcher: IPostOffice,
                             ports: java.util.Map[String, Integer], authenticator: IAuthenticator,
-                            interceptor: NotifyInterceptor, readWriteControl: ReadWriteControl): Unit = {
+                            interceptors: java.util.List[ConnectionNotifyInterceptor], readWriteControl: ReadWriteControl): Unit = {
 
 
     val sslCtxCreator: ISslContextCreator = new DefaultOctopusSslContextCreator(config)
 
 
-    val connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessionRegistry, msgDispatcher, interceptor, readWriteControl)
+    val connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessionRegistry, msgDispatcher, interceptors, readWriteControl)
 
     mqttHandler = new NettyMQTTHandler(connectionFactory)
     /**
      * 初始化参数
      */
-    initialize(bossGroup, workerGroup,channelClass, config, msgDispatcher, sessionRegistry, ports, authenticator, interceptor, readWriteControl)
+    initialize(bossGroup, workerGroup,channelClass, config, msgDispatcher, sessionRegistry, ports, authenticator, interceptors, readWriteControl)
 
     /*
     * init SSL netty server

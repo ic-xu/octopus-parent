@@ -1,4 +1,4 @@
-package io.octopus.broker.security;
+package io.octopus.kernel.kernel.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

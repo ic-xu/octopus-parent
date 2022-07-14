@@ -1,4 +1,4 @@
-package io.octopus.scala.broker.mqtt.server.handler
+package io.octopus.scala.broker.udp
 
 import com.alibaba.fastjson.JSON
 import io.netty.buffer.Unpooled
@@ -12,7 +12,7 @@ import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
 
 
-class UdpMQTTHandler(sessionRegistry: ISessionResistor, subscriptionsDirectory: ISubscriptionsDirectory)
+class UdpTransportHandler(sessionRegistry: ISessionResistor, subscriptionsDirectory: ISubscriptionsDirectory)
   extends SimpleChannelInboundHandler[DatagramPacket] {
 
   val messageType: Array[Byte] = Array(2)

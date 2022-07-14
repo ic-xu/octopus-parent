@@ -4,7 +4,7 @@ import java.io.File;
 
 public interface BrokerConstants {
 
-    String INTERCEPT_HANDLER_PROPERTY_NAME = "intercept.handler";
+    String INTERCEPT_HANDLER_PROPERTY_NAME = "postoffice.intercept";
     String BROKER_INTERCEPTOR_THREAD_POOL_SIZE = "intercept.thread_pool.size";
     String PERSISTENT_STORE_PROPERTY_NAME = "persistent_store";
     String AUTOSAVE_INTERVAL_PROPERTY_NAME = "autosave_interval";

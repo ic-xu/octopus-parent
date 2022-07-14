@@ -1,10 +1,12 @@
 package io.octopus.kernel.kernel.config;
+
 import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.kernel.kernel.environment.Environment;
 
 /**
  * Base interface for all configuration
  */
-public abstract class IConfig {
+public abstract class IConfig implements Environment {
 
     public static final String DEFAULT_CONFIG = "config/octopus.conf";
 

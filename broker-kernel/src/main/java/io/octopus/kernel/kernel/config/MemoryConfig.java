@@ -1,5 +1,8 @@
 package io.octopus.kernel.kernel.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.Properties;
 
@@ -8,6 +11,8 @@ import java.util.Properties;
  * @author user
  */
 public class MemoryConfig extends IConfig {
+
+   private final Logger LOGGER = LoggerFactory.getLogger(MemoryConfig.class);
 
     private final Properties propertiesStore = new Properties();
 
@@ -56,4 +61,12 @@ public class MemoryConfig extends IConfig {
         return new FileResourceLoader();
     }
 
+    @Override
+    public void printEnvironment() {
+        LOGGER.info("begin printf environment");
+        LOGGER.info("*****************************************************************************");
+        propertiesStore.forEach((key,value)-> LOGGER.info("[ {}  =  {} ]",key,value));
+        LOGGER.info("*****************************************************************************");
+        LOGGER.info("end printf environment");
+    }
 }

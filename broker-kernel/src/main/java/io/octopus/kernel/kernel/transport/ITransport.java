@@ -3,13 +3,14 @@ package io.octopus.kernel.kernel.transport;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.kernel.kernel.interceptor.NotifyInterceptor;
+import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.postoffice.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;
 import io.octopus.kernel.kernel.security.ReadWriteControl;
 import io.octopus.kernel.kernel.session.ISessionResistor;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,5 +39,5 @@ public interface ITransport {
                       final ISubscriptionsDirectory subscriptionsDirectory,
                       final IPostOffice msgDispatcher,
                       final Map<String, Integer> ports, final IAuthenticator authenticator,
-                      final NotifyInterceptor interceptor, final ReadWriteControl readWriteControl);
+                      final List<ConnectionNotifyInterceptor> interceptor, final ReadWriteControl readWriteControl);
 }

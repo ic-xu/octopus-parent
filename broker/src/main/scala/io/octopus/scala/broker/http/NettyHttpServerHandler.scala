@@ -1,4 +1,4 @@
-package io.octopus.scala.broker.mqtt.server.handler
+package io.octopus.scala.broker.http
 
 import com.google.gson.Gson
 import io.netty.buffer.Unpooled

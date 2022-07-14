@@ -6,7 +6,6 @@ import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ChannelIn
 import io.netty.util.ReferenceCountUtil
 import io.octopus.broker.handler.InflictReSenderHandler
 import io.octopus.kernel.utils.NettyUtils
-import io.octopus.kernel.utils.NettyUtils.getMQTTConnection2Channel
 import io.octopus.scala.broker.mqtt.factory.MQTTConnectionFactory
 import io.octopus.scala.broker.mqtt.server.MQTTConnection
 import io.octopus.utils.MqttMessageUtils

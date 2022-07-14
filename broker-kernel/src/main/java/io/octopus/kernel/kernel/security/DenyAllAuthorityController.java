@@ -1,4 +1,4 @@
-package io.octopus.broker.security;
+package io.octopus.kernel.kernel.security;
 
 import io.octopus.kernel.kernel.security.IRWController;
 import io.octopus.kernel.kernel.subscriptions.Topic;

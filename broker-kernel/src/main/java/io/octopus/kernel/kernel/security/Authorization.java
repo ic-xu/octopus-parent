@@ -1,8 +1,8 @@
-package io.octopus.broker.security;
+package io.octopus.kernel.kernel.security;
 
 import io.octopus.kernel.kernel.subscriptions.Topic;
 
-import static io.octopus.broker.security.Authorization.Permission.READWRITE;
+import static io.octopus.kernel.kernel.security.Authorization.Permission.READWRITE;
 
 /**
  * Carries the read/write authorization to topics for the users.
