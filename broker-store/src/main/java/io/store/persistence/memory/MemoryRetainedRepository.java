@@ -1,7 +1,7 @@
 package io.store.persistence.memory;
 
 import io.netty.buffer.ByteBuf;
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
 import io.octopus.kernel.kernel.subscriptions.Topic;
@@ -27,7 +27,7 @@ public final class MemoryRetainedRepository implements IRetainedRepository {
     }
 
     @Override
-    public boolean retain(Topic topic, KernelMsg msg) {
+    public boolean retain(Topic topic, KernelPayloadMessage msg) {
         final ByteBuf payload = msg.getPayload();
         byte[] rawPayload = new byte[payload.readableBytes()];
         payload.getBytes(0, rawPayload);

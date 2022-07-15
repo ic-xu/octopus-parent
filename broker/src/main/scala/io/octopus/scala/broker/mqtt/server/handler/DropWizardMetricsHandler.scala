@@ -4,9 +4,9 @@ import com.codahale.metrics.{Counter, Meter, MetricRegistry}
 import io.handler.codec.mqtt.{MqttMessage, MqttMessageType}
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
+import io.octopus.kernel.kernel.IPostOffice
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.metrics.MetricsPubMessageReport
-import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.utils.NettyUtils
 
 import java.util.concurrent.TimeUnit

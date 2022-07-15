@@ -1,7 +1,7 @@
 package io.octopus.kernel.kernel.queue;
 
 import io.octopus.kernel.checkpoint.CheckPoint;
-import io.octopus.kernel.kernel.lifecycle.Lifecycle;
+import io.octopus.kernel.kernel.Lifecycle;
 
 /**
  * @author chenxu

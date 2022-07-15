@@ -1,7 +1,7 @@
 package io.octopus.kernel.kernel.metrics;
 
 import com.codahale.metrics.*;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.kernel.IPostOffice;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;

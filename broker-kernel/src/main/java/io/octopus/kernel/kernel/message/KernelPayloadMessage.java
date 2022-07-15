@@ -11,33 +11,35 @@ import java.util.Objects;
  * @version 1
  * @date 2022/1/5 8:14 下午
  */
-public class KernelMsg implements IMessage, ByteBufHolder {
+public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder {
 
-    private IPackageId idWrapper;
 
     private MsgQos qos;
 
-    private final MsgRouter msgRouter;
+    private  MsgRouter msgRouter;
 
-    private final String topic;
+    private  String topic;
 
-    private final ByteBuf payload;
+    private  ByteBuf payload;
 
-    private final boolean isRetain;
+    private  boolean isRetain;
 
 
-    public KernelMsg(IPackageId idWrapper, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain) {
-        this(idWrapper,MsgQos.AT_MOST_ONCE, msgRouter, topic, payload, isRetain);
+
+    public KernelPayloadMessage(short packageId, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain) {
+        this(packageId, MsgQos.AT_MOST_ONCE, msgRouter, topic, payload, isRetain, PubEnum.PUBLISH);
     }
 
-    public KernelMsg(IPackageId iPackageId, MsgQos qos, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain) {
-        this.idWrapper = iPackageId;
+    public KernelPayloadMessage(short packageId, MsgQos qos, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain, PubEnum pubEnum) {
+       super(packageId,pubEnum);
         this.qos = qos;
         this.msgRouter = msgRouter;
         this.topic = topic;
         this.payload = payload;
         this.isRetain = isRetain;
     }
+
+
 
     public MsgQos getQos() {
         return qos;
@@ -63,19 +65,11 @@ public class KernelMsg implements IMessage, ByteBufHolder {
     }
 
 
-    @Override
-    public Long longId() {
-        return idWrapper.longId();
-    }
 
-
-    @Override
-    public Short shortId() {
-        return idWrapper.shortId();
-    }
 
     /**
      * 是否保留消息
+     *
      * @return
      */
     public boolean isRetain() {
@@ -88,16 +82,20 @@ public class KernelMsg implements IMessage, ByteBufHolder {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof KernelMsg)) {
+        if (!(o instanceof KernelPayloadMessage)) {
             return false;
         }
-        KernelMsg kernelMsg = (KernelMsg) o;
-        return Objects.equals(longId(), kernelMsg.longId());
+        KernelPayloadMessage kernelPayloadMessage = (KernelPayloadMessage) o;
+        return Objects.equals(packageId(), kernelPayloadMessage.packageId())
+                && Objects.equals(kernelPayloadMessage.getPubEnum(),this.getPubEnum())
+                && Objects.equals(kernelPayloadMessage.qos,this.qos)
+                && Objects.equals(kernelPayloadMessage.payload,this.payload)
+                && Objects.equals(kernelPayloadMessage.topic,this.topic);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(longId(), getQos(), getMessageType(), getTopic(), getPayload());
+        return Objects.hash(packageId(), getQos(), getMessageType(), getTopic(), getPayload());
     }
 
 
@@ -107,23 +105,23 @@ public class KernelMsg implements IMessage, ByteBufHolder {
     }
 
     @Override
-    public KernelMsg copy() {
+    public KernelPayloadMessage copy() {
         return replace(content().copy());
     }
 
     @Override
-    public KernelMsg duplicate() {
+    public KernelPayloadMessage duplicate() {
         return replace(content().duplicate());
     }
 
     @Override
-    public KernelMsg retainedDuplicate() {
+    public KernelPayloadMessage retainedDuplicate() {
         return replace(content().retainedDuplicate());
     }
 
     @Override
-    public KernelMsg replace(ByteBuf content) {
-        return new KernelMsg(idWrapper, msgRouter, topic, payload.copy(), isRetain);
+    public KernelPayloadMessage replace(ByteBuf content) {
+        return new KernelPayloadMessage(packageId(), msgRouter, topic, payload.copy(), isRetain);
     }
 
     @Override
@@ -132,25 +130,25 @@ public class KernelMsg implements IMessage, ByteBufHolder {
     }
 
     @Override
-    public KernelMsg retain() {
+    public KernelPayloadMessage retain() {
         content().retain();
         return this;
     }
 
     @Override
-    public KernelMsg retain(int increment) {
+    public KernelPayloadMessage retain(int increment) {
         content().retain(increment);
         return this;
     }
 
     @Override
-    public KernelMsg touch() {
+    public KernelPayloadMessage touch() {
         content().touch();
         return this;
     }
 
     @Override
-    public KernelMsg touch(Object hint) {
+    public KernelPayloadMessage touch(Object hint) {
         content().touch(hint);
         return this;
     }

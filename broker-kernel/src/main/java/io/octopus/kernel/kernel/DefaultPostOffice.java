@@ -1,17 +1,12 @@
-package io.octopus.kernel.kernel.postoffice;
+package io.octopus.kernel.kernel;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.octopus.kernel.kernel.interceptor.PostOfficeNotifyInterceptor;
-import io.octopus.kernel.kernel.message.KernelMsg;
-import io.octopus.kernel.kernel.message.MsgQos;
-import io.octopus.kernel.kernel.message.MsgRouter;
-import io.octopus.kernel.kernel.message.PacketIPackageId;
+import io.octopus.kernel.kernel.message.*;
 import io.octopus.kernel.kernel.queue.StoreMsg;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.security.ReadWriteControl;
-import io.octopus.kernel.kernel.session.ISession;
-import io.octopus.kernel.kernel.session.ISessionResistor;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
@@ -54,7 +49,7 @@ public class DefaultPostOffice implements IPostOffice {
 
 
     @Override
-    public Boolean processReceiverMsg(KernelMsg msg, ISession fromSession) {
+    public Boolean processReceiverMsg(KernelPayloadMessage msg, ISession fromSession) {
         /// 校验session 是否具有发布消息的全新啊
         Topic topic = new Topic(msg.getTopic());
         if (!authorizator.canWrite(topic, fromSession.getUsername(), fromSession.getClientId())) {
@@ -63,7 +58,7 @@ public class DefaultPostOffice implements IPostOffice {
         }
 
         //处理刷盘逻辑
-        StoreMsg<KernelMsg> storeMsg = processFlushDisk(msg);
+        StoreMsg<KernelPayloadMessage> storeMsg = processFlushDisk(msg);
 
         // 分发消息
         publish2Subscribers(topic, false, storeMsg);
@@ -75,7 +70,7 @@ public class DefaultPostOffice implements IPostOffice {
     }
 
     @Override
-    public void internalPublish(KernelMsg msg) {
+    public void internalPublish(KernelPayloadMessage msg) {
         MsgQos qos = msg.getQos();
         Topic topic = new Topic(msg.getTopic());
         LOGGER.debug("Sending internal PUBLISH message Topic={}, qos={}", topic, qos);
@@ -156,7 +151,7 @@ public class DefaultPostOffice implements IPostOffice {
     }
 
     @Override
-    public void fireWill(KernelMsg will, ISession session) {
+    public void fireWill(KernelPayloadMessage will, ISession session) {
 
     }
 
@@ -174,7 +169,7 @@ public class DefaultPostOffice implements IPostOffice {
      * @param msg msg
      * @return
      */
-    private StoreMsg<KernelMsg> processFlushDisk(KernelMsg msg) {
+    private StoreMsg<KernelPayloadMessage> processFlushDisk(KernelPayloadMessage msg) {
         //TODO 统一刷盘处理
         //    msgQueue.offer(msg)
         return new StoreMsg<>(msg, null);
@@ -188,7 +183,7 @@ public class DefaultPostOffice implements IPostOffice {
      * @param topic              topic
      * @param isNeedBroadcasting if send message to other broker
      */
-    private void publish2Subscribers(Topic topic, Boolean isNeedBroadcasting, StoreMsg<KernelMsg> storeMsg) {
+    private void publish2Subscribers(Topic topic, Boolean isNeedBroadcasting, StoreMsg<KernelPayloadMessage> storeMsg) {
         Set<Subscription> topicMatchingSubscriptions = subscriptionsDirectory.matchQosSharpening(topic, isNeedBroadcasting);
         topicMatchingSubscriptions.forEach(sub -> {
             //处理 qos,按照两个中比较小的一个发送
@@ -207,7 +202,7 @@ public class DefaultPostOffice implements IPostOffice {
      * @param qos       qos
      * @param storeMsg  storeMsg
      */
-    private void publish2ClientId(String clientId, String topicName, MsgQos qos, StoreMsg<KernelMsg> storeMsg, Boolean directPublish) {
+    private void publish2ClientId(String clientId, String topicName, MsgQos qos, StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
         ISession targetSession = this.sessionResistor.retrieve(clientId);
         boolean isSessionPresent = targetSession != null;
         if (isSessionPresent) {
@@ -227,7 +222,7 @@ public class DefaultPostOffice implements IPostOffice {
      * @param msg   msg
      * @param topic topic
      */
-    private Boolean processRetainMsg(KernelMsg msg, Topic topic) {
+    private Boolean processRetainMsg(KernelPayloadMessage msg, Topic topic) {
         if (msg.isRetain()) {
             if (!msg.getPayload().isReadable()) {
                 retainedRepository.cleanRetained(topic);
@@ -259,10 +254,9 @@ public class DefaultPostOffice implements IPostOffice {
                     MsgQos retainedQos = retainedMsg.qosLevel();
                     MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(subscription, retainedQos);
                     ByteBuf payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload());
-                    KernelMsg message = new KernelMsg(new PacketIPackageId(0L, (short) 0), qos, MsgRouter.TOPIC,
-                            retainedMsg.getTopic().getValue(), payloadBuf, true);
+                    KernelPayloadMessage message = new KernelPayloadMessage((short) 2, qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
                     // sendRetainedPublishOnSessionAtQos
-                    targetSession.sendMsgAtQos(new StoreMsg<KernelMsg>(message, null), false);
+                    targetSession.sendMsgAtQos(new StoreMsg<KernelPayloadMessage>(message, null), false);
                     //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
                 });
             }

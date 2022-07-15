@@ -1,6 +1,6 @@
 package io.octopus.kernel.utils;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 
 /**
  * @author chenxu
@@ -11,7 +11,7 @@ public class KernelMsgEncode {
 
 
 
-    public static byte[] encode(KernelMsg msg){
+    public static byte[] encode(KernelPayloadMessage msg){
         return null;
     }
 }

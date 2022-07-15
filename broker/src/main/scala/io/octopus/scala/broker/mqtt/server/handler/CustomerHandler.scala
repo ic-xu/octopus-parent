@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON
 import io.handler.codec.mqtt._
 import io.netty.buffer.{ByteBuf, Unpooled}
 import io.octopus.broker.customer.MqttCustomerMessageType
-import io.octopus.kernel.kernel.session.ISessionResistor
+import io.octopus.kernel.kernel.ISessionResistor
 import io.octopus.scala.broker.mqtt.casep.{ChatMessage, SdpMessage}
 import io.octopus.scala.broker.mqtt.server.MQTTConnection
 import org.slf4j.{Logger, LoggerFactory}

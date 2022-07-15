@@ -1,13 +1,11 @@
-package io.octopus.kernel.kernel.transport;
+package io.octopus.kernel.kernel;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.octopus.kernel.kernel.config.IConfig;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;
 import io.octopus.kernel.kernel.security.ReadWriteControl;
-import io.octopus.kernel.kernel.session.ISessionResistor;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 
 import java.util.List;

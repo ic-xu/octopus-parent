@@ -2,7 +2,7 @@ package io.octopus.kernel.kernel.queue;
 
 import org.junit.jupiter.api.Test;
 
-public class QueueIKernelMsgIndexTest {
+public class QueueIKernelPayloadMessageIndexTest {
 
     @Test
     public void getSize() {

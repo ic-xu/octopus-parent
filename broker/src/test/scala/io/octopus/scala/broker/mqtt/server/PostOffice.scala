@@ -1,14 +1,13 @@
 package io.octopus.scala.broker.mqtt.server
 
 import io.netty.buffer.Unpooled
-import io.octopus.kernel.kernel.interceptor.{ConnectionNotifyInterceptor, PostOfficeNotifyInterceptor}
-import io.octopus.kernel.kernel.message.{KernelMsg, MsgQos, MsgRouter, PacketIPackageId}
-import io.octopus.kernel.kernel.postoffice.IPostOffice
+import io.octopus.kernel.kernel.interceptor.PostOfficeNotifyInterceptor
+import io.octopus.kernel.kernel.message.{KernelPayloadMessage, PubEnum, MsgQos, MsgRouter, PacketIPackageId}
 import io.octopus.kernel.kernel.queue.StoreMsg
 import io.octopus.kernel.kernel.repository.IRetainedRepository
 import io.octopus.kernel.kernel.security.ReadWriteControl
-import io.octopus.kernel.kernel.session.{ISession, ISessionResistor}
 import io.octopus.kernel.kernel.subscriptions.{ISubscriptionsDirectory, Subscription, Topic}
+import io.octopus.kernel.kernel.{IPostOffice, ISession, ISessionResistor}
 import io.octopus.kernel.utils.ObjectUtils
 import org.slf4j.LoggerFactory
 
@@ -56,11 +55,11 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
    *
    * @param msg the message to publish
    */
-  def internalPublish(msg: KernelMsg): Unit = {
+  def internalPublish(msg: KernelPayloadMessage): Unit = {
     val qos = msg.getQos
     val topic = new Topic(msg.getTopic)
     LOGGER.debug("Sending internal PUBLISH message Topic={}, qos={}", topic, qos)
-    publish2Subscribers(topic, isNeedBroadcasting = false, new StoreMsg[KernelMsg](msg, null))
+    publish2Subscribers(topic, isNeedBroadcasting = false, new StoreMsg[KernelPayloadMessage](msg, null))
     if (!msg.isRetain) return
     if (qos == MsgQos.AT_MOST_ONCE || msg.getPayload.readableBytes == 0) { // QoS == 0 && retain => clean old retained
       retainedRepository.cleanRetained(topic)
@@ -80,7 +79,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
    * @param fromSession 消息来源
    * @return 结果
    */
-  override def processReceiverMsg(msg: KernelMsg, fromSession: ISession): java.lang.Boolean = {
+  override def processReceiverMsg(msg: KernelPayloadMessage, fromSession: ISession): java.lang.Boolean = {
     // 校验session是否有消息发布权限，
     val topic = new Topic(msg.getTopic)
     if (!authorizator.canWrite(topic, fromSession.getUsername, fromSession.getClientId)) {
@@ -106,10 +105,10 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
    * @param msg msg
    * @return
    */
-  def processFlushDisk(msg: KernelMsg): StoreMsg[KernelMsg] = {
+  def processFlushDisk(msg: KernelPayloadMessage): StoreMsg[KernelPayloadMessage] = {
     //TODO 统一刷盘处理
     //    msgQueue.offer(msg)
-    new StoreMsg[KernelMsg](msg, null)
+    new StoreMsg[KernelPayloadMessage](msg, null)
   }
 
 
@@ -120,7 +119,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
    * @param topic              topic
    * @param isNeedBroadcasting if send message to other broker
    */
-  private def publish2Subscribers(topic: Topic, isNeedBroadcasting: Boolean, storeMsg: StoreMsg[KernelMsg]): Unit = {
+  private def publish2Subscribers(topic: Topic, isNeedBroadcasting: Boolean, storeMsg: StoreMsg[KernelPayloadMessage]): Unit = {
     val topicMatchingSubscriptions = subscriptionsDirectory.matchQosSharpening(topic, isNeedBroadcasting)
     topicMatchingSubscriptions.forEach(sub => {
       //处理 qos,按照两个中比较小的一个发送
@@ -138,7 +137,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
    * @param qos       qos
    * @param storeMsg  storeMsg
    */
-  private def publish2ClientId(clientId: String, topicName: String, qos: MsgQos, storeMsg: StoreMsg[KernelMsg], directPublish: Boolean): Unit = {
+  private def publish2ClientId(clientId: String, topicName: String, qos: MsgQos, storeMsg: StoreMsg[KernelPayloadMessage], directPublish: Boolean): Unit = {
     val targetSession = this.sessionResistor.retrieve(clientId)
     val isSessionPresent = targetSession != null
     if (isSessionPresent) {
@@ -159,7 +158,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
    * @param msg   msg
    * @param topic topic
    */
-  private def processRetainMsg(msg: KernelMsg, topic: Topic): java.lang.Boolean = {
+  private def processRetainMsg(msg: KernelPayloadMessage, topic: Topic): java.lang.Boolean = {
     if (msg.isRetain) {
       if (!msg.getPayload.isReadable) {
         retainedRepository.cleanRetained(topic)
@@ -183,9 +182,9 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
     })
   }
 
-  def fireWill(will: KernelMsg, session: ISession): Unit = {
+  def fireWill(will: KernelPayloadMessage, session: ISession): Unit = {
     val topic = new Topic(will.getTopic)
-    publish2Subscribers(topic, isNeedBroadcasting = true, new StoreMsg[KernelMsg](will, null))
+    publish2Subscribers(topic, isNeedBroadcasting = true, new StoreMsg[KernelPayloadMessage](will, null))
     //retained message
     if (will.isRetain) if (!will.getPayload.isReadable) retainedRepository.cleanRetained(topic)
     else { // before wasn't stored
@@ -208,9 +207,9 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
           val retainedQos = retainedMsg.qosLevel()
           val qos = MsgQos.lowerQosToTheSubscriptionDesired(subscription, retainedQos)
           val payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload)
-          val message = new KernelMsg(new PacketIPackageId(0L, short2Short(0)), qos, MsgRouter.TOPIC, retainedMsg.getTopic.getValue, payloadBuf, true)
+          val message = new KernelPayloadMessage(short2Short(0), qos, MsgRouter.TOPIC, retainedMsg.getTopic.getValue, payloadBuf, true,PubEnum.PUBLISH)
           // sendRetainedPublishOnSessionAtQos
-          targetSession.sendMsgAtQos(new StoreMsg[KernelMsg](message, null), false)
+          targetSession.sendMsgAtQos(new StoreMsg[KernelPayloadMessage](message, null), false)
           //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
         })
       }

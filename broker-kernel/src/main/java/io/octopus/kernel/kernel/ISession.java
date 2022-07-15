@@ -1,6 +1,6 @@
-package io.octopus.kernel.kernel.session;
+package io.octopus.kernel.kernel;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.StoreMsg;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 
@@ -19,14 +19,42 @@ public interface ISession {
      * 接收到客户端发送过来的消息
      * @param msg msg；
      */
-    boolean receivePublishMsg(KernelMsg msg);
+    boolean receiveMsg(KernelPayloadMessage msg);
+
+
+
+    /**
+     * 接收到对端发送过来的收到确认消息，Qos1的第二个包
+     * @param msg msg；
+     */
+    Boolean receivePubAcK(Short ackPacketId);
+
+
+    /**
+     * 发布收到
+     * @param msg msg；
+     */
+    void receivePubRec(Short recPacketId);
+
+    /**
+     * 发布释放
+     * @param msg msg；
+     */
+    Boolean receivePubReL(Short relPacketId);
+
+
+    /**
+     * 发布完成
+     * @param msg msg；
+     */
+    Boolean receivePubComp(Short pubCompPacketId);
 
     /**
      * 发送消息给到客户端
      * @param storeMsg 消息
      * @param directPublish 是否直接发送
      */
-    void sendMsgAtQos(StoreMsg<KernelMsg> storeMsg, Boolean directPublish);
+    void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish);
 
     /**
      * 绑定UDP端点

@@ -2,7 +2,7 @@ package io.store.persistence.h2;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCountUtil;
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
 import io.octopus.kernel.kernel.subscriptions.Topic;
@@ -33,7 +33,7 @@ public class H2RetainedRepository implements IRetainedRepository {
 
 
     @Override
-    public boolean retain(Topic topic, KernelMsg msg) {
+    public boolean retain(Topic topic, KernelPayloadMessage msg) {
         final ByteBuf payload = msg.getPayload().copy();
         byte[] rawPayload = new byte[payload.readableBytes()];
         payload.getBytes(0, rawPayload);

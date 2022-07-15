@@ -6,7 +6,7 @@ import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ChannelIn
 import io.netty.handler.codec.http._
 import io.netty.util.CharsetUtil
 import io.netty.util.internal.StringUtil
-import io.octopus.kernel.kernel.session.ISessionResistor
+import io.octopus.kernel.kernel.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.{ISubscriptionsDirectory, Topic}
 import io.octopus.utils.HttpParseUtils
 

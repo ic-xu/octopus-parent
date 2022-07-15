@@ -3,7 +3,7 @@ package io.store.persistence.disk;
 import io.netty.buffer.ByteBuf;
 import io.octopus.kernel.checkpoint.CheckPoint;
 import io.octopus.kernel.kernel.contants.BrokerConstants;
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.queue.SearchData;
@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author user
  */ //TODO delete mappedByteBuffer
-public class ConcurrentFileQueue implements MsgQueue<KernelMsg> {
+public class ConcurrentFileQueue implements MsgQueue<KernelPayloadMessage> {
 
     private final Logger logger = LoggerFactory.getLogger(ConcurrentFileQueue.class);
     private FileMappedByteBuffer currentWriteFileByteBuffer;
@@ -73,7 +73,7 @@ public class ConcurrentFileQueue implements MsgQueue<KernelMsg> {
 
 
     @Override
-    public StoreMsg<KernelMsg> offer(KernelMsg msg) {
+    public StoreMsg<KernelPayloadMessage> offer(KernelPayloadMessage msg) {
         if (stop.get()) {
             return null;
         }
@@ -123,7 +123,7 @@ public class ConcurrentFileQueue implements MsgQueue<KernelMsg> {
 
 
     @Override
-    public StoreMsg<KernelMsg> poll() {
+    public StoreMsg<KernelPayloadMessage> poll() {
         ByteBuf messageBuf;
         long messageIndex = currentReadPosition.get();
         readLock.lock();
@@ -152,9 +152,9 @@ public class ConcurrentFileQueue implements MsgQueue<KernelMsg> {
         }
         int messageSize = messageBuf.capacity();
         currentReadPosition.addAndGet(4 + messageSize);
-        KernelMsg kernelMsg = null;
+        KernelPayloadMessage kernelPayloadMessage = null;
         try {
-            kernelMsg = KernelMsgDecode.decode(messageBuf);
+            kernelPayloadMessage = KernelMsgDecode.decode(messageBuf);
         } catch (Exception e) {
             System.out.println(messageBuf);
             e.printStackTrace();
@@ -166,7 +166,7 @@ public class ConcurrentFileQueue implements MsgQueue<KernelMsg> {
 
 
     @Override
-    public StoreMsg<KernelMsg> poll(SearchData searchData) {
+    public StoreMsg<KernelPayloadMessage> poll(SearchData searchData) {
         FileMappedByteBuffer reallyFile = findReallyFile(searchData.getIndex().getOffset());
         int reallyPosition = (int) (searchData.getIndex().getOffset() - reallyFile.getFileName());
         if (reallyPosition > 0) {
@@ -177,7 +177,7 @@ public class ConcurrentFileQueue implements MsgQueue<KernelMsg> {
             }
             try {
                 final int size = messageBuf.capacity();
-                final KernelMsg kernelMsg = KernelMsgDecode.decode(messageBuf);
+                final KernelPayloadMessage kernelPayloadMessage = KernelMsgDecode.decode(messageBuf);
 //                return new StoreMsg<>(mqttIMessage, new MsgIndex(searchData.getIndex().getOffset(), size, threadNum));
                 return null;
             } catch (Exception e) {

@@ -4,14 +4,12 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.socket.ServerSocketChannel
 import io.netty.channel.socket.nio.NioDatagramChannel
 import io.netty.channel.{AdaptiveRecvByteBufAllocator, ChannelOption, EventLoopGroup}
+import io.octopus.kernel.kernel.{IPostOffice, ISessionResistor, ITransport}
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
-import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
-import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
-import io.octopus.kernel.kernel.transport.ITransport
 import org.slf4j.{Logger, LoggerFactory}
 
 /**

@@ -1,7 +1,7 @@
 package io.octopus.kernel.kernel.config;
 
 import io.octopus.kernel.kernel.contants.BrokerConstants;
-import io.octopus.kernel.kernel.environment.Environment;
+import io.octopus.kernel.kernel.Environment;
 
 /**
  * Base interface for all configuration

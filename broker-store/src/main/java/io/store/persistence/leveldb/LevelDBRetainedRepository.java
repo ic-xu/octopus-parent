@@ -1,6 +1,6 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
 import io.octopus.kernel.kernel.subscriptions.Topic;
@@ -30,7 +30,7 @@ public class LevelDBRetainedRepository implements IRetainedRepository {
     }
 
     @Override
-    public boolean retain(Topic topic, KernelMsg msg) {
+    public boolean retain(Topic topic, KernelPayloadMessage msg) {
         return true;
     }
 

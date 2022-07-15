@@ -1,6 +1,6 @@
 package io.octopus;
 
-import io.octopus.kernel.kernel.server.IServer;
+import io.octopus.kernel.kernel.IServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package io.octopus.kernel.kernel.lifecycle;
+package io.octopus.kernel.kernel;
 
 /**
  * container life cycle

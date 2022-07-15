@@ -8,7 +8,7 @@ import io.handler.codec.mqtt.MqttMessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.kernel.IPostOffice;
 import io.octopus.kernel.utils.NettyUtils;
 
 import static io.netty.channel.ChannelHandler.Sharable;

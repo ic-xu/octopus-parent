@@ -3,7 +3,7 @@ package io.octopus.scala.broker.mqtt.server.handler
 import io.handler.codec.mqtt.MqttPublishMessage
 import io.handler.codec.mqtt.utils.MqttMessageDecoderUtils
 import io.netty.buffer.ByteBuf
-import io.octopus.kernel.kernel.postoffice.IPostOffice
+import io.octopus.kernel.kernel.IPostOffice
 import io.octopus.udp.message.MessageReceiverListener
 import io.octopus.worker.MessageHandlerWorker
 

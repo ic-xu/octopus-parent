@@ -9,7 +9,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.StringUtil;
-import io.octopus.kernel.kernel.session.ISessionResistor;
+import io.octopus.kernel.kernel.ISessionResistor;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 import io.octopus.kernel.kernel.subscriptions.Topic;

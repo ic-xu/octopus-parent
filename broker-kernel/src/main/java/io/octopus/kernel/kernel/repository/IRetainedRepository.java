@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.repository;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.subscriptions.RetainedMessage;
 import io.octopus.kernel.kernel.subscriptions.Topic;
 
@@ -23,7 +23,7 @@ public interface IRetainedRepository {
      * @param msg msg
      * @return result
      */
-    boolean retain(Topic topic, KernelMsg msg);
+    boolean retain(Topic topic, KernelPayloadMessage msg);
 
     /**
      * empt

@@ -1,4 +1,4 @@
-package io.octopus.kernel.kernel.transport;
+package io.octopus.kernel.kernel;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -11,10 +11,8 @@ import io.octopus.kernel.kernel.handler.DropWizardMetricsHandler;
 import io.octopus.kernel.kernel.handler.PipelineInitializer;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.listener.BindLocalPortListener;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;
 import io.octopus.kernel.kernel.security.ReadWriteControl;
-import io.octopus.kernel.kernel.session.ISessionResistor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

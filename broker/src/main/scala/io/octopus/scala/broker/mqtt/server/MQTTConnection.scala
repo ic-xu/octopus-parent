@@ -7,12 +7,12 @@ import io.netty.handler.timeout.IdleStateHandler
 import io.netty.util.ReferenceCountUtil
 import io.octopus.broker.handler.InflictReSenderHandler
 import io.octopus.kernel.exception.SessionCorruptedException
+import io.octopus.kernel.kernel._
 import io.octopus.kernel.kernel.config.BrokerConfiguration
 import io.octopus.kernel.kernel.connect.AbstractConnection
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.message._
 import io.octopus.kernel.kernel.security.IAuthenticator
-import io.octopus.kernel.kernel.session._
 import io.octopus.kernel.kernel.subscriptions.{Subscription, Topic}
 import io.octopus.kernel.utils.{NettyUtils, ObjectUtils}
 import io.octopus.scala.broker.mqtt.server.handler.CustomerHandler
@@ -187,7 +187,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    * @return
    */
 
-  def createWillMsg(msg: MqttConnectMessage): KernelMsg = {
+  def createWillMsg(msg: MqttConnectMessage): KernelPayloadMessage = {
     if (!msg.variableHeader().isWillFlag) {
       return null
     }
@@ -195,7 +195,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     val willTopic = msg.payload.willTopic
     val retained = msg.variableHeader.isWillRetain
     val qos = MsgQos.valueOf(msg.variableHeader().willQos())
-    new KernelMsg(new PacketIPackageId(msg.longId(), 3.toShort), qos, MsgRouter.TOPIC, willTopic, willPayload, retained)
+    new KernelPayloadMessage(3.toShort, qos, MsgRouter.TOPIC, willTopic, willPayload, retained, PubEnum.PUBLISH)
   }
 
   private def processConnectAck(msg: MqttConnAckMessage): Unit = {}
@@ -212,14 +212,14 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     }
     qos match {
       case MqttQoS.AT_MOST_ONCE =>
-        val receiverMsg = new KernelMsg(new PacketIPackageId(msg.longId(), msg.variableHeader().packetId().toShort), MsgRouter.TOPIC, topicName, msg.payload(), msg.fixedHeader().isRetain)
+        val receiverMsg = new KernelPayloadMessage(msg.variableHeader().packetId().toShort, MsgRouter.TOPIC, topicName, msg.payload(), msg.fixedHeader().isRetain)
         receiverMsg.setQos(MsgQos.AT_MOST_ONCE)
-        boundSession.receivePublishMsg(receiverMsg)
+        boundSession.receiveMsg(receiverMsg)
       case MqttQoS.AT_LEAST_ONCE =>
-        val receiverMsg = new KernelMsg(new PacketIPackageId(msg.longId(), msg.variableHeader().packetId().toShort), MsgRouter.TOPIC, topicName, msg.payload(), msg.fixedHeader().isRetain)
+        val receiverMsg = new KernelPayloadMessage(msg.variableHeader().packetId().toShort, MsgRouter.TOPIC, topicName, msg.payload(), msg.fixedHeader().isRetain)
         receiverMsg.setQos(MsgQos.AT_LEAST_ONCE)
 
-        if (boundSession.receivePublishMsg(receiverMsg)) {
+        if (boundSession.receiveMsg(receiverMsg)) {
           sendPubAck(msg.variableHeader.packetId)
         }
       case MqttQoS.EXACTLY_ONCE =>
@@ -274,9 +274,9 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     val messageId = msg.variableHeader.messageId
     val oldPublishMsg = publishMsgQos2.orNull
     if (null != oldPublishMsg) {
-      val receiverMessage = new KernelMsg(new PacketIPackageId(msg.longId(), messageId.toShort), MsgQos.EXACTLY_ONCE, MsgRouter.TOPIC, oldPublishMsg.variableHeader().topicName(),
-        oldPublishMsg.payload(), oldPublishMsg.fixedHeader().isRetain)
-      if (boundSession.receivePublishMsg(receiverMessage)) {
+      val receiverMessage = new KernelPayloadMessage(msg.variableHeader().messageId().toShort, MsgQos.EXACTLY_ONCE, MsgRouter.TOPIC, oldPublishMsg.variableHeader().topicName(),
+        oldPublishMsg.payload(), oldPublishMsg.fixedHeader().isRetain, PubEnum.PUBLISH)
+      if (boundSession.receiveMsg(receiverMessage)) {
         //          interceptor.notifyTopicPublished(mqttPublishMessage, clientId, username)
         sendPubCompMessage(messageId)
       }
@@ -599,26 +599,42 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
   }
 
 
-  def sendIfWritableElseDrop(msg: KernelMsg): Unit = {
-    val publishMessage = new MqttPublishMessage(
-      new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(msg.getQos.getValue), false, 0),
-      new MqttPublishVariableHeader(msg.getTopic, msg.shortId.intValue()),
-      msg.getPayload.retain)
-    logger.trace("write mqttMessage packageId is {}", publishMessage.variableHeader.packetId)
-    if (logger.isDebugEnabled) logger.debug("OUT {} on channel {}", publishMessage.variableHeader.topicName, channel)
+  def sendIfWritableElseDrop(kernelMsg: KernelMessage): java.lang.Boolean = {
+    logger.trace("write mqttMessage packageId is {}", kernelMsg.packageId())
+
+    var mqttMsg: MqttMessage = null
+    kernelMsg match {
+      case msg: KernelPayloadMessage =>
+        if (logger.isDebugEnabled) logger.debug("OUT {} on channel {}", msg.getTopic, channel)
+        mqttMsg = MqttMessageBuilders.publish()
+          .messageId(msg.packageId().intValue())
+          .payload(msg.getPayload.retain) .topicName(msg.getTopic)
+          .qos(MqttQoS.valueOf(msg.getQos.getValue)).retained(false).build()
+      case _ =>
+        kernelMsg.getPubEnum match {
+          case PubEnum.PUB_ACK => mqttMsg = MqttMessageBuilders.pubAck().packetId(kernelMsg.packageId()).build();
+          case PubEnum.PUB_REC => mqttMsg = MqttMessageBuilders.pubRec().packetId(kernelMsg.packageId()).build();
+          case PubEnum.PUB_REL => mqttMsg = MqttMessageBuilders.pubRel().packetId(kernelMsg.packageId()).build();
+          case PubEnum.PUB_COMP => mqttMsg = MqttMessageBuilders.pubComp().packetId(kernelMsg.packageId()).build();
+          case _ => throw new Exception("no the publish type")
+        }
+    }
+    if (ObjectUtils.isEmpty(mqttMsg)) {
+      return false
+    }
     if (channel.isWritable) {
       var channelFuture: ChannelFuture = null
       if (brokerConfig.isImmediateBufferFlush) {
-        channelFuture = channel.writeAndFlush(publishMessage)
+        channelFuture = channel.writeAndFlush(mqttMsg)
       } else {
-        channelFuture = channel.write(publishMessage)
+        channelFuture = channel.write(mqttMsg)
       }
       channelFuture.addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
+      true
     }
     else {
-      ReferenceCountUtil.release(publishMessage.payload)
-      // TODO
-      //            LOGGER.error("channel is not writable");
+      ReferenceCountUtil.release(mqttMsg.payload)
+      false
     }
   }
 

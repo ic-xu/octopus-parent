@@ -3,7 +3,7 @@ package io.octopus.scala.broker.mqtt.persistence
 import io.octopus.kernel.checkpoint.CheckPoint
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
-import io.octopus.kernel.kernel.message.KernelMsg
+import io.octopus.kernel.kernel.message.KernelPayloadMessage
 import io.octopus.kernel.kernel.queue.{MsgQueue, SearchData, StoreMsg}
 import io.store.persistence.disk.{CheckPointServer, ConcurrentFileQueue}
 import org.h2.mvstore.MVStore
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 
 class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPointServer, flushDiskServiceExecutor: ScheduledExecutorService)
-  extends MsgQueue[KernelMsg] {
+  extends MsgQueue[KernelPayloadMessage] {
 
   val autoSaveProp: String = config.getProperty(BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME, "10")
   private val autoSaveInterval = autoSaveProp.toInt
@@ -52,7 +52,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
    * @param msg message byteArray
    * @return the message index
    */
-  override def offer(msg: KernelMsg): StoreMsg[KernelMsg] = {
+  override def offer(msg: KernelPayloadMessage): StoreMsg[KernelPayloadMessage] = {
     var msgQueue: ConcurrentFileQueue = localQueue.get
     if (null == msgQueue) {
       val threadNameArray: Array[String] = Thread.currentThread.getName.split("-")
@@ -100,7 +100,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
    *
    * @return the head of this queue, or {@code null} if this queue is empty
    */
-  override def poll(): StoreMsg[KernelMsg] = getConcurrentFileQueue.poll()
+  override def poll(): StoreMsg[KernelPayloadMessage] = getConcurrentFileQueue.poll()
 
   override def size(): Int = getConcurrentFileQueue.size()
 
@@ -111,7 +111,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
    * @param searchData searchData
    * @return E
    */
-  override def poll(searchData: SearchData): StoreMsg[KernelMsg] = {
+  override def poll(searchData: SearchData): StoreMsg[KernelPayloadMessage] = {
     //    val localThreadQueue: LocalThreadQueueData = chileThreadMap.get(searchData.getIndex.getQueueName)
     //    if (!ObjectUtils.isEmpty(localThreadQueue)) {
     //      localThreadQueue.getSearchDataQueue().offer(searchData)

@@ -4,9 +4,9 @@ package io.octopus.kernel.kernel.connect;
 import io.netty.channel.Channel;
 import io.octopus.kernel.kernel.config.IConfig;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.kernel.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;
-import io.octopus.kernel.kernel.session.ISessionResistor;
+import io.octopus.kernel.kernel.ISessionResistor;
 
 import java.lang.reflect.InvocationTargetException;
 

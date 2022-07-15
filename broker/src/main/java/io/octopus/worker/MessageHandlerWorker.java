@@ -1,7 +1,7 @@
 package io.octopus.worker;
 
 import io.handler.codec.mqtt.MqttPublishMessage;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.kernel.IPostOffice;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

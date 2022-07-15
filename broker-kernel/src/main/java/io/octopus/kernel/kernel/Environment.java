@@ -1,4 +1,4 @@
-package io.octopus.kernel.kernel.environment;
+package io.octopus.kernel.kernel;
 
 /**
  * @author chenxu

@@ -1,11 +1,12 @@
-package io.octopus.kernel.kernel.session;
+package io.octopus.kernel.kernel;
 
 import io.netty.buffer.ByteBufHolder;
 import io.netty.util.ReferenceCountUtil;
 import io.octopus.kernel.kernel.connect.AbstractConnection;
 import io.octopus.kernel.kernel.message.InFlightPacket;
-import io.octopus.kernel.kernel.message.KernelMsg;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.kernel.message.KernelMessage;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
+import io.octopus.kernel.kernel.message.PubEnum;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.queue.SearchData;
@@ -50,7 +51,7 @@ public  class DefaultSession implements ISession {
     /**
      * session 对应的遗嘱消息
      */
-    private KernelMsg willMsg;
+    private KernelPayloadMessage willMsg;
 
     /**
      * 索引队列
@@ -70,7 +71,7 @@ public  class DefaultSession implements ISession {
     /**
      * 消息队列大小
      */
-    protected final MsgQueue<KernelMsg> msgQueue;
+    protected final MsgQueue<KernelPayloadMessage> msgQueue;
 
     /**
      * 清除队列服务
@@ -80,7 +81,7 @@ public  class DefaultSession implements ISession {
     /**
      * 发送中的窗口
      */
-    protected final Map<Short, KernelMsg> inflictWindow = new ConcurrentHashMap<>();
+    protected final Map<Short, KernelPayloadMessage> inflictWindow = new ConcurrentHashMap<>();
 
     /**
      * 消息发送时间，超过这个时间之后就判定为超
@@ -122,10 +123,10 @@ public  class DefaultSession implements ISession {
     protected Set<String> subTopicStr = new HashSet<>();
 
     public DefaultSession(IPostOffice postOffice, String userName,
-                          String clientId, Boolean clean, KernelMsg willMsg,
+                          String clientId, Boolean clean, KernelPayloadMessage willMsg,
                           Queue<MsgIndex> msgIndexQueue,
                           Integer inflictWindowSize, Integer clientVersion,
-                          MsgQueue<KernelMsg> msgQueue,
+                          MsgQueue<KernelPayloadMessage> msgQueue,
                           ExecutorService drainQueueService) {
 
         this.postOffice = postOffice;
@@ -148,9 +149,10 @@ public  class DefaultSession implements ISession {
      * @param msg msg；
      */
     @Override
-    public boolean receivePublishMsg(KernelMsg msg) {
+    public boolean receiveMsg(KernelPayloadMessage msg) {
         return postOffice.processReceiverMsg(msg, this);
     }
+
 
     /**
      * 发送消息，postOffice 调用这个消息发送相关消息
@@ -159,7 +161,7 @@ public  class DefaultSession implements ISession {
      * @param directPublish Send directly
      */
     @Override
-    public void sendMsgAtQos(StoreMsg<KernelMsg> storeMsg, Boolean directPublish) {
+    public void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
         switch (storeMsg.getMsg().getQos()) {
             case AT_MOST_ONCE:
                 sendMsgAtQos0(storeMsg, directPublish);
@@ -180,21 +182,20 @@ public  class DefaultSession implements ISession {
     }
 
 
-    private void sendMsgAtQos0(StoreMsg<KernelMsg> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos0(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
         connection.sendIfWritableElseDrop(storeMsg.getMsg());
     }
 
 
-    private void sendMsgAtQos1(StoreMsg<KernelMsg> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos1(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
         if (!connected() && isClean()) { //pushing messages to disconnected not clean session
             return;
         }
-        KernelMsg msg = storeMsg.getMsg();
+        KernelPayloadMessage msg = storeMsg.getMsg();
 
         if (canSkipQueue() || directPublish) {
-            //          publishMsg.variableHeader.setPacketId(mqttConnection.nextPacketId)
             inflictSlots.decrementAndGet();
-            KernelMsg old = inflictWindow.put(msg.shortId(), msg.retain());
+            KernelPayloadMessage old = inflictWindow.put(msg.packageId(), msg.retain());
             // If there already was something, release it.
             if (old != null) {
                 try {
@@ -204,7 +205,7 @@ public  class DefaultSession implements ISession {
                 inflictSlots.incrementAndGet();
             }
 
-            inflictTimeouts.add(new InFlightPacket(msg.shortId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+            inflictTimeouts.add(new InFlightPacket(msg.packageId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
             connection.sendIfWritableElseDrop(msg);
             logger.debug("Write direct to the peer, inflict slots: {}", inflictSlots.get());
             if (inflictSlots.get() == 0) {
@@ -218,16 +219,33 @@ public  class DefaultSession implements ISession {
         }
     }
 
-    private void sendMsgAtQos2(StoreMsg<KernelMsg> storeMsg, Boolean directPublish) {
-        if (!connected() && isClean()) { //pushing messages to disconnected not clean session
+    @Override
+    public Boolean receivePubAcK(Short ackPacketId) {
+        // TODO remain to invoke in somehow m_interceptor.notifyMessageAcknowledged
+        logger.trace("received a pubAck packetId is {} ", ackPacketId);
+        KernelPayloadMessage removeMsg = inflictWindow.remove(ackPacketId);
+        inflictTimeouts.remove(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+        if (removeMsg == null) {
+            logger.trace("Received a pubAck with not matching packetId  {} ", ackPacketId);
+        } else {
+            ReferenceCountUtil.safeRelease(removeMsg);
+            inflictSlots.incrementAndGet();
+        }
+        drainQueueToConnection();
+        return true;
+    }
+
+
+    private void sendMsgAtQos2(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+        if (!connected() && isClean()) {
+            //pushing messages to disconnected not clean session
             return;
         }
-        KernelMsg msg = storeMsg.getMsg();
+        KernelPayloadMessage msg = storeMsg.getMsg();
 
         if (canSkipQueue() || directPublish) {
-            //          publishMsg.variableHeader.setPacketId(mqttConnection.nextPacketId)
             inflictSlots.decrementAndGet();
-            KernelMsg old = inflictWindow.put(msg.shortId(), msg.retain());
+            KernelPayloadMessage old = inflictWindow.put(msg.packageId(), msg.retain());
             // If there already was something, release it.
             if (old != null) {
                 try {
@@ -236,7 +254,7 @@ public  class DefaultSession implements ISession {
                 }
                 inflictSlots.incrementAndGet();
             }
-            inflictTimeouts.add(new InFlightPacket(msg.shortId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+            inflictTimeouts.add(new InFlightPacket(msg.packageId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
             connection.sendIfWritableElseDrop(msg);
             logger.debug("Write direct to the peer, inflict slots: {}", inflictSlots.get());
             if (inflictSlots.get() == 0) {
@@ -248,13 +266,37 @@ public  class DefaultSession implements ISession {
             offerMsgIndex(storeMsg.getIndex(), msg);
             drainQueueToConnection();
         }
+    }
+
+    @Override
+    public void receivePubRec(Short recPacketId) {
+        logger.trace("received a pubAck packetId is {} ", recPacketId);
+        KernelPayloadMessage exitMsg = inflictWindow.get(recPacketId);
+        if (null != exitMsg) {
+            inflictTimeouts.remove(new InFlightPacket(recPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+            inflictTimeouts.add(new InFlightPacket(recPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+            connection.sendIfWritableElseDrop(new KernelMessage(recPacketId, PubEnum.PUB_REL));
+        } else {
+            logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
+        }
+    }
+
+    @Override
+    public Boolean receivePubReL(Short relPacketId) {
+
+        return false;
+    }
+
+    @Override
+    public Boolean receivePubComp(Short pubCompPacketId) {
+        return false;
     }
 
 
     public void pubAckReceived(Short ackPacketId) {
         // TODO remain to invoke in somehow m_interceptor.notifyMessageAcknowledged
         logger.trace("received a pubAck packetId is {} ", ackPacketId);
-        KernelMsg removeMsg = inflictWindow.remove(ackPacketId);
+        KernelPayloadMessage removeMsg = inflictWindow.remove(ackPacketId);
         inflictTimeouts.remove(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
         if (removeMsg == null) {
             logger.trace("Received a pubAck with not matching packetId  {} ", ackPacketId);
@@ -269,7 +311,7 @@ public  class DefaultSession implements ISession {
     //TODO
     public Boolean pubRecReceived(Short ackPacketId) {
         logger.trace("received a pubAck packetId is {} ", ackPacketId);
-        KernelMsg exitMsg = inflictWindow.get(ackPacketId);
+        KernelPayloadMessage exitMsg = inflictWindow.get(ackPacketId);
         if (null != exitMsg) {
             inflictTimeouts.remove(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
             inflictTimeouts.add(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
@@ -286,7 +328,7 @@ public  class DefaultSession implements ISession {
     }
 
 
-    public Map<Short, KernelMsg> getInflictWindow() {
+    public Map<Short, KernelPayloadMessage> getInflictWindow() {
         return inflictWindow;
     }
 
@@ -307,7 +349,7 @@ public  class DefaultSession implements ISession {
     }
 
 
-    public void addInflictWindow(Map<Short, KernelMsg> inflictWindows) {
+    public void addInflictWindow(Map<Short, KernelPayloadMessage> inflictWindows) {
         inflictWindows.forEach((packetId, msg) -> {
             inflictTimeouts.add(new InFlightPacket(packetId, FLIGHT_BEFORE_RESEND_MS));
             inflictSlots.decrementAndGet();
@@ -324,7 +366,7 @@ public  class DefaultSession implements ISession {
     }
 
     // persistence msgIndex
-    protected void offerMsgIndex(MsgIndex msgIndex, KernelMsg msg) {
+    protected void offerMsgIndex(MsgIndex msgIndex, KernelPayloadMessage msg) {
         if (!ObjectUtils.isEmpty(msgIndex)) {
             msgIndexQueue.offer(msgIndex);
         }
@@ -347,7 +389,7 @@ public  class DefaultSession implements ISession {
                 //        return null;
                 //    }
                 //and inflictHasSlotsAndConnectionIsUp is true
-                StoreMsg<KernelMsg> msg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                StoreMsg<KernelPayloadMessage> msg = msgQueue.poll(new SearchData(clientId, msgIndex));
                 //        if (!ObjectUtils.isEmpty(msg)) {
                 //          msg.getMsg match {
                 //            case mqttMessage: MqttMessage =>
@@ -405,7 +447,7 @@ public  class DefaultSession implements ISession {
             debugLogPacketIds(expired);
             expired.forEach(notAckPacketId -> {
                 if (inflictWindow.containsKey(notAckPacketId.getPacketId())) {
-                    KernelMsg message = inflictWindow.remove(notAckPacketId.getPacketId());
+                    KernelPayloadMessage message = inflictWindow.remove(notAckPacketId.getPacketId());
                     if (null == message) { // Already acked...
                         logger.warn("Already acked...");
                     } else {
@@ -457,7 +499,7 @@ public  class DefaultSession implements ISession {
     }
 
 
-    public void update(Boolean clean, KernelMsg will) {
+    public void update(Boolean clean, KernelPayloadMessage will) {
         this.clean = clean;
         this.willMsg = will;
     }

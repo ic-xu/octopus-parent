@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON
 import io.netty.buffer.Unpooled
 import io.netty.channel.socket.DatagramPacket
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.octopus.kernel.kernel.session.ISessionResistor
+import io.octopus.kernel.kernel.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.{ISubscriptionsDirectory, Topic}
 import io.octopus.scala.broker.mqtt.casep.UdpPublishMessage
 

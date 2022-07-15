@@ -1,4 +1,4 @@
-package io.octopus.kernel.kernel.session;
+package io.octopus.kernel.kernel;
 
 /**
  * @author chenxu

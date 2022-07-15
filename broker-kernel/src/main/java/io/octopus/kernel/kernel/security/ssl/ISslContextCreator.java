@@ -1,4 +1,4 @@
-package io.octopus.kernel.kernel.ssl;
+package io.octopus.kernel.kernel.security.ssl;
 
 import io.netty.handler.ssl.SslContext;
 

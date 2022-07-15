@@ -1,6 +1,5 @@
-package io.octopus.kernel.kernel.server;
+package io.octopus.kernel.kernel;
 
-import io.octopus.kernel.kernel.lifecycle.Lifecycle;
 import io.octopus.kernel.kernel.listener.LifecycleListener;
 
 import java.util.List;

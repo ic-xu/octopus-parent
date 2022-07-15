@@ -7,7 +7,7 @@ import com.console.sshd.command.VMCommand;
 import com.console.sshd.repl.CliRunnerCommandFactory;
 import com.console.sshd.command.ConsoleCommand;
 import io.octopus.kernel.kernel.listener.LifecycleListener;
-import io.octopus.kernel.kernel.server.IServer;
+import io.octopus.kernel.kernel.IServer;
 import org.apache.sshd.common.config.keys.KeyUtils;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.scp.server.ScpCommandFactory;

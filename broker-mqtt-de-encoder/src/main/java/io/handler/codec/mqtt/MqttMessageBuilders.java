@@ -365,6 +365,45 @@ public final class MqttMessageBuilders {
         }
     }
 
+    public static final class PubCompBuilder {
+        private short packetId;
+        PubCompBuilder() {
+        }
+
+        public PubCompBuilder packetId(short packetId) {
+            this.packetId = packetId;
+            return this;
+        }
+
+        public MqttMessage build() {
+            MqttFixedHeader mqttFixedHeader =
+                    new MqttFixedHeader(MqttMessageType.PUBCOMP, false, MqttQoS.AT_MOST_ONCE, false, 0);
+            MqttMessageIdVariableHeader mqttMessageIdVariableHeader =
+                    new MqttMessageIdVariableHeader(packetId);
+            return new MqttMessage(mqttFixedHeader, mqttMessageIdVariableHeader);
+        }
+    }
+
+    public static final class PubRecBuilder {
+        private short packetId;
+        PubRecBuilder() {
+        }
+
+        public PubRecBuilder packetId(short packetId) {
+            this.packetId = packetId;
+            return this;
+        }
+
+        public MqttMessage build() {
+            MqttFixedHeader mqttFixedHeader =
+                    new MqttFixedHeader(MqttMessageType.PUBREC, false, MqttQoS.AT_MOST_ONCE, false, 0);
+            MqttMessageIdVariableHeader mqttMessageIdVariableHeader =
+                    new MqttMessageIdVariableHeader(packetId);
+            return new MqttMessage(mqttFixedHeader, mqttMessageIdVariableHeader);
+        }
+    }
+
+
     public static final class SubAckBuilder {
 
         private short packetId;
@@ -534,6 +573,14 @@ public final class MqttMessageBuilders {
 
     public static PubRelBuilder pubRel() {
         return new PubRelBuilder();
+    }
+
+    public static PubRecBuilder pubRec() {
+        return new PubRecBuilder();
+    }
+
+    public static PubCompBuilder pubComp() {
+        return new PubCompBuilder();
     }
 
     public static SubAckBuilder subAck() {

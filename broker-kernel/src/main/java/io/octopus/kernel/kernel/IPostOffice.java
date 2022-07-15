@@ -1,8 +1,7 @@
-package io.octopus.kernel.kernel.postoffice;
+package io.octopus.kernel.kernel;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.message.MsgQos;
-import io.octopus.kernel.kernel.session.ISession;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 
 import java.util.List;
@@ -27,18 +26,18 @@ public interface IPostOffice {
      * 3）、如果消息需要存储，则调用存储组件
      * 4）、分发消息
      *
-     * @param kernelMsg   消息体
+     * @param kernelPayloadMessage   消息体
      * @param fromSession 消息来源
      * @return 结果
      */
-    Boolean processReceiverMsg(KernelMsg kernelMsg, ISession fromSession);
+    Boolean processReceiverMsg(KernelPayloadMessage kernelPayloadMessage, ISession fromSession);
 
     /**
      * 内部直接发送，跳过对topic 和用户的校验，一般用作嵌入broker 或者集群间的内部发送数据
      *
      * @param msg msg
      */
-    void internalPublish(KernelMsg msg);
+    void internalPublish(KernelPayloadMessage msg);
 
     /**
      * 订阅消息
@@ -86,7 +85,7 @@ public interface IPostOffice {
      * @param will
      * @param session
      */
-    void fireWill(KernelMsg will, ISession session);
+    void fireWill(KernelPayloadMessage will, ISession session);
 
     /**
      *

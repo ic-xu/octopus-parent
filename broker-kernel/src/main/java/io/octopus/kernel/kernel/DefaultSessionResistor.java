@@ -1,10 +1,9 @@
-package io.octopus.kernel.kernel.session;
+package io.octopus.kernel.kernel;
 
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.octopus.kernel.exception.SessionCorruptedException;
 import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.kernel.kernel.message.KernelMsg;
-import io.octopus.kernel.kernel.postoffice.IPostOffice;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
@@ -42,7 +41,7 @@ public class DefaultSessionResistor implements ISessionResistor {
     private Integer receiveMaximum = 10;
     private IPostOffice postOffice = null;
 
-    private final MsgQueue<KernelMsg> msgQueue;
+    private final MsgQueue<KernelPayloadMessage> msgQueue;
 
     private final ExecutorService drainQueueService = new ThreadPoolExecutor(4, 4,
             0L, TimeUnit.MILLISECONDS,
@@ -53,7 +52,7 @@ public class DefaultSessionResistor implements ISessionResistor {
 
 
     public DefaultSessionResistor(IQueueRepository queueRepository, IRWController authorizator,
-                                  IConfig config, MsgQueue<KernelMsg> msgQueue) {
+                                  IConfig config, MsgQueue<KernelPayloadMessage> msgQueue) {
         this.queueRepository = queueRepository;
         this.authorizator = authorizator;
         this.config = config;
@@ -65,7 +64,7 @@ public class DefaultSessionResistor implements ISessionResistor {
     }
 
     @Override
-    public SessionCreationResult createOrReOpenSession(String clientId, String username, Boolean isClean, KernelMsg willMsg, int clientVersion) {
+    public SessionCreationResult createOrReOpenSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
 
         SessionCreationResult createResult = null;
         DefaultSession newSession = createNewSession(clientId, username, isClean, willMsg, clientVersion);
@@ -88,7 +87,7 @@ public class DefaultSessionResistor implements ISessionResistor {
 
 
     public SessionCreationResult reOpenExistingSession(String clientId, DefaultSession newSession,
-                                                       String username, Boolean newClean, KernelMsg willMsg) {
+                                                       String username, Boolean newClean, KernelPayloadMessage willMsg) {
         DefaultSession oldSession = sessions.get(clientId);
         SessionCreationResult result = null;
         if (oldSession.disconnected()) {
@@ -147,7 +146,7 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @param clientId client
      * @return session
      */
-    public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelMsg willMsg, int clientVersion) {
+    public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
         Queue<MsgIndex> sessionIndexQueue = indexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
         DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean,
                 willMsg, sessionIndexQueue, receiveMaximum, clientVersion, msgQueue, drainQueueService);
@@ -190,7 +189,7 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @param willMessage willMsg
      * @param session     session
      */
-    private void copySessionConfig(Boolean isClean, KernelMsg willMessage, DefaultSession session) {
+    private void copySessionConfig(Boolean isClean, KernelPayloadMessage willMessage, DefaultSession session) {
         session.update(isClean, willMessage);
     }
 

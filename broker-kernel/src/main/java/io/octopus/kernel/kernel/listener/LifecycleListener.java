@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.listener;
 
-import io.octopus.kernel.kernel.lifecycle.Lifecycle;
+import io.octopus.kernel.kernel.Lifecycle;
 
 /**
  * @author chenxu

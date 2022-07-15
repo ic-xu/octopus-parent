@@ -10,16 +10,14 @@ import io.netty.handler.ssl.{SslContext, SslHandler}
 import io.netty.handler.timeout.IdleStateHandler
 import io.octopus.broker.handler._
 import io.octopus.broker.security.DefaultOctopusSslContextCreator
+import io.octopus.kernel.kernel.{BaseTransport, IPostOffice, ISessionResistor}
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.metrics.{BytesMetricsCollector, MessageMetricsCollector}
-import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
-import io.octopus.kernel.kernel.session.ISessionResistor
-import io.octopus.kernel.kernel.ssl.ISslContextCreator
+import io.octopus.kernel.kernel.security.ssl.ISslContextCreator
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
-import io.octopus.kernel.kernel.transport.BaseTransport
 import io.octopus.scala.broker.mqtt.factory.MQTTConnectionFactory
 import io.octopus.scala.broker.mqtt.server.handler.{BeforeInterceptorHandler, NettyMQTTHandler}
 import org.slf4j.{Logger, LoggerFactory}

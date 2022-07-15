@@ -5,14 +5,12 @@ import io.netty.channel.socket.ServerSocketChannel
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpServerCodec, HttpServerExpectContinueHandler}
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.octopus.broker.handler.NettyHttpServerHandler
+import io.octopus.kernel.kernel.{BaseTransport, IPostOffice, ISessionResistor}
 import io.octopus.kernel.kernel.config.IConfig
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
-import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
-import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
-import io.octopus.kernel.kernel.transport.BaseTransport
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.util

@@ -3,20 +3,16 @@ package io.octopus.scala.broker.mqtt.server
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.DefaultThreadFactory
 import io.octopus.Version
-import io.octopus.broker.security._
+import io.octopus.kernel.kernel._
 import io.octopus.kernel.kernel.config.{FileResourceLoader, IConfig, IResourceLoader, ResourceLoaderConfig}
 import io.octopus.kernel.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.interceptor.{ConnectionNotifyInterceptor, PostOfficeNotifyInterceptor}
 import io.octopus.kernel.kernel.listener.LifecycleListener
-import io.octopus.kernel.kernel.message.KernelMsg
-import io.octopus.kernel.kernel.postoffice.{DefaultPostOffice, IPostOffice}
+import io.octopus.kernel.kernel.message.KernelPayloadMessage
 import io.octopus.kernel.kernel.repository.{IQueueRepository, IRetainedRepository, IStoreCreateFactory, ISubscriptionsRepository}
 import io.octopus.kernel.kernel.router.IRouterRegister
-import io.octopus.kernel.kernel.security.{ACLFileParser, AcceptAllAuthenticator, DenyAllAuthorityController, IAuthenticator, IRWController, PermitAllAuthorityController, ReadWriteControl, ResourceAuthenticator}
-import io.octopus.kernel.kernel.server.{IServer, ServiceDetails}
-import io.octopus.kernel.kernel.session.DefaultSessionResistor
+import io.octopus.kernel.kernel.security._
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
-import io.octopus.kernel.kernel.transport.TransportBootstrap
 import io.octopus.kernel.utils.{ClassLoadUtils, HostUtils, ObjectUtils}
 import io.octopus.scala.broker.mqtt.persistence.MemoryQueue
 import io.octopus.utils.LoggingUtils
@@ -231,12 +227,12 @@ class Server extends IServer {
    * @param clientId the id of the sending integration.
    * @throws IllegalStateException if the integration is not yet started
    */
-  def internalPublish(msg: KernelMsg, clientId: String): Unit = {
+  def internalPublish(msg: KernelPayloadMessage, clientId: String): Unit = {
     if (!initialized) {
-      logger.error("Octopus is not started, internal message cannot be published. CId: {}, messageId: {}", clientId, msg.longId)
+      logger.error("Octopus is not started, internal message cannot be published. CId: {}, messageId: {}", clientId, msg.packageId())
       throw new IllegalStateException("Can't publish on a integration is not yet started")
     }
-    logger.trace("Internal publishing message CId: {}, messageId: {}", clientId, msg.longId)
+    logger.trace("Internal publishing message CId: {}, messageId: {}", clientId, msg.packageId())
 
     postOffice.internalPublish(msg)
     ReferenceCountUtil.safeRelease(msg.getPayload)

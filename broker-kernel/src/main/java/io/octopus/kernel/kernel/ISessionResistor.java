@@ -1,6 +1,6 @@
-package io.octopus.kernel.kernel.session;
+package io.octopus.kernel.kernel;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 
 import java.util.Set;
 
@@ -58,7 +58,7 @@ public interface ISessionResistor {
      * @param clientVersion clientVersion
      * @return return
      */
-    SessionCreationResult createOrReOpenSession(String clientId, String username, Boolean isClean, KernelMsg willMsg, int clientVersion);
+    SessionCreationResult createOrReOpenSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion);
 
 
 }

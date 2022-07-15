@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.interceptor;
 
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 
 /**
@@ -12,17 +12,17 @@ public interface PostOfficeNotifyInterceptor {
 
     String getIdentity();
 
-    void notifyTopicBeforePublished(KernelMsg msg);
+    void notifyTopicBeforePublished(KernelPayloadMessage msg);
 
-    void notifyTopicPublished(KernelMsg msg, String clientId, String username);
+    void notifyTopicPublished(KernelPayloadMessage msg, String clientId, String username);
 
     void notifyTopicSubscribed(Subscription sub, String username);
 
     void notifyTopicUnsubscribed(String topic, String clientId, String username);
 
-    void notifyMessageAcknowledged(KernelMsg msg);
+    void notifyMessageAcknowledged(KernelPayloadMessage msg);
 
-    void addInterceptHandler(KernelMsg interceptHandler);
+    void addInterceptHandler(KernelPayloadMessage interceptHandler);
 
-    void removeInterceptHandler(KernelMsg interceptHandler);
+    void removeInterceptHandler(KernelPayloadMessage interceptHandler);
 }

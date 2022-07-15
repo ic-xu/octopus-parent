@@ -5,6 +5,7 @@ import io.netty.handler.codec.DecoderResult;
 
 /**
  * Utility class with factory methods to create different types of MQTT messages.
+ * @author user
  */
 public final class MqttMessageFactory {
 

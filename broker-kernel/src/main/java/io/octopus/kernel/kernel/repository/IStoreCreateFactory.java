@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.repository;
 
-import io.octopus.kernel.kernel.lifecycle.Lifecycle;
+import io.octopus.kernel.kernel.Lifecycle;
 import io.octopus.kernel.kernel.router.IRouterRegister;
 
 /**

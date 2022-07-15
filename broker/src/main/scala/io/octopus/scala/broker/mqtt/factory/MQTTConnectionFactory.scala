@@ -1,11 +1,10 @@
 package io.octopus.scala.broker.mqtt.factory
 
 import io.netty.channel.Channel
+import io.octopus.kernel.kernel.{IPostOffice, ISessionResistor}
 import io.octopus.kernel.kernel.config.BrokerConfiguration
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
-import io.octopus.kernel.kernel.postoffice.IPostOffice
 import io.octopus.kernel.kernel.security.{IAuthenticator, ReadWriteControl}
-import io.octopus.kernel.kernel.session.ISessionResistor
 import io.octopus.scala.broker.mqtt.server.MQTTConnection
 
 /**

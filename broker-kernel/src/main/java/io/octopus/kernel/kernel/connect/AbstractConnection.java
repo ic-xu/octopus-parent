@@ -3,10 +3,10 @@ package io.octopus.kernel.kernel.connect;
 import io.netty.channel.Channel;
 import io.octopus.kernel.kernel.config.BrokerConfiguration;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelMessage;
 import io.octopus.kernel.kernel.security.IAuthenticator;
-import io.octopus.kernel.kernel.session.ISession;
-import io.octopus.kernel.kernel.session.ISessionResistor;
+import io.octopus.kernel.kernel.ISession;
+import io.octopus.kernel.kernel.ISessionResistor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public abstract class AbstractConnection {
      *
      * @param msg
      */
-    public abstract void sendIfWritableElseDrop(KernelMsg msg) ;
+    public abstract Boolean sendIfWritableElseDrop(KernelMessage msg) ;
 
 
 //    /**

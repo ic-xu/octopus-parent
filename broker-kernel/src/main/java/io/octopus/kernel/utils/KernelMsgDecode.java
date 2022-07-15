@@ -1,7 +1,7 @@
 package io.octopus.kernel.utils;
 
 import io.netty.buffer.ByteBuf;
-import io.octopus.kernel.kernel.message.KernelMsg;
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 
 /**
  * @author chenxu
@@ -10,13 +10,13 @@ import io.octopus.kernel.kernel.message.KernelMsg;
  */
 public class KernelMsgDecode {
 
-    public static KernelMsg decode(final byte[] body){
+    public static KernelPayloadMessage decode(final byte[] body){
         return null;
     }
 
 
 
-    public static KernelMsg decode(final ByteBuf body){
+    public static KernelPayloadMessage decode(final ByteBuf body){
         return null;
     }
 }

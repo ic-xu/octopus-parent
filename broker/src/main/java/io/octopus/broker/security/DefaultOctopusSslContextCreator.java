@@ -6,7 +6,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.octopus.kernel.kernel.config.IConfig;
 import io.octopus.kernel.kernel.contants.BrokerConstants;
-import io.octopus.kernel.kernel.ssl.ISslContextCreator;
+import io.octopus.kernel.kernel.security.ssl.ISslContextCreator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
