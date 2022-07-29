@@ -2,7 +2,7 @@ package io.store.persistence.disk;
 
 import io.netty.buffer.ByteBuf;
 import io.octopus.kernel.checkpoint.CheckPoint;
-import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;

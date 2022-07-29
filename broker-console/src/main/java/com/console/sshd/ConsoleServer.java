@@ -33,7 +33,7 @@ import java.util.*;
  * 26 Dec, 2014
  */
 public class ConsoleServer implements IServer {
-    private static final Logger logger = LoggerFactory.getLogger(ConsoleServer.class);
+    private final Logger logger = LoggerFactory.getLogger(ConsoleServer.class);
     //
     int port = 2222;
     SshServer sshServer;

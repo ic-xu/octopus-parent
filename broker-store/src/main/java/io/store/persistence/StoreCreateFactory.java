@@ -1,8 +1,8 @@
 package io.store.persistence;
 
 import io.netty.util.internal.ObjectUtil;
-import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.config.IConfig;
+import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.repository.IStoreCreateFactory;

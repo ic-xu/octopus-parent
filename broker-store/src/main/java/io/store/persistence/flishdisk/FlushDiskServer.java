@@ -1,7 +1,7 @@
 package io.store.persistence.flishdisk;
 
-import io.octopus.kernel.kernel.config.IConfig;
-import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.config.IConfig;
+import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.kernel.message.IMessage;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.utils.ObjectUtils;

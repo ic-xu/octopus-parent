@@ -54,7 +54,7 @@ public  class DefaultSession implements ISession {
     private KernelPayloadMessage willMsg;
 
     /**
-     * 索引队列
+     * 索引队列,专门存储消息索引
      */
     protected final Queue<MsgIndex> msgIndexQueue;
 
@@ -174,7 +174,8 @@ public  class DefaultSession implements ISession {
                 sendMsgAtQos2(storeMsg, directPublish);
                 break;
             case UDP:
-                logger.error("Not admissible");
+                // TODO 还没有实现UDP 推送消息
+                logger.error("Not admissible {}","UDP");
                 break;
             default:
                 logger.error("Not admissible");
@@ -365,6 +366,12 @@ public  class DefaultSession implements ISession {
         drainQueueToConnection();
     }
 
+
+    /**
+     * 存储队列，用来存储全局消息的存储，提供消息检索
+     * @param msgIndex 消息索引
+     * @param msg 消息
+     */
     // persistence msgIndex
     protected void offerMsgIndex(MsgIndex msgIndex, KernelPayloadMessage msg) {
         if (!ObjectUtils.isEmpty(msgIndex)) {

@@ -1,7 +1,7 @@
 package io.store.persistence.disk;
 
 import io.octopus.kernel.checkpoint.CheckPoint;
-import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.utils.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

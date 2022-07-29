@@ -2,7 +2,7 @@ package io.octopus.kernel.kernel;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
-import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.config.IConfig;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.security.IAuthenticator;
 import io.octopus.kernel.kernel.security.ReadWriteControl;

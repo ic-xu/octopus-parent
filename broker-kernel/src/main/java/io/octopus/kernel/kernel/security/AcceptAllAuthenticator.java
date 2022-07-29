@@ -1,7 +1,5 @@
 package io.octopus.kernel.kernel.security;
 
-import io.octopus.kernel.kernel.security.IAuthenticator;
-
 /**
  * @author user
  */

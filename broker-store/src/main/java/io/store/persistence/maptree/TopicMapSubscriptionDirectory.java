@@ -1,7 +1,7 @@
 package io.store.persistence.maptree;
 
 
-import io.octopus.kernel.kernel.contants.ConstantsTopics;
+import io.octopus.contants.ConstantsTopics;
 import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 import io.octopus.kernel.kernel.subscriptions.Subscription;

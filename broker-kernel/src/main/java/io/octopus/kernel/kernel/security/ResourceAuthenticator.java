@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.security;
 
-import io.octopus.kernel.kernel.config.IResourceLoader;
+import io.octopus.config.IResourceLoader;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

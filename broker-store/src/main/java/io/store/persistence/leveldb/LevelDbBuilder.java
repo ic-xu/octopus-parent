@@ -1,6 +1,6 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.config.IConfig;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.repository.IStoreCreateFactory;

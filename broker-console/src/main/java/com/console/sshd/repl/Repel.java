@@ -3,7 +3,6 @@ package com.console.sshd.repl;
 import com.console.sshd.ConsoleServer;
 import com.console.sshd.ascii.TerminalWriter;
 import com.console.sshd.command.ConsoleCommand;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
 
 import static java.util.Collections.emptyList;
 

@@ -2,7 +2,7 @@ package io.store.persistence.disk;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.octopus.kernel.kernel.contants.BrokerConstants;
+import io.octopus.contants.BrokerConstants;
 
 import java.io.File;
 import java.io.IOException;

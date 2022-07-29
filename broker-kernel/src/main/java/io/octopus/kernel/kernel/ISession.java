@@ -18,6 +18,7 @@ public interface ISession {
     /**
      * 接收到客户端发送过来的消息
      * @param msg msg；
+     * @return  boolean
      */
     boolean receiveMsg(KernelPayloadMessage msg);
 
@@ -25,27 +26,30 @@ public interface ISession {
 
     /**
      * 接收到对端发送过来的收到确认消息，Qos1的第二个包
-     * @param msg msg；
+     * @param ackPacketId msg；
+     * @return boolean
      */
     Boolean receivePubAcK(Short ackPacketId);
 
 
     /**
      * 发布收到
-     * @param msg msg；
+     * @param recPacketId msg；
      */
     void receivePubRec(Short recPacketId);
 
     /**
      * 发布释放
-     * @param msg msg；
+     * @param relPacketId msg；
+     * @return boolean
      */
     Boolean receivePubReL(Short relPacketId);
 
 
     /**
      * 发布完成
-     * @param msg msg；
+     * @param pubCompPacketId msg；
+     * @return b
      */
     Boolean receivePubComp(Short pubCompPacketId);
 
@@ -93,20 +97,20 @@ public interface ISession {
 
     /**
      * session of bound session`s username
-     * @return
+     * @return string
      */
     String getUsername();
 
     /**
      * session of bound session`s clientId
-     * @return
+     * @return string
      */
     String getClientId();
 
 
     /**
      * 获取订阅主题名集合
-     * @return
+     * @return set
      */
     Set<String> getSubTopicList();
 

@@ -2,7 +2,7 @@ package io.octopus.kernel.kernel;
 
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.octopus.kernel.exception.SessionCorruptedException;
-import io.octopus.kernel.kernel.config.IConfig;
+import io.octopus.config.IConfig;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;
