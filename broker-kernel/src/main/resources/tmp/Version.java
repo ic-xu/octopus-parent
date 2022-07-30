@@ -1,4 +1,4 @@
-package io.octopus;
+package io.octopus.kernel;
 
 public class Version {
 

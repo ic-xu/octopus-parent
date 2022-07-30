@@ -4,7 +4,7 @@
 //import io.handler.codec.mqtt.MqttPublishMessage;
 //import io.octopus.base.utils.HostUtils;
 //import io.netty.util.concurrent.DefaultThreadFactory;
-//import io.octopus.Version;
+//import io.octopus.kernel.Version;
 //import io.octopus.base.interfaces.*;
 //import io.octopus.broker.security.*;
 //import io.octopus.broker.session.MqttConnectionFactory;

@@ -56,115 +56,115 @@
 
         <!-- 检查常量（用static final修饰的字段）的名称是否遵守命名规约
        format: 定义全局常量的命名规则 -->
-        <module name="ConstantName">
-            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
-        </module>
-        <!-- 检查局部变量的名称是否遵守命名规约  format: 定义局部常量的命名规则 -->
-        <module name="LocalVariableName">
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
-        </module>
+<!--        <module name="ConstantName">-->
+<!--            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>-->
+<!--        </module>-->
+<!--        &lt;!&ndash; 检查局部变量的名称是否遵守命名规约  format: 定义局部常量的命名规则 &ndash;&gt;-->
+<!--        <module name="LocalVariableName">-->
+<!--            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>-->
+<!--        </module>-->
 
-        <!-- 检查成员变量（非静态字段）的名称是否遵守命名规约  format: 定义非静态成员变量的命名规则
-　　　　    applyToPublic: 是否适用于public的成员变量
-　　　　    applyToProtected: 是否适用于protected的成员变量
-　　　　    applyToPackage: 是否适用于package的成员变量
-　　　　    applyToPrivate: 是否适用于private的成员变量 -->
-        <module name="MemberName">
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
-            <property name="applyToPublic" value="true"/>
-            <property name="applyToProtected" value="true"/>
-            <property name="applyToPackage" value="true"/>
-            <property name="applyToPrivate" value="true"/>
-        </module>
-
-
-        <!--　检查方法名称是否遵守命名规约 format: 定义方法名的命名规则 -->
-        <module name="MethodName">
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
-        </module>
-
-        <!--　检查包名称是否遵守命名规约 format: 定义包名的命名规则 -->
-        <module name="PackageName">
-            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
-        </module>
-
-
-        <!--　检查参数名称是否遵守命名规约 format: 定义参数名的命名规则 -->
-        <module name="ParameterName">
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
-        </module>
-
-        <!--　检查静态变量（用static修饰，但没用final修饰的字段）的名称是否遵守命名规约
-                 format: 定义静态变量的命名规则 -->
-        <module name="StaticVariableName">
-            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
-        </module>
-
-        <!--　检查类的名称是否遵守命名规约
-                format: 定义类和接口的命名规则
-    　　　　    tokens: 定义规则适用的类型，例如：CLASS_DEF表示类，INTERFACE_DEF 表示接口 -->
-        <module name="TypeName">
-            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
-            <property name="tokens" value="CLASS_DEF,INTERFACE_DEF"/>
-        </module>
-
-        <!--　检查是否导入了指定的非法包 -->
-        <module name="IllegalImport"/>
-
-        <!--　检查是否存在多余的导入语句 -->
-        <module name="RedundantImport"/>
-
-        <!--　检查未使用的导入语句 -->
-        <module name="UnusedImports"/>
-
-        <!--　检查switch语句是否含有default子句 -->
-        <module name="MissingSwitchDefault"/>
-
-        <!--　检查switch语句中的default是否在所有的case分支之后 -->
-        <module name="DefaultComesLast"/>
-
-        <!--　检查循环控制变量是否被修改 -->
-<!--        <module name="ModifiedControlVariable"/>-->
-
-        <!--　限制if-else代码块的嵌套层数（默认值为1）-->
-        <module name="NestedIfDepth">
-            <property name="max" value="5"/>
-        </module>
-
-        <!--　限制try代码块的嵌套层数（默认值为1）-->
-        <module name="NestedTryDepth">
-            <property name="max" value="3"/>
-        </module>
-
-
-        <!-- 检查空的代码段 -->
-        <module name="EmptyStatement"/>
-
-
-        <!--　检查代码块的左花括号的放置位置
-         option: 定义左大括号'{'显示位置，eol在同一行显示，nl在下一行显示
-　　　　    maxLineLength: 大括号'{'所在行行最多容纳的字符数
-　　　　    tokens: 该属性适用的类型，例：CLASS_DEF,INTERFACE_DEF,METHOD_DEF,CTOR_DEF -->
-        <module name="LeftCurly">
-            <property name="option" value="eol"/>
-<!--            <property name="maxLineLength" value="100"/>-->
-            <property name="tokens" value="CLASS_DEF,INTERFACE_DEF,METHOD_DEF,CTOR_DEF"/>
-        </module>
-
-        <!-- =============空格检查============= -->
-        <!--　检查空的for循环初始化语句的填充符
-            option: 定义初始化语句中是否使用空格，例如：space表示使用空格，则for(int i = 0; i < 100; i++)
-            就是符合格式要求的，而for(int i=0; i<100;i++)就不符合要求　 -->
-
-<!--        <module name="EmptyForInitializerPad">-->
-<!--            <property name="option" value="space"/>-->
+<!--        &lt;!&ndash; 检查成员变量（非静态字段）的名称是否遵守命名规约  format: 定义非静态成员变量的命名规则-->
+<!--　　　　    applyToPublic: 是否适用于public的成员变量-->
+<!--　　　　    applyToProtected: 是否适用于protected的成员变量-->
+<!--　　　　    applyToPackage: 是否适用于package的成员变量-->
+<!--　　　　    applyToPrivate: 是否适用于private的成员变量 &ndash;&gt;-->
+<!--        <module name="MemberName">-->
+<!--            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>-->
+<!--            <property name="applyToPublic" value="true"/>-->
+<!--            <property name="applyToProtected" value="true"/>-->
+<!--            <property name="applyToPackage" value="true"/>-->
+<!--            <property name="applyToPrivate" value="true"/>-->
 <!--        </module>-->
 
 
-        <module name="FinalClass"/>
-        <module name="CovariantEquals"/>
-        <module name="EmptyStatement"/>
-        <module name="EqualsHashCode"/>
+<!--        &lt;!&ndash;　检查方法名称是否遵守命名规约 format: 定义方法名的命名规则 &ndash;&gt;-->
+<!--        <module name="MethodName">-->
+<!--            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>-->
+<!--        </module>-->
+
+<!--        &lt;!&ndash;　检查包名称是否遵守命名规约 format: 定义包名的命名规则 &ndash;&gt;-->
+<!--        <module name="PackageName">-->
+<!--            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>-->
+<!--        </module>-->
+
+
+<!--        &lt;!&ndash;　检查参数名称是否遵守命名规约 format: 定义参数名的命名规则 &ndash;&gt;-->
+<!--        <module name="ParameterName">-->
+<!--            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>-->
+<!--        </module>-->
+
+<!--        &lt;!&ndash;　检查静态变量（用static修饰，但没用final修饰的字段）的名称是否遵守命名规约-->
+<!--                 format: 定义静态变量的命名规则 &ndash;&gt;-->
+<!--        <module name="StaticVariableName">-->
+<!--            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>-->
+<!--        </module>-->
+
+<!--        &lt;!&ndash;　检查类的名称是否遵守命名规约-->
+<!--                format: 定义类和接口的命名规则-->
+<!--    　　　　    tokens: 定义规则适用的类型，例如：CLASS_DEF表示类，INTERFACE_DEF 表示接口 &ndash;&gt;-->
+<!--        <module name="TypeName">-->
+<!--            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>-->
+<!--            <property name="tokens" value="CLASS_DEF,INTERFACE_DEF"/>-->
+<!--        </module>-->
+
+<!--        &lt;!&ndash;　检查是否导入了指定的非法包 &ndash;&gt;-->
+<!--        <module name="IllegalImport"/>-->
+
+<!--        &lt;!&ndash;　检查是否存在多余的导入语句 &ndash;&gt;-->
+<!--        <module name="RedundantImport"/>-->
+
+<!--        &lt;!&ndash;　检查未使用的导入语句 &ndash;&gt;-->
+<!--        <module name="UnusedImports"/>-->
+
+<!--        &lt;!&ndash;　检查switch语句是否含有default子句 &ndash;&gt;-->
+<!--        <module name="MissingSwitchDefault"/>-->
+
+<!--        &lt;!&ndash;　检查switch语句中的default是否在所有的case分支之后 &ndash;&gt;-->
+<!--        <module name="DefaultComesLast"/>-->
+
+<!--        &lt;!&ndash;　检查循环控制变量是否被修改 &ndash;&gt;-->
+<!--&lt;!&ndash;        <module name="ModifiedControlVariable"/>&ndash;&gt;-->
+
+<!--        &lt;!&ndash;　限制if-else代码块的嵌套层数（默认值为1）&ndash;&gt;-->
+<!--        <module name="NestedIfDepth">-->
+<!--            <property name="max" value="5"/>-->
+<!--        </module>-->
+
+<!--        &lt;!&ndash;　限制try代码块的嵌套层数（默认值为1）&ndash;&gt;-->
+<!--        <module name="NestedTryDepth">-->
+<!--            <property name="max" value="3"/>-->
+<!--        </module>-->
+
+
+<!--        &lt;!&ndash; 检查空的代码段 &ndash;&gt;-->
+<!--        <module name="EmptyStatement"/>-->
+
+
+<!--        &lt;!&ndash;　检查代码块的左花括号的放置位置-->
+<!--         option: 定义左大括号'{'显示位置，eol在同一行显示，nl在下一行显示-->
+<!--　　　　    maxLineLength: 大括号'{'所在行行最多容纳的字符数-->
+<!--　　　　    tokens: 该属性适用的类型，例：CLASS_DEF,INTERFACE_DEF,METHOD_DEF,CTOR_DEF &ndash;&gt;-->
+<!--        <module name="LeftCurly">-->
+<!--            <property name="option" value="eol"/>-->
+<!--&lt;!&ndash;            <property name="maxLineLength" value="100"/>&ndash;&gt;-->
+<!--            <property name="tokens" value="CLASS_DEF,INTERFACE_DEF,METHOD_DEF,CTOR_DEF"/>-->
+<!--        </module>-->
+
+<!--        &lt;!&ndash; =============空格检查============= &ndash;&gt;-->
+<!--        &lt;!&ndash;　检查空的for循环初始化语句的填充符-->
+<!--            option: 定义初始化语句中是否使用空格，例如：space表示使用空格，则for(int i = 0; i < 100; i++)-->
+<!--            就是符合格式要求的，而for(int i=0; i<100;i++)就不符合要求　 &ndash;&gt;-->
+
+<!--&lt;!&ndash;        <module name="EmptyForInitializerPad">&ndash;&gt;-->
+<!--&lt;!&ndash;            <property name="option" value="space"/>&ndash;&gt;-->
+<!--&lt;!&ndash;        </module>&ndash;&gt;-->
+
+
+<!--        <module name="FinalClass"/>-->
+<!--        <module name="CovariantEquals"/>-->
+<!--        <module name="EmptyStatement"/>-->
+<!--        <module name="EqualsHashCode"/>-->
 
     </module>
 

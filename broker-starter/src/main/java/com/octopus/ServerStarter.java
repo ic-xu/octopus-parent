@@ -1,7 +1,7 @@
 package com.octopus;
 
 
-import io.octopus.Version;
+import io.octopus.kernel.Version;
 import io.octopus.kernel.kernel.*;
 import io.octopus.config.FileResourceLoader;
 import io.octopus.config.IConfig;

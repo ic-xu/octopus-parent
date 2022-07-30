@@ -2,9 +2,9 @@ package io.octopus.scala.broker.mqtt.server
 
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.DefaultThreadFactory
-import io.octopus.Version
 import io.octopus.config.{FileResourceLoader, IConfig, IResourceLoader, ResourceLoaderConfig}
 import io.octopus.contants.BrokerConstants
+import io.octopus.kernel.Version
 import io.octopus.kernel.kernel._
 import io.octopus.kernel.kernel.interceptor.{ConnectionNotifyInterceptor, PostOfficeNotifyInterceptor}
 import io.octopus.kernel.kernel.listener.LifecycleListener

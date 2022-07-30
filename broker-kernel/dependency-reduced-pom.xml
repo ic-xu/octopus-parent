@@ -17,9 +17,6 @@
           <target>${maven.compiler.target}</target>
           <encoding>UTF-8</encoding>
           <excludes>libs</excludes>
-          <compilerArgs>
-            <arg>--add-exports=java.base/sun.security.pkcs=ALL-UNNAMED</arg>
-          </compilerArgs>
           <compilerArguments>
             <verbose />
             <bootclasspath>${java.home}/lib/rt.jar:${java.home}/lib/jce.jar:${java.home}/lib/jsse.jar</bootclasspath>
@@ -151,6 +148,12 @@
       <version>2.0.46.Final</version>
       <classifier>linux-x86_64</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>netty-tcnative-classes</artifactId>
+          <groupId>io.netty</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -208,6 +211,6 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss:SSS</maven.build.timestamp.format>
     <version.template.file>src/main/resources/tmp/Version.java</version.template.file>
-    <version.file>src/main/java/io/octopus/Version.java</version.file>
+    <version.file>src/main/java/io/octopus/kernel/Version.java</version.file>
   </properties>
 </project>
