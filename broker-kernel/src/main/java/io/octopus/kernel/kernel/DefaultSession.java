@@ -124,7 +124,7 @@ public class DefaultSession implements ISession {
     protected Set<String> subTopicStr = new HashSet<>();
 
     /**
-     * qos2的消息的包装对象。
+     * qos2的消息的包装对象。目的是拆分qos1 和qos2的逻辑队列，不让qos2 的消息阻塞 qos1 的消息发送
      */
     private Qos2SenderWrapper qos2SenderMsg;
 
