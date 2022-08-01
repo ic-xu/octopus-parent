@@ -36,8 +36,15 @@ public class DefaultSessionResistor implements ISessionResistor {
 
     private final ConcurrentHashMap<String, Set<String>> usernamePools = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String, Queue<MsgIndex>> indexQueues = new ConcurrentHashMap<>();
+    /**
+     * 专门用来存储qos1 消息索引的
+     */
+    private final ConcurrentHashMap<String, Queue<MsgIndex>> qos1IndexQueues = new ConcurrentHashMap<>();
 
+    /**
+     * 专门用来存储qos2 消息索引的
+     */
+    private final ConcurrentHashMap<String, Queue<MsgIndex>> qos2IndexQueues = new ConcurrentHashMap<>();
     private Integer receiveMaximum = 10;
     private IPostOffice postOffice = null;
 
@@ -122,7 +129,7 @@ public class DefaultSessionResistor implements ISessionResistor {
             result = new SessionCreationResult(newSession, CreationModeEnum.DROP_EXISTING, true);
         }
         if (!newClean) { //把消息分发给新的session
-            newSession.addInflictWindow(oldSession.getInflictWindow());
+            newSession.addQos1InflictWindow(oldSession.getQos1InflictWindow());
         }
         var published = false;
         if (result.getMode() != CreationModeEnum.REOPEN_EXISTING) {
@@ -147,9 +154,10 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @return session
      */
     public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
-        Queue<MsgIndex> sessionIndexQueue = indexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
+        Queue<MsgIndex> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
+        Queue<MsgIndex> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
         DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean,
-                willMsg, sessionIndexQueue, receiveMaximum, clientVersion, msgQueue, drainQueueService);
+                willMsg, qos1Queue, qos2Queue,receiveMaximum, clientVersion, msgQueue, drainQueueService);
         newSession.markConnecting();
         return newSession;
     }
@@ -160,7 +168,7 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @param clientId client
      */
     private void dropQueuesForClient(String clientId) {
-        indexQueues.remove(clientId);
+        qos1IndexQueues.remove(clientId);
     }
 
     private void reactivateSubscriptions(DefaultSession session, String username) {

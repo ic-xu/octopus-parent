@@ -1,12 +1,8 @@
 package io.octopus.kernel.kernel;
 
-import io.netty.buffer.ByteBufHolder;
 import io.netty.util.ReferenceCountUtil;
 import io.octopus.kernel.kernel.connect.AbstractConnection;
-import io.octopus.kernel.kernel.message.InFlightPacket;
-import io.octopus.kernel.kernel.message.KernelMessage;
-import io.octopus.kernel.kernel.message.KernelPayloadMessage;
-import io.octopus.kernel.kernel.message.PubEnum;
+import io.octopus.kernel.kernel.message.*;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.queue.SearchData;
@@ -30,7 +26,7 @@ import java.util.stream.Collectors;
  * @version 1
  * @date 2022/6/21 18:51
  */
-public  class DefaultSession implements ISession {
+public class DefaultSession implements ISession {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultSession.class);
     /**
@@ -54,9 +50,14 @@ public  class DefaultSession implements ISession {
     private KernelPayloadMessage willMsg;
 
     /**
-     * 索引队列,专门存储消息索引
+     * 索引队列,专门存储 qos1 的消息索引
      */
-    protected final Queue<MsgIndex> msgIndexQueue;
+    protected final Queue<MsgIndex> qos1Queue;
+
+    /**
+     * 索引队列,专门存储 qos2的消息索引
+     */
+    protected final Queue<MsgIndex> qos2Queue;
 
     /**
      * 发送中窗口大小
@@ -81,7 +82,7 @@ public  class DefaultSession implements ISession {
     /**
      * 发送中的窗口
      */
-    protected final Map<Short, KernelPayloadMessage> inflictWindow = new ConcurrentHashMap<>();
+    protected final Map<Short, KernelPayloadMessage> qos1InflictWindow = new ConcurrentHashMap<>();
 
     /**
      * 消息发送时间，超过这个时间之后就判定为超
@@ -122,9 +123,14 @@ public  class DefaultSession implements ISession {
      */
     protected Set<String> subTopicStr = new HashSet<>();
 
+    /**
+     * qos2的消息的包装对象。
+     */
+    private Qos2SenderWrapper qos2SenderMsg;
+
     public DefaultSession(IPostOffice postOffice, String userName,
                           String clientId, Boolean clean, KernelPayloadMessage willMsg,
-                          Queue<MsgIndex> msgIndexQueue,
+                          Queue<MsgIndex> qos1Queue, Queue<MsgIndex> qos2Queue,
                           Integer inflictWindowSize, Integer clientVersion,
                           MsgQueue<KernelPayloadMessage> msgQueue,
                           ExecutorService drainQueueService) {
@@ -134,7 +140,8 @@ public  class DefaultSession implements ISession {
         this.clientId = clientId;
         this.clean = clean;
         this.willMsg = willMsg;
-        this.msgIndexQueue = msgIndexQueue;
+        this.qos1Queue = qos1Queue;
+        this.qos2Queue = qos2Queue;
         this.inflictWindowSize = inflictWindowSize;
         this.clientVersion = clientVersion;
         this.msgQueue = msgQueue;
@@ -175,7 +182,7 @@ public  class DefaultSession implements ISession {
                 break;
             case UDP:
                 // TODO 还没有实现UDP 推送消息
-                logger.error("Not admissible {}","UDP");
+                logger.error("Not admissible {}", "UDP");
                 break;
             default:
                 logger.error("Not admissible");
@@ -194,9 +201,9 @@ public  class DefaultSession implements ISession {
         }
         KernelPayloadMessage msg = storeMsg.getMsg();
 
-        if (canSkipQueue() || directPublish) {
+        if (canSkipQos1Queue() || directPublish) {
             inflictSlots.decrementAndGet();
-            KernelPayloadMessage old = inflictWindow.put(msg.packageId(), msg.retain());
+            KernelPayloadMessage old = qos1InflictWindow.put(msg.packageId(), msg.retain());
             // If there already was something, release it.
             if (old != null) {
                 try {
@@ -215,8 +222,10 @@ public  class DefaultSession implements ISession {
             // TODO drainQueueToConnection();?
             //            drainQueueToConnection();
         } else {
-            offerMsgIndex(storeMsg.getIndex(), msg);
-            drainQueueToConnection();
+            qos1Queue.offer(storeMsg.getIndex());
+//            offerMsgIndex(storeMsg.getIndex(), msg);
+
+//            drainQueueToConnection();
         }
     }
 
@@ -224,7 +233,7 @@ public  class DefaultSession implements ISession {
     public Boolean receivePubAcK(Short ackPacketId) {
         // TODO remain to invoke in somehow m_interceptor.notifyMessageAcknowledged
         logger.trace("received a pubAck packetId is {} ", ackPacketId);
-        KernelPayloadMessage removeMsg = inflictWindow.remove(ackPacketId);
+        KernelPayloadMessage removeMsg = qos1InflictWindow.remove(ackPacketId);
         inflictTimeouts.remove(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
         if (removeMsg == null) {
             logger.trace("Received a pubAck with not matching packetId  {} ", ackPacketId);
@@ -232,7 +241,7 @@ public  class DefaultSession implements ISession {
             ReferenceCountUtil.safeRelease(removeMsg);
             inflictSlots.incrementAndGet();
         }
-        drainQueueToConnection();
+        drainQos1QueueToConnection();
         return true;
     }
 
@@ -244,42 +253,31 @@ public  class DefaultSession implements ISession {
         }
         KernelPayloadMessage msg = storeMsg.getMsg();
 
-        if (canSkipQueue() || directPublish) {
-            inflictSlots.decrementAndGet();
-            KernelPayloadMessage old = inflictWindow.put(msg.packageId(), msg.retain());
-            // If there already was something, release it.
-            if (old != null) {
-                try {
-                    ReferenceCountUtil.safeRelease(old);
-                } catch (Exception ignored) {
-                }
-                inflictSlots.incrementAndGet();
-            }
+        if (canSkipQos2Queue() || directPublish) {
+            ///缓存qos2消息
+            qos2SenderMsg = new Qos2SenderWrapper(msg);
+            ///添加超时检测
             inflictTimeouts.add(new InFlightPacket(msg.packageId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+            ///发送消息
             connection.sendIfWritableElseDrop(msg);
             logger.debug("Write direct to the peer, inflict slots: {}", inflictSlots.get());
             if (inflictSlots.get() == 0) {
                 connection.flush();
             }
-            // TODO drainQueueToConnection();?
-            //            drainQueueToConnection();
         } else {
-            offerMsgIndex(storeMsg.getIndex(), msg);
-            drainQueueToConnection();
+            qos2Queue.offer(storeMsg.getIndex());
+//            drainQueueToConnection();
         }
     }
 
     @Override
     public void receivePubRec(Short recPacketId) {
         logger.trace("received a pubAck packetId is {} ", recPacketId);
-        KernelPayloadMessage exitMsg = inflictWindow.get(recPacketId);
-        if (null != exitMsg) {
-            inflictTimeouts.remove(new InFlightPacket(recPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
-            inflictTimeouts.add(new InFlightPacket(recPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
-            connection.sendIfWritableElseDrop(new KernelMessage(recPacketId, PubEnum.PUB_REL));
-        } else {
-            logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
+        if (null != qos2SenderMsg && Objects.equals(qos2SenderMsg.getQos2Msg().packageId(), recPacketId)) {
+            qos2SenderMsg.setReceiverPubRec(true);
+
         }
+        logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
     }
 
     @Override
@@ -290,47 +288,34 @@ public  class DefaultSession implements ISession {
 
     @Override
     public Boolean receivePubComp(Short pubCompPacketId) {
+        if (null != qos2SenderMsg && Objects.equals(qos2SenderMsg.getQos2Msg().packageId(), pubCompPacketId)) {
+            qos2SenderMsg = null;
+            return true;
+        }
         return false;
     }
 
+    /**
+     * 判断是否可以跳过qos2的消息队列
+     *
+     * @return boolean
+     */
+    private Boolean canSkipQos2Queue() {
+        return qos2Queue.isEmpty() && connected() && connection.getChannel().isWritable() && qos2SenderMsg == null;
+    }
 
-    public void pubAckReceived(Short ackPacketId) {
-        // TODO remain to invoke in somehow m_interceptor.notifyMessageAcknowledged
-        logger.trace("received a pubAck packetId is {} ", ackPacketId);
-        KernelPayloadMessage removeMsg = inflictWindow.remove(ackPacketId);
-        inflictTimeouts.remove(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
-        if (removeMsg == null) {
-            logger.trace("Received a pubAck with not matching packetId  {} ", ackPacketId);
-        } else if (removeMsg instanceof ByteBufHolder) {
-            ReferenceCountUtil.safeRelease(removeMsg);
-            inflictSlots.incrementAndGet();
-        }
-        drainQueueToConnection();
+    /**
+     * 判断是否可以跳过qos1的消息队列
+     *
+     * @return boolean
+     */
+    private Boolean canSkipQos1Queue() {
+        return qos1Queue.isEmpty() && inflictSlots.get() > 0 && connected() && connection.getChannel().isWritable();
     }
 
 
-    //TODO
-    public Boolean pubRecReceived(Short ackPacketId) {
-        logger.trace("received a pubAck packetId is {} ", ackPacketId);
-        KernelPayloadMessage exitMsg = inflictWindow.get(ackPacketId);
-        if (null != exitMsg) {
-            inflictTimeouts.remove(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
-            inflictTimeouts.add(new InFlightPacket(ackPacketId, DefaultSession.FLIGHT_BEFORE_RESEND_MS));
-            return true;
-        } else {
-            logger.trace("Received a pubAck with not matching packetId  {} ", ackPacketId);
-            return false;
-        }
-    }
-
-
-    private Boolean canSkipQueue() {
-        return msgIndexQueue.isEmpty() && inflictSlots.get() > 0 && connected() && connection.getChannel().isWritable();
-    }
-
-
-    public Map<Short, KernelPayloadMessage> getInflictWindow() {
-        return inflictWindow;
+    public Map<Short, KernelPayloadMessage> getQos1InflictWindow() {
+        return qos1InflictWindow;
     }
 
 
@@ -343,14 +328,13 @@ public  class DefaultSession implements ISession {
     public List<Subscription> subscriptions(List<Subscription> subscriptions) {
         List<Subscription> subscriptionsResult = postOffice.subscriptions(this, subscriptions);
         List<String> subscriptionStr = subscriptionsResult.stream()
-                .map(subscription -> subscription.topicFilter.getValue())
-                .collect(Collectors.toList());
+                .map(subscription -> subscription.topicFilter.getValue()).toList();
         this.subTopicStr.addAll(subscriptionStr);
         return subscriptionsResult;
     }
 
 
-    public void addInflictWindow(Map<Short, KernelPayloadMessage> inflictWindows) {
+    public void addQos1InflictWindow(Map<Short, KernelPayloadMessage> inflictWindows) {
         inflictWindows.forEach((packetId, msg) -> {
             inflictTimeouts.add(new InFlightPacket(packetId, FLIGHT_BEFORE_RESEND_MS));
             inflictSlots.decrementAndGet();
@@ -359,35 +343,28 @@ public  class DefaultSession implements ISession {
 
 
     public void writeAbilityChanged() {
-        drainQueueToConnection();
+        flushAllQueuedMessages();
     }
-
-    public void flushAllQueuedMessages() {
-        drainQueueToConnection();
-    }
-
 
     /**
-     * 存储队列，用来存储全局消息的存储，提供消息检索
-     * @param msgIndex 消息索引
-     * @param msg 消息
+     * 推送队列中的消息
      */
-    // persistence msgIndex
-    protected void offerMsgIndex(MsgIndex msgIndex, KernelPayloadMessage msg) {
-        if (!ObjectUtils.isEmpty(msgIndex)) {
-            msgIndexQueue.offer(msgIndex);
-        }
-        //    ReferenceCountUtil.safeRelease(publishMsg)
+    public void flushAllQueuedMessages() {
+        // 清理Qos1 的消息
+        drainQos1QueueToConnection();
+
+        // 清理QOS2的消息
+        drainQos2QueueToConnection();
     }
 
 
     /**
      * doDrainQueueToConnection
      */
-    protected void doDrainQueueToConnection() {
+    protected void doDrainQos1QueueToConnection() {
         reSendInflictNotAcked();
-        while (!msgIndexQueue.isEmpty() && inflictHasSlotsAndConnectionIsUp()) {
-            MsgIndex msgIndex = msgIndexQueue.poll();
+        while (!qos1Queue.isEmpty() && inflictHasSlotsAndConnectionIsUp()) {
+            MsgIndex msgIndex = qos1Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
 
                 //notify: there must not use foreach(), there queue not implement
@@ -447,14 +424,14 @@ public  class DefaultSession implements ISession {
 
     public void reSendInflictNotAcked() {
         if (this.inflictTimeouts.size() == 0) {
-            inflictWindow.clear();
+            qos1InflictWindow.clear();
         } else {
             List<InFlightPacket> expired = new ArrayList<>(inflictWindowSize);
             this.inflictTimeouts.drainTo(expired);
             debugLogPacketIds(expired);
             expired.forEach(notAckPacketId -> {
-                if (inflictWindow.containsKey(notAckPacketId.getPacketId())) {
-                    KernelPayloadMessage message = inflictWindow.remove(notAckPacketId.getPacketId());
+                if (qos1InflictWindow.containsKey(notAckPacketId.getPacketId())) {
+                    KernelPayloadMessage message = qos1InflictWindow.remove(notAckPacketId.getPacketId());
                     if (null == message) { // Already acked...
                         logger.warn("Already acked...");
                     } else {
@@ -513,17 +490,48 @@ public  class DefaultSession implements ISession {
 
 
     // consume the queue
-    protected void drainQueueToConnection() {
-        drainQueueService.submit(new DrainQueueWorker());
+    protected void drainQos1QueueToConnection() {
+        drainQueueService.submit(new DrainQos1QueueWorker());
+    }
+
+    /**
+     * 推送qos2消息
+     */
+    protected void drainQos2QueueToConnection() {
+        if (null == qos2SenderMsg) {
+            MsgIndex msgIndex = qos2Queue.poll();
+            if (!ObjectUtils.isEmpty(msgIndex)) {
+                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                KernelPayloadMessage msg = storeMsg.getMsg();
+
+                /// 一直找到正常的消息为止
+                while (null == msg) {
+                    storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                    msg = storeMsg.getMsg();
+                }
+
+                ///缓存qos2消息
+                qos2SenderMsg = new Qos2SenderWrapper(msg);
+                ///添加超时检测
+                inflictTimeouts.add(new InFlightPacket(msg.packageId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+                ///发送消息
+                connection.sendIfWritableElseDrop(msg);
+                logger.debug("Write direct to the peer, inflict slots: {}", inflictSlots.get());
+                if (inflictSlots.get() == 0) {
+                    connection.flush();
+                }
+
+            }
+        }
     }
 
 
-    class DrainQueueWorker implements Runnable {
+    class DrainQos1QueueWorker implements Runnable {
 
         @Override
         public void run() {
             try {
-                doDrainQueueToConnection();
+                doDrainQos1QueueToConnection();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -623,27 +631,30 @@ public  class DefaultSession implements ISession {
 
 
     public Optional<InetSocketAddress> remoteAddress() {
-        if (connected()){
+        if (connected()) {
             return Optional.of(connection.remoteAddress());
-        }else {
-            return  Optional.empty();
+        } else {
+            return Optional.empty();
         }
     }
 
 
     public void cleanSessionQueue() {
-        while (msgIndexQueue.size() > 0) {
-            msgIndexQueue.poll();
+        while (qos1Queue.size() > 0) {
+            qos1Queue.poll();
+        }
+
+        while (qos2Queue.size() > 0) {
+            qos2Queue.poll();
         }
     }
-
 
 
     public void markConnecting() {
         assignState(SessionStatus.DISCONNECTED, SessionStatus.CONNECTING);
     }
 
-    public Boolean completeConnection(){
+    public Boolean completeConnection() {
         return assignState(SessionStatus.CONNECTING, SessionStatus.CONNECTED);
     }
 
@@ -655,10 +666,11 @@ public  class DefaultSession implements ISession {
     }
 
 
-    public void  sendQueuedMessagesWhileOffline() {
+    public void sendQueuedMessagesWhileOffline() {
         logger.trace("Republishing all saved messages for session {} on CId={}", this, this.clientId);
-        drainQueueToConnection();
+        flushAllQueuedMessages();
     }
+
     @Override
     public String toString() {
         return "Session {" + "clientId='" + clientId + '\'' + ", clean=" + clean + ", status=" + status + ", inflightSlots=" + inflictSlots + '}';

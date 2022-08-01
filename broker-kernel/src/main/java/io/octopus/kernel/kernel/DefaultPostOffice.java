@@ -128,7 +128,7 @@ public class DefaultPostOffice implements IPostOffice {
         String clientID = fromSession.getClientId();
         topics.forEach(t -> {
             Topic topic = new Topic(t);
-            Boolean validTopic = topic.isValid();
+            boolean validTopic = topic.isValid();
             if (!validTopic) { // close the connection, not valid topicFilter is a protocol violation
                 fromSession.handleConnectionLost();
                 LOGGER.warn("Topic filter is not valid. CId={}, topics: {}, offending topic filter: {}", clientID, topics, topic);
@@ -222,20 +222,16 @@ public class DefaultPostOffice implements IPostOffice {
      * @param msg   msg
      * @param topic topic
      */
-    private Boolean processRetainMsg(KernelPayloadMessage msg, Topic topic) {
+    private void processRetainMsg(KernelPayloadMessage msg, Topic topic) {
         if (msg.isRetain()) {
             if (!msg.getPayload().isReadable()) {
                 retainedRepository.cleanRetained(topic);
-                return true;
             } else if (msg.getQos() == MsgQos.AT_MOST_ONCE) {
                 retainedRepository.cleanRetained(topic);
-                return true;
             } else {
                 // before wasn't stored
-                return retainedRepository.retain(topic, msg);
+                retainedRepository.retain(topic, msg);
             }
-        } else {
-            return true;
         }
     }
 

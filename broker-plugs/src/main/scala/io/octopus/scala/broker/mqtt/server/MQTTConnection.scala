@@ -156,7 +156,9 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
             connected.set(true)
             // OK continue with sending queued messages and normal flow
             //notify other offline
-            if (result.getMode eq CreationModeEnum.REOPEN_EXISTING) result.getSession.sendQueuedMessagesWhileOffline()
+            if (result.getMode eq CreationModeEnum.REOPEN_EXISTING) {
+              result.getSession.sendQueuedMessagesWhileOffline()
+            }
             initializeKeepAliveTimeout(channel, msg, clientIdUsed)
 
             //  set InflictReSender
@@ -246,7 +248,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    */
   private def processPubAck(message: MqttMessage): Unit = {
     val shortId = message.variableHeader.asInstanceOf[MqttMessageIdVariableHeader].messageId
-    boundSession.pubAckReceived(shortId.toShort)
+    boundSession.receivePubAcK(shortId.toShort)
   }
 
 
@@ -256,11 +258,10 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    * @param msg msg
    */
   private def processPubRec(msg: MqttPubRecMessage): Unit = {
-    val result = boundSession.pubRecReceived(msg.variableHeader().messageId().toShort)
-    if (result) {
-      val mqttPubRelMessage = MqttMessageBuilders.pubRel().packetId(msg.variableHeader().messageId().toShort).build()
-      sendIfWritableElseDrop(mqttPubRelMessage)
-    }
+    boundSession.receivePubRec(msg.variableHeader().messageId().toShort)
+    val mqttPubRelMessage = MqttMessageBuilders.pubRel().packetId(msg.variableHeader().messageId().toShort).build()
+    sendIfWritableElseDrop(mqttPubRelMessage)
+
   }
 
 
@@ -293,8 +294,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
   private def processPubComp(message: MqttMessage): Unit = {
 
     val messageID = message.variableHeader.asInstanceOf[MqttMessageIdVariableHeader].messageId
-
-
+    boundSession.receivePubComp(messageID.toShort)
   }
 
   private def processSubscribe(message: MqttSubscribeMessage): Unit = {
@@ -608,7 +608,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
         if (logger.isDebugEnabled) logger.debug("OUT {} on channel {}", msg.getTopic, channel)
         mqttMsg = MqttMessageBuilders.publish()
           .messageId(msg.packageId().intValue())
-          .payload(msg.getPayload.retain) .topicName(msg.getTopic)
+          .payload(msg.getPayload.retain).topicName(msg.getTopic)
           .qos(MqttQoS.valueOf(msg.getQos.getValue)).retained(false).build()
       case _ =>
         kernelMsg.getPubEnum match {
