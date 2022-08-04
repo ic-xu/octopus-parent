@@ -8,7 +8,7 @@ import java.util.Objects;
  */
 public class KernelMessage {
 
-    private final short packageId;
+    private  short packageId;
 
 
 
@@ -27,10 +27,9 @@ public class KernelMessage {
     }
 
 
-
-
-
-
+    public void setPackageId(short packageId) {
+        this.packageId = packageId;
+    }
 
     public Short packageId() {
         return packageId;

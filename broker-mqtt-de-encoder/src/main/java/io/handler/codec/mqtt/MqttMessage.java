@@ -98,7 +98,7 @@ public class MqttMessage {
                 .append('[')
                 .append("fixedHeader=").append(fixedHeader() != null ? fixedHeader().toString() : "")
                 .append(", variableHeader=").append(variableHeader() != null ? variableHeader.toString() : "")
-                .append(", payload=").append(payload() != null ? payload.toString() : "")
+//                .append(", payload=").append(payload() != null ? payload.toString() : "")
                 .append(']')
                 .toString();
     }

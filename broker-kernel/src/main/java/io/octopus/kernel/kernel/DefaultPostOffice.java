@@ -66,7 +66,7 @@ public class DefaultPostOffice implements IPostOffice {
         // 如果消息需要存储，则调用存储组件
         processRetainMsg(msg, topic);
 
-        return null;
+        return true;
     }
 
     @Override
@@ -252,7 +252,7 @@ public class DefaultPostOffice implements IPostOffice {
                     ByteBuf payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload());
                     KernelPayloadMessage message = new KernelPayloadMessage((short) 2, qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
                     // sendRetainedPublishOnSessionAtQos
-                    targetSession.sendMsgAtQos(new StoreMsg<KernelPayloadMessage>(message, null), false);
+                    targetSession.sendMsgAtQos(new StoreMsg<>(message, null), false);
                     //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
                 });
             }

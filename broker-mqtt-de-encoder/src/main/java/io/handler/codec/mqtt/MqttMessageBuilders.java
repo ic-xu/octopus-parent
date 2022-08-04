@@ -358,10 +358,10 @@ public final class MqttMessageBuilders {
 
         public MqttMessage build() {
             MqttFixedHeader mqttFixedHeader =
-                    new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_MOST_ONCE, false, 0);
+                    new MqttFixedHeader(MqttMessageType.PUBREL, false, MqttQoS.AT_LEAST_ONCE, false, 0);
             MqttMessageIdVariableHeader mqttMessageIdVariableHeader =
                     new MqttMessageIdVariableHeader(packetId);
-            return new MqttMessage(mqttFixedHeader, mqttMessageIdVariableHeader);
+           return MqttMessageFactory.newMessage(mqttFixedHeader,mqttMessageIdVariableHeader,null);
         }
     }
 
@@ -380,7 +380,7 @@ public final class MqttMessageBuilders {
                     new MqttFixedHeader(MqttMessageType.PUBCOMP, false, MqttQoS.AT_MOST_ONCE, false, 0);
             MqttMessageIdVariableHeader mqttMessageIdVariableHeader =
                     new MqttMessageIdVariableHeader(packetId);
-            return new MqttMessage(mqttFixedHeader, mqttMessageIdVariableHeader);
+            return MqttMessageFactory.newMessage(mqttFixedHeader,mqttMessageIdVariableHeader,null);
         }
     }
 
@@ -399,7 +399,7 @@ public final class MqttMessageBuilders {
                     new MqttFixedHeader(MqttMessageType.PUBREC, false, MqttQoS.AT_MOST_ONCE, false, 0);
             MqttMessageIdVariableHeader mqttMessageIdVariableHeader =
                     new MqttMessageIdVariableHeader(packetId);
-            return new MqttMessage(mqttFixedHeader, mqttMessageIdVariableHeader);
+            return MqttMessageFactory.newMessage(mqttFixedHeader,mqttMessageIdVariableHeader,null);
         }
     }
 

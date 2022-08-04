@@ -46,6 +46,10 @@ class MQTTTransport extends BaseTransport {
                             ports: java.util.Map[String, Integer], authenticator: IAuthenticator,
                             interceptors: java.util.List[ConnectionNotifyInterceptor], readWriteControl: ReadWriteControl): Unit = {
 
+    /**
+     * 初始化参数
+     */
+    initialize(bossGroup, workerGroup, channelClass, config, msgDispatcher, sessionRegistry, ports, authenticator, interceptors, readWriteControl)
 
     val sslCtxCreator: ISslContextCreator = new DefaultOctopusSslContextCreator(config)
 
@@ -53,10 +57,7 @@ class MQTTTransport extends BaseTransport {
     val connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessionRegistry, msgDispatcher, interceptors, readWriteControl)
 
     mqttHandler = new NettyMQTTHandler(connectionFactory)
-    /**
-     * 初始化参数
-     */
-    initialize(bossGroup, workerGroup,channelClass, config, msgDispatcher, sessionRegistry, ports, authenticator, interceptors, readWriteControl)
+
 
     /*
     * init SSL netty server

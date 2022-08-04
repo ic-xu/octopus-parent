@@ -232,7 +232,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
         //        if (null != old) {
         //          ReferenceCountUtil.safeRelease(old)
         //        }
-        publishMsgQos2 = Option.apply(msg.retain())
+        publishMsgQos2 = Option.apply(msg.copy())
         sendPublishReceived(packageId)
 
       case _ =>
@@ -259,9 +259,8 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    */
   private def processPubRec(msg: MqttPubRecMessage): Unit = {
     boundSession.receivePubRec(msg.variableHeader().messageId().toShort)
-    val mqttPubRelMessage = MqttMessageBuilders.pubRel().packetId(msg.variableHeader().messageId().toShort).build()
-    sendIfWritableElseDrop(mqttPubRelMessage)
-
+//    val mqttPubRelMessage = MqttMessageBuilders.pubRel().packetId(msg.variableHeader().messageId().toShort).build()
+//    sendIfWritableElseDrop(mqttPubRelMessage)
   }
 
 
@@ -559,7 +558,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
   /**
    * 发送MQTT消息，私有方法，只能在当前对象中调用
    *
-   * @param message 消息
+   * @param mqttMsg 消息
    */
   private def sendIfWritableElseDrop(mqttMsg: MqttMessage): Unit = {
     logger.trace("write mqttMessage packageId is {}", mqttMsg.variableHeader)
@@ -573,15 +572,16 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
       channelFuture.addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
     }
     else {
+      //如果不能写，就释放消息
       ReferenceCountUtil.release(mqttMsg.payload)
-      // TODO 这里应该处理阻塞的消息
     }
   }
 
 
   def readCompleted(): Unit = {
     logger.debug("readCompleted client CId: {}, channel: {}", getClientId, channel)
-    if (getClientId != null) { // TODO drain all messages in target's session in-flight message queue
+    if (getClientId != null) {
+      /// drain all messages in target's session in-flight message queue
       boundSession.flushAllQueuedMessages()
     }
   }
@@ -630,13 +630,13 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
         channelFuture = channel.write(mqttMsg)
       }
       channelFuture.addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
-      true
-    }
-    else {
-      ReferenceCountUtil.release(mqttMsg.payload)
+     true
+    }else {
+      ReferenceCountUtil.safeRelease(mqttMsg.payload)
       false
     }
   }
+
 
 
   /**

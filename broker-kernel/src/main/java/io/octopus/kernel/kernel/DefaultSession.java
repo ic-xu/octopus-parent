@@ -19,7 +19,6 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * @author chenxu
@@ -169,28 +168,21 @@ public class DefaultSession implements ISession {
      */
     @Override
     public void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+        storeMsg.getMsg().setPackageId(nextPacketId());
         switch (storeMsg.getMsg().getQos()) {
-            case AT_MOST_ONCE:
-                sendMsgAtQos0(storeMsg, directPublish);
-                break;
+            case AT_MOST_ONCE -> sendMsgAtQos0(storeMsg);
             //这里发布的时候两个使用同样的处理方法即可
-            case AT_LEAST_ONCE:
-                sendMsgAtQos1(storeMsg, directPublish);
-                break;
-            case EXACTLY_ONCE:
-                sendMsgAtQos2(storeMsg, directPublish);
-                break;
-            case UDP:
-                // TODO 还没有实现UDP 推送消息
-                logger.error("Not admissible {}", "UDP");
-                break;
-            default:
-                logger.error("Not admissible");
+            case AT_LEAST_ONCE -> sendMsgAtQos1(storeMsg, directPublish);
+            case EXACTLY_ONCE -> sendMsgAtQos2(storeMsg, directPublish);
+
+            //TODO UDP 的转发逻辑还没有实现
+            case UDP -> logger.error("Not admissible {}", "UDP");
+            default -> logger.error("Not admissible");
         }
     }
 
 
-    private void sendMsgAtQos0(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos0(StoreMsg<KernelPayloadMessage> storeMsg) {
         connection.sendIfWritableElseDrop(storeMsg.getMsg());
     }
 
@@ -219,13 +211,8 @@ public class DefaultSession implements ISession {
             if (inflictSlots.get() == 0) {
                 connection.flush();
             }
-            // TODO drainQueueToConnection();?
-            //            drainQueueToConnection();
         } else {
             qos1Queue.offer(storeMsg.getIndex());
-//            offerMsgIndex(storeMsg.getIndex(), msg);
-
-//            drainQueueToConnection();
         }
     }
 
@@ -275,9 +262,12 @@ public class DefaultSession implements ISession {
         logger.trace("received a pubAck packetId is {} ", recPacketId);
         if (null != qos2SenderMsg && Objects.equals(qos2SenderMsg.getQos2Msg().packageId(), recPacketId)) {
             qos2SenderMsg.setReceiverPubRec(true);
-
+            //发送收到消息
+            KernelMessage kernelMessage = new KernelMessage(recPacketId,PubEnum.PUB_REL);
+            connection.sendIfWritableElseDrop(kernelMessage);
+        }else{
+            logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
         }
-        logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
     }
 
     @Override
@@ -367,52 +357,9 @@ public class DefaultSession implements ISession {
             MsgIndex msgIndex = qos1Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
 
-                //notify: there must not use foreach(), there queue not implement
-                //  @Override
-                //    public Iterator<MsgIndex> iterator() {
-                //        return null;
-                //    }
-                //and inflictHasSlotsAndConnectionIsUp is true
-                StoreMsg<KernelPayloadMessage> msg = msgQueue.poll(new SearchData(clientId, msgIndex));
-                //        if (!ObjectUtils.isEmpty(msg)) {
-                //          msg.getMsg match {
-                //            case mqttMessage: MqttMessage =>
-                //              mqttMessage.fixedHeader.messageType match {
-                //                case MqttMessageType.CUSTOMER =>
-                //                case MqttMessageType.PUBLISH =>
-                //                  val msgPub = mqttMessage.asInstanceOf[MqttPublishMessage]
-                //                  msgPub.variableHeader.setPacketId(nextPacketId)
-                //                  if (msgPub.fixedHeader.qosLevel ne MqttQoS.AT_MOST_ONCE) {
-                //                    inflictSlots.decrementAndGet
-                //                    val old = inflictWindow.put(msgPub.variableHeader.packetId, msgPub.copy)
-                //                    ReferenceCountUtil.safeRelease(old)
-                //                    inflictSlots.incrementAndGet
-                //                    inflictTimeouts.add(new InFlightPacket(msgPub.variableHeader.packetId, FLIGHT_BEFORE_RESEND_MS))
-                //                  }
-                //                  connection.sendPublish(msgPub)
-                //
-                //                case MqttMessageType.PUBACK =>
-                //                case MqttMessageType.PUBREC =>
-                //                case MqttMessageType.PUBREL =>
-                //                case MqttMessageType.PUBCOMP =>
-                //                  val variableHeader = mqttMessage.variableHeader.asInstanceOf[MqttMessageIdVariableHeader]
-                //                  inflictSlots.decrementAndGet
-                //                  val packetId = variableHeader.messageId
-                //                  val old = inflictWindow.put(packetId, mqttMessage)
-                //                  ReferenceCountUtil.safeRelease(old)
-                //                  inflictSlots.incrementAndGet
-                //                  inflictTimeouts.add(new InFlightPacket(packetId, FLIGHT_BEFORE_RESEND_MS))
-                //                  val pubRel = connection.pubRel(packetId)
-                //                  connection.sendIfWritableElseDrop(pubRel)
-                //
-                //                case _ =>
-                //
-                //              }
-                //
-                //            case _ => logger.trace("error msg {}", msg)
-                //          }
-                //          ReferenceCountUtil.safeRelease(msg.getMsg)
-                //        }
+                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                /// 重新开发发送 qos1 的消息。
+                sendMsgAtQos1(storeMsg, false);
             }
         }
     }
@@ -435,16 +382,6 @@ public class DefaultSession implements ISession {
                     if (null == message) { // Already acked...
                         logger.warn("Already acked...");
                     } else {
-
-                      /*  message match {
-                            //            case pubRelMsg: MqttPubRelMessage => connection.sendIfWritableElseDrop(pubRelMsg)
-                            //            case publishMsg: MqttPublishMessage =>
-                            //              //                        MqttPublishMessage publishMsg = publishNotRetainedDuplicated(notAckPacketId, msg.getTopic(), msg.getPublishingQos(), msg.getPayload());
-                            //              inflictTimeouts.add(new InFlightPacket(notAckPacketId.getPacketId, FLIGHT_BEFORE_RESEND_MS))
-                            //              connection.sendPublish(publishMsg)
-                            case _ =>logger.warn("Already acked...")
-                        }*/
-
                     }
                     ReferenceCountUtil.safeRelease(message);
                 }
@@ -520,7 +457,6 @@ public class DefaultSession implements ISession {
                 if (inflictSlots.get() == 0) {
                     connection.flush();
                 }
-
             }
         }
     }
@@ -545,12 +481,12 @@ public class DefaultSession implements ISession {
         return userName;
     }
 
-    public int nextPacketId() {
+    public Short nextPacketId() {
         if (lastPacketId.incrementAndGet() > 65535) {
             lastPacketId.set(2);
             return 2;
         }
-        return lastPacketId.get();
+        return (short)lastPacketId.get();
     }
 
 
@@ -583,11 +519,11 @@ public class DefaultSession implements ISession {
     }
 
     /**
-     * uddate the status of session
+     * update the status of session
      *
      * @param expected expected Status
      * @param newState new Status
-     * @return
+     * @return boolean
      */
     public Boolean assignState(SessionStatus expected, SessionStatus newState) {
         return status.compareAndSet(expected, newState);
