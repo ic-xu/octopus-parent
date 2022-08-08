@@ -51,12 +51,12 @@ public class DefaultSession implements ISession {
     /**
      * 索引队列,专门存储 qos1 的消息索引
      */
-    protected final Queue<MsgIndex> qos1Queue;
+    protected final Queue<KernelPayloadMessage> qos1Queue;
 
     /**
      * 索引队列,专门存储 qos2的消息索引
      */
-    protected final Queue<MsgIndex> qos2Queue;
+    protected final Queue<KernelPayloadMessage> qos2Queue;
 
     /**
      * 发送中窗口大小
@@ -68,10 +68,10 @@ public class DefaultSession implements ISession {
      */
     protected final Integer clientVersion;
 
-    /**
-     * 消息队列大小
-     */
-    protected final MsgQueue<KernelPayloadMessage> msgQueue;
+//    /**
+//     * 消息队列大小
+//     */
+//    protected final MsgQueue<KernelPayloadMessage> msgQueue;
 
     /**
      * 清除队列服务
@@ -129,9 +129,8 @@ public class DefaultSession implements ISession {
 
     public DefaultSession(IPostOffice postOffice, String userName,
                           String clientId, Boolean clean, KernelPayloadMessage willMsg,
-                          Queue<MsgIndex> qos1Queue, Queue<MsgIndex> qos2Queue,
+                          Queue<KernelPayloadMessage> qos1Queue, Queue<KernelPayloadMessage> qos2Queue,
                           Integer inflictWindowSize, Integer clientVersion,
-                          MsgQueue<KernelPayloadMessage> msgQueue,
                           ExecutorService drainQueueService) {
 
         this.postOffice = postOffice;
@@ -143,7 +142,6 @@ public class DefaultSession implements ISession {
         this.qos2Queue = qos2Queue;
         this.inflictWindowSize = inflictWindowSize;
         this.clientVersion = clientVersion;
-        this.msgQueue = msgQueue;
         this.drainQueueService = drainQueueService;
         inflictSlots = new AtomicInteger(inflictWindowSize); // this should be configurable
     }
@@ -163,17 +161,17 @@ public class DefaultSession implements ISession {
     /**
      * 发送消息，postOffice 调用这个消息发送相关消息
      *
-     * @param storeMsg      msg
+     * @param kernelMsg      msg
      * @param directPublish Send directly
      */
     @Override
-    public void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
-        storeMsg.getMsg().setPackageId(nextPacketId());
-        switch (storeMsg.getMsg().getQos()) {
-            case AT_MOST_ONCE -> sendMsgAtQos0(storeMsg);
+    public void sendMsgAtQos(KernelPayloadMessage kernelMsg, Boolean directPublish) {
+        kernelMsg.setPackageId(nextPacketId());
+        switch (kernelMsg.getQos()) {
+            case AT_MOST_ONCE -> sendMsgAtQos0(kernelMsg);
             //这里发布的时候两个使用同样的处理方法即可
-            case AT_LEAST_ONCE -> sendMsgAtQos1(storeMsg, directPublish);
-            case EXACTLY_ONCE -> sendMsgAtQos2(storeMsg, directPublish);
+            case AT_LEAST_ONCE -> sendMsgAtQos1(kernelMsg, directPublish);
+            case EXACTLY_ONCE -> sendMsgAtQos2(kernelMsg, directPublish);
 
             //TODO UDP 的转发逻辑还没有实现
             case UDP -> logger.error("Not admissible {}", "UDP");
@@ -182,16 +180,16 @@ public class DefaultSession implements ISession {
     }
 
 
-    private void sendMsgAtQos0(StoreMsg<KernelPayloadMessage> storeMsg) {
-        connection.sendIfWritableElseDrop(storeMsg.getMsg());
+    private void sendMsgAtQos0(KernelPayloadMessage kernelMsg) {
+        connection.sendIfWritableElseDrop(kernelMsg);
     }
 
 
-    private void sendMsgAtQos1(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos1(KernelPayloadMessage msg, Boolean directPublish) {
         if (!connected() && isClean()) { //pushing messages to disconnected not clean session
             return;
         }
-        KernelPayloadMessage msg = storeMsg.getMsg();
+//        KernelPayloadMessage msg = storeMsg.getMsg();
 
         if (canSkipQos1Queue() || directPublish) {
             inflictSlots.decrementAndGet();
@@ -212,7 +210,7 @@ public class DefaultSession implements ISession {
                 connection.flush();
             }
         } else {
-            qos1Queue.offer(storeMsg.getIndex());
+            qos1Queue.offer(msg);
         }
     }
 
@@ -233,12 +231,12 @@ public class DefaultSession implements ISession {
     }
 
 
-    private void sendMsgAtQos2(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos2(KernelPayloadMessage msg, Boolean directPublish) {
         if (!connected() && isClean()) {
             //pushing messages to disconnected not clean session
             return;
         }
-        KernelPayloadMessage msg = storeMsg.getMsg();
+//        KernelPayloadMessage msg = storeMsg.getMsg();
 
         if (canSkipQos2Queue() || directPublish) {
             ///缓存qos2消息
@@ -252,7 +250,7 @@ public class DefaultSession implements ISession {
                 connection.flush();
             }
         } else {
-            qos2Queue.offer(storeMsg.getIndex());
+            qos2Queue.offer(msg);
 //            drainQueueToConnection();
         }
     }
@@ -354,12 +352,11 @@ public class DefaultSession implements ISession {
     protected void doDrainQos1QueueToConnection() {
         reSendInflictNotAcked();
         while (!qos1Queue.isEmpty() && inflictHasSlotsAndConnectionIsUp()) {
-            MsgIndex msgIndex = qos1Queue.poll();
-            if (!ObjectUtils.isEmpty(msgIndex)) {
-
-                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+            KernelPayloadMessage kernelPayloadMessage = qos1Queue.poll();
+            if (!ObjectUtils.isEmpty(kernelPayloadMessage)) {
+//                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
                 /// 重新开发发送 qos1 的消息。
-                sendMsgAtQos1(storeMsg, false);
+                sendMsgAtQos1(kernelPayloadMessage, false);
             }
         }
     }
@@ -436,16 +433,16 @@ public class DefaultSession implements ISession {
      */
     protected void drainQos2QueueToConnection() {
         if (null == qos2SenderMsg) {
-            MsgIndex msgIndex = qos2Queue.poll();
-            if (!ObjectUtils.isEmpty(msgIndex)) {
-                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
-                KernelPayloadMessage msg = storeMsg.getMsg();
+            KernelPayloadMessage msg = qos2Queue.poll();
+            if (!ObjectUtils.isEmpty(msg)) {
+//                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+//                KernelPayloadMessage msg = storeMsg.getMsg();
 
                 /// 一直找到正常的消息为止
-                while (null == msg) {
-                    storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
-                    msg = storeMsg.getMsg();
-                }
+//                while (null == msg) {
+//                    storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+//                    msg = storeMsg.getMsg();
+//                }
 
                 ///缓存qos2消息
                 qos2SenderMsg = new Qos2SenderWrapper(msg);

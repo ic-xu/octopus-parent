@@ -4,7 +4,6 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import io.octopus.kernel.exception.SessionCorruptedException;
 import io.octopus.config.IConfig;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
-import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import io.octopus.kernel.kernel.security.IRWController;
@@ -39,16 +38,14 @@ public class DefaultSessionResistor implements ISessionResistor {
     /**
      * 专门用来存储qos1 消息索引的
      */
-    private final ConcurrentHashMap<String, Queue<MsgIndex>> qos1IndexQueues = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Queue<KernelPayloadMessage>> qos1IndexQueues = new ConcurrentHashMap<>();
 
     /**
      * 专门用来存储qos2 消息索引的
      */
-    private final ConcurrentHashMap<String, Queue<MsgIndex>> qos2IndexQueues = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Queue<KernelPayloadMessage>> qos2IndexQueues = new ConcurrentHashMap<>();
     private Integer receiveMaximum = 10;
     private IPostOffice postOffice = null;
-
-    private final MsgQueue<KernelPayloadMessage> msgQueue;
 
     private final ExecutorService drainQueueService = new ThreadPoolExecutor(4, 4,
             0L, TimeUnit.MILLISECONDS,
@@ -59,11 +56,10 @@ public class DefaultSessionResistor implements ISessionResistor {
 
 
     public DefaultSessionResistor(IQueueRepository queueRepository, IRWController authorizator,
-                                  IConfig config, MsgQueue<KernelPayloadMessage> msgQueue) {
+                                  IConfig config) {
         this.queueRepository = queueRepository;
         this.authorizator = authorizator;
         this.config = config;
-        this.msgQueue = msgQueue;
     }
 
     public void setPostOffice(IPostOffice postOffice) {
@@ -154,10 +150,10 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @return session
      */
     public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
-        Queue<MsgIndex> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
-        Queue<MsgIndex> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
+        Queue<KernelPayloadMessage> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
+        Queue<KernelPayloadMessage> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
         DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean,
-                willMsg, qos1Queue, qos2Queue,receiveMaximum, clientVersion, msgQueue, drainQueueService);
+                willMsg, qos1Queue, qos2Queue,receiveMaximum, clientVersion, drainQueueService);
         newSession.markConnecting();
         return newSession;
     }

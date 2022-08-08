@@ -58,7 +58,7 @@ public interface ISession {
      * @param storeMsg 消息
      * @param directPublish 是否直接发送
      */
-    void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish);
+    void sendMsgAtQos(KernelPayloadMessage kernelMsg, Boolean directPublish);
 
     /**
      * 绑定UDP端点

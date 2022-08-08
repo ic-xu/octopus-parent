@@ -58,10 +58,10 @@ public class DefaultPostOffice implements IPostOffice {
         }
 
         //处理刷盘逻辑
-        StoreMsg<KernelPayloadMessage> storeMsg = processFlushDisk(msg);
+//        StoreMsg<KernelPayloadMessage> storeMsg = processFlushDisk(msg);
 
         // 分发消息
-        publish2Subscribers(topic, false, storeMsg);
+        publish2Subscribers(topic, false, msg);
 
         // 如果消息需要存储，则调用存储组件
         processRetainMsg(msg, topic);
@@ -74,7 +74,7 @@ public class DefaultPostOffice implements IPostOffice {
         MsgQos qos = msg.getQos();
         Topic topic = new Topic(msg.getTopic());
         LOGGER.debug("Sending internal PUBLISH message Topic={}, qos={}", topic, qos);
-        publish2Subscribers(topic, false, new StoreMsg<>(msg, null));
+        publish2Subscribers(topic, false,msg);
         if (!msg.isRetain()) {
             return;
         }
@@ -179,17 +179,17 @@ public class DefaultPostOffice implements IPostOffice {
     /**
      * publish2Subscribers: publish message to ever one client
      *
-     * @param storeMsg           msg
+     * @param msg           msg
      * @param topic              topic
      * @param isNeedBroadcasting if send message to other broker
      */
-    private void publish2Subscribers(Topic topic, Boolean isNeedBroadcasting, StoreMsg<KernelPayloadMessage> storeMsg) {
+    private void publish2Subscribers(Topic topic, Boolean isNeedBroadcasting, KernelPayloadMessage msg) {
         Set<Subscription> topicMatchingSubscriptions = subscriptionsDirectory.matchQosSharpening(topic, isNeedBroadcasting);
         topicMatchingSubscriptions.forEach(sub -> {
             //处理 qos,按照两个中比较小的一个发送
-            MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(sub, storeMsg.getMsg().getQos());
+            MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(sub, msg.getQos());
             // 发送某一个
-            publish2ClientId(sub.getClientId(), sub.getTopicFilter().getValue(), qos, storeMsg, false);
+            publish2ClientId(sub.getClientId(), sub.getTopicFilter().getValue(), qos, msg, false);
         });
     }
 
@@ -200,15 +200,15 @@ public class DefaultPostOffice implements IPostOffice {
      * @param clientId  clientId
      * @param topicName topic
      * @param qos       qos
-     * @param storeMsg  storeMsg
+     * @param kernelMsg  storeMsg
      */
-    private void publish2ClientId(String clientId, String topicName, MsgQos qos, StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+    private void publish2ClientId(String clientId, String topicName, MsgQos qos, KernelPayloadMessage kernelMsg, Boolean directPublish) {
         ISession targetSession = this.sessionResistor.retrieve(clientId);
         boolean isSessionPresent = targetSession != null;
         if (isSessionPresent) {
             LOGGER.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}", clientId, topicName, qos);
             // we need to retain because duplicate only copy r/w indexes and don't retain() causing refCnt = 0
-            targetSession.sendMsgAtQos(storeMsg, directPublish);
+            targetSession.sendMsgAtQos(kernelMsg, directPublish);
         } else { // If we are, the subscriber disconnected after the subscriptions tree selected that session as a
             // destination.
             LOGGER.debug("PUBLISH to not yet present session. CId: {}, topicFilter: {}, qos: {}", clientId, topicName, qos);
@@ -252,7 +252,7 @@ public class DefaultPostOffice implements IPostOffice {
                     ByteBuf payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload());
                     KernelPayloadMessage message = new KernelPayloadMessage((short) 2, qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
                     // sendRetainedPublishOnSessionAtQos
-                    targetSession.sendMsgAtQos(new StoreMsg<>(message, null), false);
+                    targetSession.sendMsgAtQos(message, false);
                     //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
                 });
             }

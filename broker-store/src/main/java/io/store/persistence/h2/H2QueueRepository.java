@@ -1,6 +1,7 @@
 
 package io.store.persistence.h2;
 
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import org.h2.mvstore.MVStore;
@@ -18,7 +19,7 @@ public class H2QueueRepository implements IQueueRepository {
     }
 
     @Override
-    public Queue<MsgIndex> createQueue(String cli, boolean clean) {
+    public Queue<KernelPayloadMessage> createQueue(String cli, boolean clean) {
 //        if (!clean) {
         return new H2PersistentQueue<>(mvStore, cli);
 //        }
@@ -31,8 +32,8 @@ public class H2QueueRepository implements IQueueRepository {
     }
 
     @Override
-    public Map<String, Queue<MsgIndex>> listAllQueues() {
-        Map<String, Queue<MsgIndex>> result = new HashMap<>();
+    public Map<String, Queue<KernelPayloadMessage>> listAllQueues() {
+        Map<String, Queue<KernelPayloadMessage>> result = new HashMap<>();
         mvStore.getMapNames().stream()
                 .filter(name -> name.startsWith("queue_") && !name.endsWith("_meta"))
                 .map(name -> name.substring("queue_".length()))

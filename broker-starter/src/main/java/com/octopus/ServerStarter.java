@@ -229,7 +229,7 @@ public class ServerStarter {
         ReadWriteControl readWriteControl = new ReadWriteControl(this.irwController);
         CheckPointServer checkPointServer = new CheckPointServer();
 
-        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryQueue(config, checkPointServer));
+        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config);
         IPostOffice postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.postOfficeNotifyInterceptors, readWriteControl);
         sessionResistor.setPostOffice(postOffice);
 

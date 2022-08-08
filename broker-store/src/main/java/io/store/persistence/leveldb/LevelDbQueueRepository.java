@@ -1,11 +1,14 @@
 package io.store.persistence.leveldb;
 
+import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.MsgIndex;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.store.persistence.memory.MemoryQueueRepository;
 import org.iq80.leveldb.DB;
 
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author chenxu
@@ -20,12 +23,13 @@ public class LevelDbQueueRepository implements IQueueRepository {
     }
 
     @Override
-    public Queue<MsgIndex> createQueue(String cli, boolean clean) {
-        return new LevelDBPersistentQueue(db,cli);
+    public Queue<KernelPayloadMessage> createQueue(String cli, boolean clean) {
+//        return new LevelDBPersistentQueue(db,cli);
+        return new ConcurrentLinkedQueue<>();
     }
 
     @Override
-    public Map<String, Queue<MsgIndex>> listAllQueues() {
+    public Map<String, Queue<KernelPayloadMessage>> listAllQueues() {
         return null;
     }
 

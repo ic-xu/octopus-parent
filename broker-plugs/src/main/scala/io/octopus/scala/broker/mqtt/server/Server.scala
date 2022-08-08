@@ -114,7 +114,7 @@ class Server extends IServer {
     val readWriteControl: ReadWriteControl = new ReadWriteControl(this.reController)
     this.checkPointServer = new CheckPointServer
 
-    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryQueue(config, checkPointServer))
+    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config)
     postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.kernelInterceptor.asJava, readWriteControl)
     sessionResistor.setPostOffice(postOffice)
 
