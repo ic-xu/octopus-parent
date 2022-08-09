@@ -33,14 +33,12 @@ class NettyMQTTHandler(connectionFactory: MQTTConnectionFactory) extends Channel
 
   override def channelRead(ctx: ChannelHandlerContext, message: Object): Unit = {
     var msg:MqttMessage = null
-    try msg = MqttMessageUtils.validateMessage(message)
-    catch {
-      case e:Exception =>
-        return
-    }
     //从channel 中获取相应的连接对象，通过连接对象处理相应的事务
     val mqttConnection: MQTTConnection = NettyUtils.getMQTTConnection2Channel(ctx.channel).asInstanceOf[MQTTConnection]
-    try mqttConnection.handleMessage(msg)
+    try {
+      msg = MqttMessageUtils.validateMessage(message)
+      mqttConnection.handleMessage(msg)
+    }
     catch {
       case ex: Throwable =>
         //ctx.fireExceptionCaught(ex);

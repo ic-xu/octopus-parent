@@ -144,7 +144,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
       override def operationComplete(future: ChannelFuture): Unit = {
         if (future.isSuccess) {
           logger.trace("CONN - ACK sent, channel: {}", channel)
-          if (!result.getSession.completeConnection) { //change the session status
+          if (!boundSession.completeConnection) { //change the session status
             // send DISCONNECT and close the channel
             val disconnectMsg = MqttMessageBuilders.disconnect.build
             channel.writeAndFlush(disconnectMsg).addListener(ChannelFutureListener.CLOSE)
