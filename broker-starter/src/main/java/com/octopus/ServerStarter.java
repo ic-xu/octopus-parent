@@ -19,7 +19,6 @@ import io.octopus.kernel.kernel.security.*;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 import io.octopus.kernel.utils.ClassLoadUtils;
 import io.octopus.kernel.utils.ObjectUtils;
-import io.octopus.scala.broker.mqtt.persistence.MemoryQueue;
 import io.store.persistence.StoreCreateFactory;
 import io.store.persistence.disk.CheckPointServer;
 import io.store.persistence.maptree.TopicMapSubscriptionDirectory;
