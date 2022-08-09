@@ -1,6 +1,6 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.Index;
 import io.octopus.kernel.utils.ByteUtils;
 import io.octopus.kernel.utils.ObjectUtils;
 import org.iq80.leveldb.DB;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author chenxu
  * @version 1
  */
-public class LevelDBPersistentQueue extends AbstractQueue<MsgIndex> {
+public class LevelDBPersistentQueue extends AbstractQueue<Index> {
 
 
     private final AtomicLong queueHead;
@@ -101,7 +101,7 @@ public class LevelDBPersistentQueue extends AbstractQueue<MsgIndex> {
 
 
     @Override
-    public Iterator<MsgIndex> iterator() {
+    public Iterator<Index> iterator() {
         return null;
     }
 
@@ -111,14 +111,14 @@ public class LevelDBPersistentQueue extends AbstractQueue<MsgIndex> {
     }
 
     @Override
-    public boolean offer(MsgIndex index) {
+    public boolean offer(Index index) {
         db.put(getQueueHeadKey(), index.toBytes(), writeOptions);
         size.incrementAndGet();
         return true;
     }
 
     @Override
-    public MsgIndex poll() {
+    public Index poll() {
         if (queueTail.get() >= queueHead.get()) {
             return null;
         }
@@ -130,11 +130,11 @@ public class LevelDBPersistentQueue extends AbstractQueue<MsgIndex> {
             db.delete(queueKey);
         }
         size.decrementAndGet();
-        return MsgIndex.fromBytes(bytes);
+        return Index.fromBytes(bytes);
     }
 
     @Override
-    public MsgIndex peek() {
+    public Index peek() {
         if (queueTail.get() >= queueHead.get()) {
             return null;
         }
@@ -142,7 +142,7 @@ public class LevelDBPersistentQueue extends AbstractQueue<MsgIndex> {
         if (ObjectUtils.isEmpty(bytes)) {
             return null;
         }
-        return MsgIndex.fromBytes(bytes);
+        return Index.fromBytes(bytes);
     }
 
 

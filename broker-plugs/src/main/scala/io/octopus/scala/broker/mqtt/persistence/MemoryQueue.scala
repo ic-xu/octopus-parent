@@ -3,7 +3,7 @@ package io.octopus.scala.broker.mqtt.persistence
 import io.octopus.config.IConfig
 import io.octopus.kernel.checkpoint.CheckPoint
 import io.octopus.kernel.kernel.message.KernelPayloadMessage
-import io.octopus.kernel.kernel.queue.{MsgIndex, MsgQueue, SearchData, StoreMsg}
+import io.octopus.kernel.kernel.queue.{Index, MsgQueue, SearchData, StoreMsg}
 import io.store.persistence.disk.CheckPointServer
 
 import java.util
@@ -40,7 +40,7 @@ class MemoryQueue(config: IConfig, checkPointServer: CheckPointServer) extends M
     val msgIndex = index.incrementAndGet()
     globalMap.put(msgIndex, kernelMsg)
     tail += 1
-    new StoreMsg[KernelPayloadMessage](kernelMsg, new MsgIndex(msgIndex, 0, 0))
+    new StoreMsg[KernelPayloadMessage](kernelMsg, new Index(msgIndex, 0, 0))
   }
 
 
@@ -56,7 +56,7 @@ class MemoryQueue(config: IConfig, checkPointServer: CheckPointServer) extends M
       return null
     }
     val msg = globalMap.remove(hader)
-    new StoreMsg[KernelPayloadMessage](msg, new MsgIndex(hader, 0, 0))
+    new StoreMsg[KernelPayloadMessage](msg, new Index(hader, 0, 0))
   }
 
   override def size(): Int = globalMap.size()

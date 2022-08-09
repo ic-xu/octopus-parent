@@ -13,7 +13,7 @@ import io.octopus.kernel.utils.ByteUtils;
  * @author chenxu
  * @version 1
  */
-public class MsgIndex {
+public class Index {
 
     /**
      * offset  is the starting position of the message  in the whole queue system
@@ -31,7 +31,7 @@ public class MsgIndex {
     private final int queueName;
 
 
-    public MsgIndex(Long offset, Integer size, int queueName) {
+    public Index(Long offset, Integer size, int queueName) {
         ObjectUtil.checkNotNull(queueName, "queueName not null");
         ObjectUtil.checkInRange(offset, 0L, Long.MAX_VALUE, "offset must >= 0 && <= Long.MAX_VALUE");
         this.offset = offset;
@@ -52,12 +52,11 @@ public class MsgIndex {
     }
 
 
-    public static MsgIndex fromBytes(byte[] bytes) {
+    public static Index fromBytes(byte[] bytes) {
         final long offset = ByteUtils.bytes2Long(bytes, 0);
         final int size = ByteUtils.byteArray2Int(bytes, 8);
-//        final String queueName = new String(Arrays.copyOfRange(bytes, 12, bytes.length), StandardCharsets.UTF_8);
         final int queueName = ByteUtils.byteArray2Short(bytes, 12);
-        return new MsgIndex(offset, size, queueName);
+        return new Index(offset, size, queueName);
     }
 
     public byte[] toBytes() {
@@ -68,16 +67,6 @@ public class MsgIndex {
         return bytes;
     }
 
-//    public byte[] toBytes() {
-//        byte[] payload = this.queueName.getBytes(StandardCharsets.UTF_8);
-//        byte[] offsetBytes = ByteUtils.long2Bytes(offset);
-//        byte[] sizeBytes = ByteUtils.int2byte(size);
-//        byte[] bytes = new byte[payload.length + offsetBytes.length + sizeBytes.length];
-//        System.arraycopy(offsetBytes, 0, bytes, 0, 8);
-//        System.arraycopy(sizeBytes, 0, bytes, 8, 4);
-//        System.arraycopy(payload, 0, bytes, 12, payload.length);
-//        return bytes;
-//    }
 
     @Override
     public String toString() {

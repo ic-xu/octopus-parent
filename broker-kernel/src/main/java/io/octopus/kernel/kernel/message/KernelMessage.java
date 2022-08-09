@@ -42,10 +42,9 @@ public class KernelMessage {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof KernelPayloadMessage)) {
+        if (!(o instanceof KernelMessage kernelMsg)) {
             return false;
         }
-        KernelMessage kernelMsg = (KernelMessage) o;
         return Objects.equals(packageId(), kernelMsg.packageId())
                 && Objects.equals(kernelMsg.pubEnum,this.pubEnum);
     }

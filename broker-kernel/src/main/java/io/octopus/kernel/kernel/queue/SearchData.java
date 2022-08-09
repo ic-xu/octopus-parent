@@ -22,17 +22,17 @@ public class SearchData {
     /**
      * message index
      */
-    private final MsgIndex index;
+    private final Index index;
 
 
-    public SearchData(String clientId, MsgIndex index) {
+    public SearchData(String clientId, Index index) {
         this.clientId = clientId;
         ObjectUtil.checkNotNull(index,"index not null");
         this.index = index;
     }
 
 
-    public MsgIndex getIndex() {
+    public Index getIndex() {
         return index;
     }
 

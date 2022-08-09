@@ -3,7 +3,7 @@ package io.octopus.kernel.kernel;
 import io.netty.util.ReferenceCountUtil;
 import io.octopus.kernel.kernel.connect.AbstractConnection;
 import io.octopus.kernel.kernel.message.*;
-import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.Index;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.queue.SearchData;
 import io.octopus.kernel.kernel.queue.StoreMsg;
@@ -51,12 +51,12 @@ public class DefaultSession implements ISession {
     /**
      * 索引队列,专门存储 qos1 的消息索引
      */
-    protected final Queue<MsgIndex> qos1Queue;
+    protected final Queue<Index> qos1Queue;
 
     /**
      * 索引队列,专门存储 qos2的消息索引
      */
-    protected final Queue<MsgIndex> qos2Queue;
+    protected final Queue<Index> qos2Queue;
 
     /**
      * 发送中窗口大小
@@ -129,7 +129,7 @@ public class DefaultSession implements ISession {
 
     public DefaultSession(IPostOffice postOffice, String userName,
                           String clientId, Boolean clean, KernelPayloadMessage willMsg,
-                          Queue<MsgIndex> qos1Queue, Queue<MsgIndex> qos2Queue,
+                          Queue<Index> qos1Queue, Queue<Index> qos2Queue,
                           Integer inflictWindowSize, Integer clientVersion,
                           MsgQueue<KernelPayloadMessage> msgQueue,
                           ExecutorService drainQueueService) {
@@ -354,7 +354,7 @@ public class DefaultSession implements ISession {
     protected void doDrainQos1QueueToConnection() {
         reSendInflictNotAcked();
         while (!qos1Queue.isEmpty() && inflictHasSlotsAndConnectionIsUp()) {
-            MsgIndex msgIndex = qos1Queue.poll();
+            Index msgIndex = qos1Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
 
                 StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
@@ -436,7 +436,7 @@ public class DefaultSession implements ISession {
      */
     protected void drainQos2QueueToConnection() {
         if (null == qos2SenderMsg) {
-            MsgIndex msgIndex = qos2Queue.poll();
+            Index msgIndex = qos2Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
                 StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
                 KernelPayloadMessage msg = storeMsg.getMsg();

@@ -1,6 +1,6 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.Index;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import org.iq80.leveldb.DB;
 
@@ -20,12 +20,12 @@ public class LevelDbQueueRepository implements IQueueRepository {
     }
 
     @Override
-    public Queue<MsgIndex> createQueue(String cli, boolean clean) {
+    public Queue<Index> createQueue(String cli, boolean clean) {
         return new LevelDBPersistentQueue(db,cli);
     }
 
     @Override
-    public Map<String, Queue<MsgIndex>> listAllQueues() {
+    public Map<String, Queue<Index>> listAllQueues() {
         return null;
     }
 

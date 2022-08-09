@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.octopus.kernel.checkpoint.CheckPoint;
 import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
-import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.Index;
 import io.octopus.kernel.kernel.queue.MsgQueue;
 import io.octopus.kernel.kernel.queue.SearchData;
 import io.octopus.kernel.kernel.queue.StoreMsg;
@@ -98,7 +98,7 @@ public class ConcurrentFileQueue implements MsgQueue<KernelPayloadMessage> {
             size.incrementAndGet();
             lastMessageSize = messageArray.length + 4;
             checkPointServer.saveCheckPoint(wrapperCheckPoint(), false);
-            return new StoreMsg<>(msg, new MsgIndex(currentWritePosition.getAndAdd(lastMessageSize), messageArray.length, threadNum));
+            return new StoreMsg<>(msg, new Index(currentWritePosition.getAndAdd(lastMessageSize), messageArray.length, threadNum));
         } catch (IOException e) {
             e.printStackTrace();
             return null;

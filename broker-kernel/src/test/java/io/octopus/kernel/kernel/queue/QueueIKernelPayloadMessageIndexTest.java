@@ -22,10 +22,10 @@ public class QueueIKernelPayloadMessageIndexTest {
 
     @Test
     public void toBytes() {
-        MsgIndex test001asdfas = new MsgIndex(10L, 3643,  65534);
+        Index test001asdfas = new Index(10L, 3643,  65534);
         System.out.println(test001asdfas);
         byte[] bytes = test001asdfas.toBytes();
-        MsgIndex msgIndex = MsgIndex.fromBytes(bytes);
+        Index msgIndex = Index.fromBytes(bytes);
         System.out.println(msgIndex);
     }
 }

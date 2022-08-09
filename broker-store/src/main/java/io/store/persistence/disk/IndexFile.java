@@ -1,6 +1,6 @@
 package io.store.persistence.disk;
 
-import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class IndexFile {
         }
     }
 
-    public void writeIndex(MsgIndex msgIndex) {
+    public void writeIndex(Index msgIndex) {
         int writeOffset = findNotWriteBlock() * 64;
         mappedByteBuffer.putLong(writeOffset, msgIndex.getOffset());
         mappedByteBuffer.putLong(writeOffset + 64, msgIndex.getSize());

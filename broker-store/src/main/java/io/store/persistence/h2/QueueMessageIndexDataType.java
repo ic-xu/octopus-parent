@@ -1,7 +1,7 @@
 package io.store.persistence.h2;
 
 
-import io.octopus.kernel.kernel.queue.MsgIndex;
+import io.octopus.kernel.kernel.queue.Index;
 import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.StringDataType;
 import org.slf4j.Logger;
@@ -22,8 +22,8 @@ public final class QueueMessageIndexDataType implements org.h2.mvstore.type.Data
 
     @Override
     public int getMemory(Object obj) {
-        if (obj instanceof MsgIndex) {
-            final MsgIndex index = (MsgIndex) obj;
+        if (obj instanceof Index) {
+            final Index index = (Index) obj;
             /* Long => 8 , Int => 4, int => 4 */
             return 14;
         } else {
@@ -34,8 +34,8 @@ public final class QueueMessageIndexDataType implements org.h2.mvstore.type.Data
 
     @Override
     public void write(WriteBuffer buff, Object obj) {
-        if (obj instanceof MsgIndex) {
-            final MsgIndex index = (MsgIndex) obj;
+        if (obj instanceof Index) {
+            final Index index = (Index) obj;
             buff.putLong(index.getOffset());
             buff.putInt(index.getSize());
             buff.putInt(index.getQueueName());
@@ -58,7 +58,7 @@ public final class QueueMessageIndexDataType implements org.h2.mvstore.type.Data
         final int size = buff.getInt();
 //        final String queueName = stringDataType.read(buff);
         final int queueName = buff.getInt();
-        return new MsgIndex(offset, size, queueName);
+        return new Index(offset, size, queueName);
     }
 
     @Override

@@ -16,13 +16,13 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
 
     private MsgQos qos;
 
-    private  MsgRouter msgRouter;
+    private final MsgRouter msgRouter;
 
-    private  String topic;
+    private final String topic;
 
-    private  ByteBuf payload;
+    private final ByteBuf payload;
 
-    private  boolean isRetain;
+    private final boolean isRetain;
 
 
 
@@ -70,7 +70,7 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
     /**
      * 是否保留消息
      *
-     * @return
+     * @return retain | boolean
      */
     public boolean isRetain() {
         return isRetain;
@@ -82,10 +82,9 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
         if (this == o) {
             return true;
         }
-        if (!(o instanceof KernelPayloadMessage)) {
+        if (!(o instanceof KernelPayloadMessage kernelPayloadMessage)) {
             return false;
         }
-        KernelPayloadMessage kernelPayloadMessage = (KernelPayloadMessage) o;
         return Objects.equals(packageId(), kernelPayloadMessage.packageId())
                 && Objects.equals(kernelPayloadMessage.getPubEnum(),this.getPubEnum())
                 && Objects.equals(kernelPayloadMessage.qos,this.qos)

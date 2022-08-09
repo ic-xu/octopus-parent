@@ -8,14 +8,14 @@ public class StoreMsg<T> {
 
     private final T msg;
 
-    private final MsgIndex index;
+    private final Index index;
 
-    public StoreMsg(T msg, MsgIndex index) {
+    public StoreMsg(T msg, Index index) {
         this.msg = msg;
         this.index = index;
     }
 
-    public MsgIndex getIndex() {
+    public Index getIndex() {
         return index;
     }
 
