@@ -19,7 +19,7 @@ import io.octopus.kernel.kernel.security.*;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 import io.octopus.kernel.utils.ClassLoadUtils;
 import io.octopus.kernel.utils.ObjectUtils;
-import io.octopus.scala.broker.mqtt.persistence.MemoryQueue;
+import io.octopus.scala.broker.mqtt.persistence.MemoryRepository;
 import io.store.persistence.StoreCreateFactory;
 import io.store.persistence.disk.CheckPointServer;
 import io.store.persistence.maptree.TopicMapSubscriptionDirectory;
@@ -229,7 +229,7 @@ public class ServerStarter {
         ReadWriteControl readWriteControl = new ReadWriteControl(this.irwController);
         CheckPointServer checkPointServer = new CheckPointServer();
 
-        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryQueue(config, checkPointServer));
+        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer));
         IPostOffice postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.postOfficeNotifyInterceptors, readWriteControl);
         sessionResistor.setPostOffice(postOffice);
 

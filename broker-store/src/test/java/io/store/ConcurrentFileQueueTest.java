@@ -1,7 +1,7 @@
 package io.store;
 
 import io.store.persistence.disk.CheckPointServer;
-import io.store.persistence.disk.ConcurrentFileQueue;
+import io.store.persistence.disk.ConcurrentFileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +17,11 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConcurrentFileQueueTest {
-    ConcurrentFileQueue concurrentFileQueue;
+    ConcurrentFileRepository concurrentFileQueue;
 
     @BeforeEach
     public void before() throws IOException {
-        concurrentFileQueue = new ConcurrentFileQueue(null,0,new CheckPointServer());
+        concurrentFileQueue = new ConcurrentFileRepository(null,0,new CheckPointServer());
 //        MqttPublishMessage mqttPublishMessage = publishNotRetainedDuplicated(1, "test/bb/cc" + 1, MqttQoS.AT_LEAST_ONCE, Unpooled.wrappedBuffer(("hhhh-ggg-ddd" + 1).getBytes(StandardCharsets.UTF_8)));
 //        concurrentFileQueue.offer(mqttPublishMessage);
     }

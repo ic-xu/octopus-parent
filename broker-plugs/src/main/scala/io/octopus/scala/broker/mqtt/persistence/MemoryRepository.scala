@@ -3,7 +3,7 @@ package io.octopus.scala.broker.mqtt.persistence
 import io.octopus.config.IConfig
 import io.octopus.kernel.checkpoint.CheckPoint
 import io.octopus.kernel.kernel.message.KernelPayloadMessage
-import io.octopus.kernel.kernel.queue.{Index, MsgQueue, SearchData, StoreMsg}
+import io.octopus.kernel.kernel.queue.{Index, MsgRepository, SearchData, StoreMsg}
 import io.store.persistence.disk.CheckPointServer
 
 import java.util
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong
  * @version 1
  */
 
-class MemoryQueue(config: IConfig, checkPointServer: CheckPointServer) extends MsgQueue[KernelPayloadMessage] {
+class MemoryRepository(config: IConfig, checkPointServer: CheckPointServer) extends MsgRepository[KernelPayloadMessage] {
 
   private val index: AtomicLong = new AtomicLong(0)
 

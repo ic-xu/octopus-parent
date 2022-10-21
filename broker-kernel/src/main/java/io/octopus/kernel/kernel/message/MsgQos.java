@@ -25,18 +25,13 @@ public enum MsgQos {
 
 
     public static MsgQos valueOf(int value) {
-        switch (value) {
-            case 0:
-                return AT_MOST_ONCE;
-            case 1:
-                return AT_LEAST_ONCE;
-            case 2:
-                return EXACTLY_ONCE;
-            case 3:
-                return UDP;
-            default:
-                throw new IllegalArgumentException("invalid QoS: " + value);
-        }
+        return switch (value) {
+            case 0 -> AT_MOST_ONCE;
+            case 1 -> AT_LEAST_ONCE;
+            case 2 -> EXACTLY_ONCE;
+            case 3 -> UDP;
+            default -> throw new IllegalArgumentException("invalid QoS: " + value);
+        };
     }
 
 

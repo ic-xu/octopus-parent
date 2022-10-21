@@ -1,7 +1,7 @@
 package io.octopus.scala.broker.mqtt.persistence
 
 import io.octopus.kernel.utils.ObjectUtils
-import io.store.persistence.disk.{CheckPointServer, ConcurrentFileQueue}
+import io.store.persistence.disk.{CheckPointServer, ConcurrentFileRepository}
 import org.h2.mvstore.MVStore
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -18,7 +18,7 @@ class FlushDiskServer(checkPointServer: CheckPointServer, mvStore: MVStore) {
   private val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
 
 
-  def start(queues: java.util.Collection[ConcurrentFileQueue]): Unit = {
+  def start(queues: java.util.Collection[ConcurrentFileRepository]): Unit = {
     val queueIterator = queues.iterator()
     while (queueIterator.hasNext) {
       val queue = queueIterator.next()

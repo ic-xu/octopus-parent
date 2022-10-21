@@ -110,7 +110,7 @@ public class ResourceLoaderConfig extends IConfig {
         LOGGER.info(" ");
         LOGGER.info("begin printf environment");
         LOGGER.info("*****************************************************************************");
-        propertiesStore.forEach((key,value)-> LOGGER.info("** [ {}  =  {} ]",key,value));
+        propertiesStore.forEach((key,value)-> LOGGER.info("                 [ {}  =  {} ]",key,value));
         LOGGER.info("*****************************************************************************");
         LOGGER.info("end printf environment");
     }

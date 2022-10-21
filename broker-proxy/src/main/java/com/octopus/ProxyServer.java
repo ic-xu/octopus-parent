@@ -8,8 +8,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-import java.net.UnknownHostException;
-
 /**
  * @author chenxu
  * @version 1
@@ -17,17 +15,9 @@ import java.net.UnknownHostException;
  */
 public class ProxyServer {
 
-    public static void main(String[] args) throws InterruptedException, UnknownHostException {
-//        InetAddress address = InetAddress.getByName("ws-live-push-cowork-airport.test.maxhub.vip");
-////        Inet4Address inet4Address = new Inet4Address();
-//
-//        System.out.println("==================>   "+address.getHostAddress());
-
+    public static void main(String[] args) throws InterruptedException {
         String host = "ws-live-push-cowork-airport.test.maxhub.vip";
-//        host = "127.0.0.1";
         host="live-gataway.test.maxhub.vip";
-//        host="172.30.89.122";
-
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap();

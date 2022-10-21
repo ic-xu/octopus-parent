@@ -1,11 +1,10 @@
 package io.octopus.kernel.kernel;
 
-import io.netty.util.concurrent.DefaultThreadFactory;
 import io.octopus.kernel.exception.SessionCorruptedException;
 import io.octopus.config.IConfig;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.queue.MsgQueue;
+import io.octopus.kernel.kernel.queue.MsgRepository;
 import io.octopus.kernel.kernel.repository.IQueueRepository;
 import io.octopus.kernel.kernel.security.IRWController;
 import io.octopus.kernel.kernel.subscriptions.Topic;
@@ -45,25 +44,17 @@ public class DefaultSessionResistor implements ISessionResistor {
      * 专门用来存储qos2 消息索引的
      */
     private final ConcurrentHashMap<String, Queue<Index>> qos2IndexQueues = new ConcurrentHashMap<>();
-    private Integer receiveMaximum = 10;
     private IPostOffice postOffice = null;
 
-    private final MsgQueue<KernelPayloadMessage> msgQueue;
-
-    private final ExecutorService drainQueueService = new ThreadPoolExecutor(4, 4,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(9999),
-            new DefaultThreadFactory("drain-queue"),
-            new ThreadPoolExecutor.CallerRunsPolicy()
-    );
+    private final MsgRepository<KernelPayloadMessage> msgRepository;
 
 
     public DefaultSessionResistor(IQueueRepository queueRepository, IRWController authorizator,
-                                  IConfig config, MsgQueue<KernelPayloadMessage> msgQueue) {
+                                  IConfig config, MsgRepository<KernelPayloadMessage> msgRepository) {
         this.queueRepository = queueRepository;
         this.authorizator = authorizator;
         this.config = config;
-        this.msgQueue = msgQueue;
+        this.msgRepository = msgRepository;
     }
 
     public void setPostOffice(IPostOffice postOffice) {
@@ -73,7 +64,7 @@ public class DefaultSessionResistor implements ISessionResistor {
     @Override
     public SessionCreationResult createOrReOpenSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
 
-        SessionCreationResult createResult = null;
+        SessionCreationResult createResult;
         DefaultSession newSession = createNewSession(clientId, username, isClean, willMsg, clientVersion);
         if (!sessions.contains(clientId)) {
             createResult = new SessionCreationResult(newSession, CreationModeEnum.CREATED_CLEAN_NEW, false);
@@ -132,7 +123,7 @@ public class DefaultSessionResistor implements ISessionResistor {
             newSession.addQos1InflictWindow(oldSession.getQos1InflictWindow());
         }
         var published = false;
-        if (result.getMode() != CreationModeEnum.REOPEN_EXISTING) {
+        if (result.mode() != CreationModeEnum.REOPEN_EXISTING) {
             logger.debug("Drop session of already connected client with same id");
             published = sessions.replace(clientId, oldSession, newSession);
         } else {
@@ -156,8 +147,9 @@ public class DefaultSessionResistor implements ISessionResistor {
     public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
         Queue<Index> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
         Queue<Index> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
+        Integer receiveMaximum = 10;
         DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean,
-                willMsg, qos1Queue, qos2Queue,receiveMaximum, clientVersion, msgQueue, drainQueueService);
+                willMsg, qos1Queue, qos2Queue, receiveMaximum, clientVersion, msgRepository);
         newSession.markConnecting();
         return newSession;
     }
@@ -174,7 +166,7 @@ public class DefaultSessionResistor implements ISessionResistor {
     private void reactivateSubscriptions(DefaultSession session, String username) {
         //verify if subscription still satisfy read ACL permissions
         session.getSubTopicList().forEach(topicStr -> {
-            Boolean topicReadable = authorizator.canRead(new Topic(topicStr), username, session.getClientId());
+            boolean topicReadable = authorizator.canRead(new Topic(topicStr), username, session.getClientId());
             if (!topicReadable) {
                 postOffice.unSubscriptions(session, session.getSubTopicList());
             }
@@ -245,4 +237,6 @@ public class DefaultSessionResistor implements ISessionResistor {
         sessions.remove(session.getClientId(), session);
         queueRepository.cleanQueue(session.getClientId());
     }
+
+
 }

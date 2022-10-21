@@ -7,7 +7,7 @@ import io.octopus.kernel.kernel.Lifecycle;
  * @author chenxu
  * @version 1
  */
-public interface MsgQueue<E> extends Lifecycle {
+public interface MsgRepository<E> extends Lifecycle {
 
 
     default void init(Object params) {

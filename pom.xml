@@ -4,10 +4,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bintray.repo>andsel/maven</bintray.repo>
-        <netty.version>4.1.79.Final</netty.version>
-        <netty.tcnative.version>2.0.46.Final</netty.tcnative.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <netty.version>4.1.84.Final</netty.version>
+        <netty.tcnative.version>2.0.54.Final</netty.tcnative.version>
         <net.bytebuddy.version>1.12.6</net.bytebuddy.version>
         <h2.version>1.4.199</h2.version>
         <redission.verssion>3.15.5</redission.verssion>
@@ -17,6 +15,9 @@
         <zkclient.version>0.11</zkclient.version>
         <websocket-client.version>9.2.0.M1</websocket-client.version>
         <HikariCP.version>2.4.7</HikariCP.version>
+
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
     </properties>
 
     <groupId>io.octopus</groupId>
@@ -34,13 +35,14 @@
             <url>http://www.mvnrepository.com/</url>
             <layout>default</layout>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
 
 
     <modules>
+        <module>broker</module>
         <module>broker-plugs</module>
         <module>broker-store</module>
         <module>broker-kernel</module>
@@ -51,7 +53,6 @@
         <module>broker-example</module>
         <module>broker-console</module>
         <module>broker-proxy</module>
-        <module>broker-starter</module>
     </modules>
 
     <dependencies>
@@ -99,11 +100,9 @@
             <classifier>linux-x86_64</classifier>
         </dependency>
 
-
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-classes-epoll</artifactId>
         </dependency>
 
         <!-- needs extra dependencies: objenesis & hamcrest -->
@@ -119,12 +118,24 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-api</artifactId>-->
-<!--            <version>1.7.32</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.slf4j</groupId>-->
+        <!--            <artifactId>slf4j-api</artifactId>-->
+        <!--            <version>1.7.32</version>-->
+        <!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
@@ -153,6 +164,30 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy-agent</artifactId>
+        </dependency>
+        <!--行为驱动测试框架-->
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
         </dependency>
     </dependencies>
 
@@ -210,15 +245,11 @@
                 <classifier>linux-x86_64</classifier>
             </dependency>
 
-
-            <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>5.8.2</version>
-                <scope>test</scope>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-classes-epoll</artifactId>
+                <version>${netty.version}</version>
             </dependency>
-
 
             <!-- needs extra dependencies: objenesis & hamcrest -->
             <dependency>
@@ -451,6 +482,38 @@
                 <artifactId>commons-codec</artifactId>
                 <version>1.10</version>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>1.19</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>1.19</version>
+                <scope>test</scope>
+            </dependency>
+
+
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-bom</artifactId>
+                <version>7.8.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.9.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -476,6 +539,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.4.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -489,7 +553,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -526,7 +590,6 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
                     <configLocation>z-checkstyle/checkstyle.xml</configLocation>
-                    <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
@@ -544,17 +607,16 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                     <encoding>UTF-8</encoding>
                     <excludes>libs</excludes>
 
-<!--                    java17 之后启动不起来,java: 不允许在使用 -release 时从系统模块 java.base 导出程序包: -->
-<!--                    <compilerArgs>-->
-<!--                        <arg>&#45;&#45;add-exports=java.base/sun.security.pkcs=ALL-UNNAMED</arg>-->
-<!--                    </compilerArgs>-->
+                    <!--                    java17 之后启动不起来,java: 不允许在使用 -release 时从系统模块 java.base 导出程序包: -->
+                    <!--                    <compilerArgs>-->
+                    <!--                        <arg>&#45;&#45;add-exports=java.base/sun.security.pkcs=ALL-UNNAMED</arg>-->
+                    <!--                    </compilerArgs>-->
                     <compilerArguments>
                         <verbose/>
                         <!-- 将jdk的依赖jar打入项目中，这样项目中使用的jdk的依赖就尅正常使用 -->
@@ -573,12 +635,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.2.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>9.1</version>
+                            <version>10.3.4</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -641,6 +703,29 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+
+
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.10.1</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>UTF-8</encoding>
+                        <excludes>libs</excludes>
+
+                        <!--                    java17 之后启动不起来,java: 不允许在使用 -release 时从系统模块 java.base 导出程序包: -->
+                        <!--                    <compilerArgs>-->
+                        <!--                        <arg>&#45;&#45;add-exports=java.base/sun.security.pkcs=ALL-UNNAMED</arg>-->
+                        <!--                    </compilerArgs>-->
+                        <compilerArguments>
+                            <verbose/>
+                            <!-- 将jdk的依赖jar打入项目中，这样项目中使用的jdk的依赖就尅正常使用 -->
+                            <bootclasspath>${java.home}/lib/rt.jar:${java.home}/lib/jce.jar:${java.home}/lib/jsse.jar
+                            </bootclasspath>
+                        </compilerArguments>
+                    </configuration>
                 </plugin>
 
             </plugins>

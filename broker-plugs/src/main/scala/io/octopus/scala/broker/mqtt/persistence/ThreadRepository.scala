@@ -4,8 +4,8 @@ import io.octopus.config.IConfig
 import io.octopus.contants.BrokerConstants
 import io.octopus.kernel.checkpoint.CheckPoint
 import io.octopus.kernel.kernel.message.KernelPayloadMessage
-import io.octopus.kernel.kernel.queue.{MsgQueue, SearchData, StoreMsg}
-import io.store.persistence.disk.{CheckPointServer, ConcurrentFileQueue}
+import io.octopus.kernel.kernel.queue.{MsgRepository, SearchData, StoreMsg}
+import io.store.persistence.disk.{CheckPointServer, ConcurrentFileRepository}
 import org.h2.mvstore.MVStore
 
 import java.io.IOException
@@ -18,14 +18,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @version 1
  */
 
-class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPointServer, flushDiskServiceExecutor: ScheduledExecutorService)
-  extends MsgQueue[KernelPayloadMessage] {
+class ThreadRepository(config: IConfig, mvStore: MVStore, checkPointServer: CheckPointServer, flushDiskServiceExecutor: ScheduledExecutorService)
+  extends MsgRepository[KernelPayloadMessage] {
 
   val autoSaveProp: String = config.getProperty(BrokerConstants.AUTOSAVE_INTERVAL_PROPERTY_NAME, "10")
   private val autoSaveInterval = autoSaveProp.toInt
-  private val localQueue: InheritableThreadLocal[ConcurrentFileQueue] = new InheritableThreadLocal[ConcurrentFileQueue]
+  private val localQueue: InheritableThreadLocal[ConcurrentFileRepository] = new InheritableThreadLocal[ConcurrentFileRepository]
   private val chileThreadMap: util.Map[String, LocalThreadQueueData] = new ConcurrentHashMap[String, LocalThreadQueueData]
-  private val queueMap: util.Map[Integer, ConcurrentFileQueue] = new ConcurrentHashMap[Integer, ConcurrentFileQueue]
+  private val queueMap: util.Map[Integer, ConcurrentFileRepository] = new ConcurrentHashMap[Integer, ConcurrentFileRepository]
 //  private var dispatcher: Any = _
   private val stopFlag: AtomicBoolean = new AtomicBoolean(false);
   private val flushDiskServer: FlushDiskServer = new FlushDiskServer(checkPointServer, mvStore)
@@ -40,7 +40,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
   }
 
 
-  def getConcurrentFileQueue: ConcurrentFileQueue = {
+  def getConcurrentFileQueue: ConcurrentFileRepository = {
     val concurrentFileQueue = localQueue.get
     if (null == concurrentFileQueue) throw new NullPointerException("concurrentFileQueue is null")
     concurrentFileQueue
@@ -53,7 +53,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
    * @return the message index
    */
   override def offer(msg: KernelPayloadMessage): StoreMsg[KernelPayloadMessage] = {
-    var msgQueue: ConcurrentFileQueue = localQueue.get
+    var msgQueue: ConcurrentFileRepository = localQueue.get
     if (null == msgQueue) {
       val threadNameArray: Array[String] = Thread.currentThread.getName.split("-")
       var threadName: Integer = null
@@ -64,7 +64,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
       //      }
       val str = threadNameArray(threadNameArray.length - 1)
       threadName = Integer.parseInt(str)
-      try msgQueue = new ConcurrentFileQueue(Thread.currentThread.getName, threadName, new CheckPointServer)
+      try msgQueue = new ConcurrentFileRepository(Thread.currentThread.getName, threadName, new CheckPointServer)
       catch {
         case e: IOException => e.printStackTrace()
           return null
@@ -118,7 +118,7 @@ class ThreadQueue(config: IConfig, mvStore: MVStore, checkPointServer: CheckPoin
     //
     //    }
     //    null
-    val msgQueue: ConcurrentFileQueue = queueMap.get(searchData.getIndex.getQueueName)
+    val msgQueue: ConcurrentFileRepository = queueMap.get(searchData.getIndex.getQueueName)
     msgQueue.poll(searchData)
   }
 

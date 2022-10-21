@@ -127,7 +127,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     try {
       logger.trace("Binding MQTTConnection (channel: {}) to session", channel)
       result = sessionResistor.createOrReOpenSession(clientId, this.getUsername, msg.variableHeader().isCleanSession, createWillMsg(msg), msg.variableHeader().version())
-      boundSession = result.getSession
+      boundSession = result.session
       boundSession.bind(this)
     } catch {
       case sessionException: SessionCorruptedException =>
@@ -137,7 +137,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
         return
     }
 
-    val isSessionAlreadyPresent = !cleanSession && result.getAlreadyStored
+    val isSessionAlreadyPresent = !cleanSession && result.alreadyStored
     val clientIdUsed = clientId
     val ackMessage = MqttMessageBuilders.connAck.returnCode(MqttConnectReturnCode.CONNECTION_ACCEPTED).sessionPresent(isSessionAlreadyPresent).build
     channel.writeAndFlush(ackMessage).addListener(new ChannelFutureListener() {
@@ -156,8 +156,8 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
             connected.set(true)
             // OK continue with sending queued messages and normal flow
             //notify other offline
-            if (result.getMode eq CreationModeEnum.REOPEN_EXISTING) {
-              result.getSession.sendQueuedMessagesWhileOffline()
+            if (result.mode eq CreationModeEnum.REOPEN_EXISTING) {
+              result.session.sendQueuedMessagesWhileOffline()
             }
             initializeKeepAliveTimeout(channel, msg, clientIdUsed)
 

@@ -12,8 +12,9 @@
     <artifactId>broker-console</artifactId>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <sshd.version>2.9.0</sshd.version>
+        <cucumber.version>7.8.0</cucumber.version>
+        <junit-platform.version>1.9.0</junit-platform.version>
     </properties>
 
     <dependencies>
@@ -31,13 +32,13 @@
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-netty</artifactId>
-            <version>2.8.0</version>
+            <version>${sshd.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.sshd/sshd-netty -->
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-common</artifactId>
-            <version>2.8.0</version>
+            <version>${sshd.version}</version>
         </dependency>
 
 
@@ -45,21 +46,21 @@
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-scp</artifactId>
-            <version>2.8.0</version>
+            <version>${sshd.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.sshd/sshd-netty -->
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-sftp</artifactId>
-            <version>2.8.0</version>
+            <version>${sshd.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.sshd/sshd-cli -->
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <version>1.4</version>
+            <version>1.5.0</version>
         </dependency>
 
         <dependency>
@@ -74,4 +75,24 @@
         </dependency>
 
     </dependencies>
+
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

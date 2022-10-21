@@ -3,7 +3,7 @@ package io.store.persistence.flishdisk;
 import io.octopus.config.IConfig;
 import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.kernel.message.IMessage;
-import io.octopus.kernel.kernel.queue.MsgQueue;
+import io.octopus.kernel.kernel.queue.MsgRepository;
 import io.octopus.kernel.utils.ObjectUtils;
 import io.store.persistence.disk.CheckPointServer;
 import org.h2.mvstore.MVStore;
@@ -18,14 +18,14 @@ public class FlushDiskServer {
 
     Logger logger = LoggerFactory.getLogger(FlushDiskServer.class);
     private final ScheduledExecutorService flushDiskService;
-    private final MsgQueue<IMessage> concurrentFileQueue;
+    private final MsgRepository<IMessage> concurrentFileQueue;
     private final MVStore mvStore;
     private final int autoSaveInterval; // in seconds
     private final CheckPointServer checkPointServer;
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
-    public FlushDiskServer(MsgQueue<IMessage> concurrentFileQueue, MVStore mvStore,
+    public FlushDiskServer(MsgRepository<IMessage> concurrentFileQueue, MVStore mvStore,
                            IConfig config, ScheduledExecutorService flushDiskService,
                            CheckPointServer checkPointServer) {
         this.concurrentFileQueue = concurrentFileQueue;

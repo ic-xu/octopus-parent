@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class DefaultPostOffice implements IPostOffice {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DefaultPostOffice.class);
-    private final List<String> adminUser = new ArrayList<>();
+    private final List<String> adminUser = new ArrayList<>(4);
 
 
     private final ISubscriptionsDirectory subscriptionsDirectory;
@@ -47,7 +47,12 @@ public class DefaultPostOffice implements IPostOffice {
         this.authorizator = authorizator;
     }
 
-
+    /**
+     * 收到消息
+     * @param msg   消息体
+     * @param fromSession 消息来源
+     * @return 是否接收成功
+     */
     @Override
     public Boolean processReceiverMsg(KernelPayloadMessage msg, ISession fromSession) {
         /// 校验session 是否具有发布消息的全新啊
@@ -236,7 +241,9 @@ public class DefaultPostOffice implements IPostOffice {
     }
 
 
-    // TODO 发布保留的订阅消息
+    /**
+     * TODO 发布保留的订阅消息
+      */
     private void publishRetainedMessagesForSubscriptions(String clientID, List<Subscription> newSubscriptions) {
         ISession targetSession = this.sessionResistor.retrieve(clientID);
         newSubscriptions.forEach(subscription -> {

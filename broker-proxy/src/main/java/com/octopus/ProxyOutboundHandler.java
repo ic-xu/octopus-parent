@@ -6,14 +6,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**
+ * 出站代理
  * @author chenxu
  * @version 1
  * @date 2022/2/25 10:50 上午
  */
-
-
-
-
 public class ProxyOutboundHandler extends ChannelInboundHandlerAdapter {
 
     private final Channel inboundChannel;

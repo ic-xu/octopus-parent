@@ -5,7 +5,7 @@ import io.octopus.kernel.checkpoint.CheckPoint;
 import io.octopus.contants.BrokerConstants;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.queue.MsgQueue;
+import io.octopus.kernel.kernel.queue.MsgRepository;
 import io.octopus.kernel.kernel.queue.SearchData;
 import io.octopus.kernel.kernel.queue.StoreMsg;
 import io.octopus.kernel.utils.KernelMsgDecode;
@@ -25,9 +25,9 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author user
  */ //TODO delete mappedByteBuffer
-public class ConcurrentFileQueue implements MsgQueue<KernelPayloadMessage> {
+public class ConcurrentFileRepository implements MsgRepository<KernelPayloadMessage> {
 
-    private final Logger logger = LoggerFactory.getLogger(ConcurrentFileQueue.class);
+    private final Logger logger = LoggerFactory.getLogger(ConcurrentFileRepository.class);
     private FileMappedByteBuffer currentWriteFileByteBuffer;
     private FileMappedByteBuffer currentReadFileByteBuffer;
     private final AtomicLong currentWritePosition = new AtomicLong(0);
@@ -51,7 +51,7 @@ public class ConcurrentFileQueue implements MsgQueue<KernelPayloadMessage> {
     private final AtomicBoolean stop = new AtomicBoolean(false);
     private final int threadNum;
 
-    public ConcurrentFileQueue(String parentDir,int threadNum, CheckPointServer checkPointServer) throws IOException {
+    public ConcurrentFileRepository(String parentDir, int threadNum, CheckPointServer checkPointServer) throws IOException {
         this.parentDir = parentDir;
         this.threadNum = threadNum;
         fileList = new TreeMap<>();

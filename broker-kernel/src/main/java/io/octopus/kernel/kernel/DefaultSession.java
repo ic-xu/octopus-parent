@@ -4,7 +4,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.octopus.kernel.kernel.connect.AbstractConnection;
 import io.octopus.kernel.kernel.message.*;
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.queue.MsgQueue;
+import io.octopus.kernel.kernel.queue.MsgRepository;
 import io.octopus.kernel.kernel.queue.SearchData;
 import io.octopus.kernel.kernel.queue.StoreMsg;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
@@ -16,7 +16,6 @@ import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @version 1
  * @date 2022/6/21 18:51
  */
-public class DefaultSession implements ISession {
+public class DefaultSession implements ISession, Runnable {
 
     private final Logger logger = LoggerFactory.getLogger(DefaultSession.class);
     /**
@@ -71,12 +70,7 @@ public class DefaultSession implements ISession {
     /**
      * 消息队列大小
      */
-    protected final MsgQueue<KernelPayloadMessage> msgQueue;
-
-    /**
-     * 清除队列服务
-     */
-    protected final ExecutorService drainQueueService;
+    protected final MsgRepository<KernelPayloadMessage> msgRepository;
 
     /**
      * 发送中的窗口
@@ -131,8 +125,7 @@ public class DefaultSession implements ISession {
                           String clientId, Boolean clean, KernelPayloadMessage willMsg,
                           Queue<Index> qos1Queue, Queue<Index> qos2Queue,
                           Integer inflictWindowSize, Integer clientVersion,
-                          MsgQueue<KernelPayloadMessage> msgQueue,
-                          ExecutorService drainQueueService) {
+                          MsgRepository<KernelPayloadMessage> msgRepository) {
 
         this.postOffice = postOffice;
         this.userName = userName;
@@ -143,8 +136,7 @@ public class DefaultSession implements ISession {
         this.qos2Queue = qos2Queue;
         this.inflictWindowSize = inflictWindowSize;
         this.clientVersion = clientVersion;
-        this.msgQueue = msgQueue;
-        this.drainQueueService = drainQueueService;
+        this.msgRepository = msgRepository;
         inflictSlots = new AtomicInteger(inflictWindowSize); // this should be configurable
     }
 
@@ -263,12 +255,15 @@ public class DefaultSession implements ISession {
         if (null != qos2SenderMsg && Objects.equals(qos2SenderMsg.getQos2Msg().packageId(), recPacketId)) {
             qos2SenderMsg.setReceiverPubRec(true);
             //发送收到消息
-            KernelMessage kernelMessage = new KernelMessage(recPacketId,PubEnum.PUB_REL);
+            KernelMessage kernelMessage = new KernelMessage(recPacketId, PubEnum.PUB_REL);
             connection.sendIfWritableElseDrop(kernelMessage);
-        }else{
+        } else {
             logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
         }
     }
+
+
+
 
     @Override
     public Boolean receivePubReL(Short relPacketId) {
@@ -357,7 +352,7 @@ public class DefaultSession implements ISession {
             Index msgIndex = qos1Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
 
-                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                StoreMsg<KernelPayloadMessage> storeMsg = msgRepository.poll(new SearchData(clientId, msgIndex));
                 /// 重新开发发送 qos1 的消息。
                 sendMsgAtQos1(storeMsg, false);
             }
@@ -381,7 +376,6 @@ public class DefaultSession implements ISession {
                     KernelPayloadMessage message = qos1InflictWindow.remove(notAckPacketId.getPacketId());
                     if (null == message) { // Already acked...
                         logger.warn("Already acked...");
-                    } else {
                     }
                     ReferenceCountUtil.safeRelease(message);
                 }
@@ -428,7 +422,7 @@ public class DefaultSession implements ISession {
 
     // consume the queue
     protected void drainQos1QueueToConnection() {
-        drainQueueService.submit(new DrainQos1QueueWorker());
+        doDrainQos1QueueToConnection();
     }
 
     /**
@@ -438,12 +432,12 @@ public class DefaultSession implements ISession {
         if (null == qos2SenderMsg) {
             Index msgIndex = qos2Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
-                StoreMsg<KernelPayloadMessage> storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                StoreMsg<KernelPayloadMessage> storeMsg = msgRepository.poll(new SearchData(clientId, msgIndex));
                 KernelPayloadMessage msg = storeMsg.getMsg();
 
                 /// 一直找到正常的消息为止
                 while (null == msg) {
-                    storeMsg = msgQueue.poll(new SearchData(clientId, msgIndex));
+                    storeMsg = msgRepository.poll(new SearchData(clientId, msgIndex));
                     msg = storeMsg.getMsg();
                 }
 
@@ -461,20 +455,10 @@ public class DefaultSession implements ISession {
         }
     }
 
+    @Override
+    public void run() {
 
-    class DrainQos1QueueWorker implements Runnable {
-
-        @Override
-        public void run() {
-            try {
-                doDrainQos1QueueToConnection();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
     }
-
 
     @Override
     public String getUsername() {
@@ -486,7 +470,7 @@ public class DefaultSession implements ISession {
             lastPacketId.set(2);
             return 2;
         }
-        return (short)lastPacketId.get();
+        return (short) lastPacketId.get();
     }
 
 
