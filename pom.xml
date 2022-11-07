@@ -42,17 +42,16 @@
 
 
     <modules>
-        <module>broker</module>
-        <module>broker-plugs</module>
+        <module>broker-starter</module>
         <module>broker-store</module>
         <module>broker-kernel</module>
         <module>broker-route</module>
         <module>broker-agent</module>
-        <module>broker-mqtt-de-encoder</module>
         <module>broker-rpc</module>
         <module>broker-example</module>
         <module>broker-console</module>
         <module>broker-proxy</module>
+        <module>broker-plugs</module>
     </modules>
 
     <dependencies>

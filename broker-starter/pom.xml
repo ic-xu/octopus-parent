@@ -32,7 +32,7 @@
 
         <dependency>
             <groupId>io.octopus</groupId>
-            <artifactId>broker-plugs</artifactId>
+            <artifactId>broker-mqtt</artifactId>
             <version>0.2.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

@@ -2,13 +2,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>octopus-parent</artifactId>
+        <artifactId>broker-plugs</artifactId>
         <groupId>io.octopus</groupId>
         <version>0.2.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>broker-mqtt-de-encoder</artifactId>
-<!--    <name>broker-mqtt-de-encoder</name>-->
     <packaging>jar</packaging>
 
 
