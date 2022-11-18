@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * MQTT Properties container
- * */
+ */
 public final class MqttProperties {
 
     public enum MqttPropertyType {
@@ -31,6 +31,18 @@ public final class MqttProperties {
 
         // four bytes properties
         PUBLICATION_EXPIRY_INTERVAL(0x02),
+
+        /**
+         * 会话到期时间间隔
+         * <p>
+         * 后跟表示会话到期间隔的四字节整数（以秒为单位）。多次包含会话到期间隔是协议错误。
+         * <p>
+         * 如果没有会话到期间隔，则使用值 0。如果设置为 0 或不存在，则会话在网络连接关闭时结束。
+         * <p>
+         * 如果 Session Expiry Interval 为 0xFFFFFFFF (UINT_MAX)，则 Session 不会过期。
+         * <p>
+         * 如果会话过期间隔大于 0 [MQTT-3.1.2-23] ，则客户端和服务器必须在网络连接关闭后存储会话状态。
+         */
         SESSION_EXPIRY_INTERVAL(0x11),
         WILL_DELAY_INTERVAL(0x18),
         MAXIMUM_PACKET_SIZE(0x27),
@@ -119,6 +131,7 @@ public final class MqttProperties {
 
         /**
          * Get MQTT property ID
+         *
          * @return property ID
          */
         public int propertyId() {
@@ -214,7 +227,7 @@ public final class MqttProperties {
 
         private static UserProperties fromUserPropertyCollection(Collection<UserProperty> properties) {
             UserProperties userProperties = new UserProperties();
-            for (UserProperty property: properties) {
+            for (UserProperty property : properties) {
                 userProperties.add(new StringPair(property.value.key, property.value.value));
             }
             return userProperties;
@@ -232,7 +245,7 @@ public final class MqttProperties {
         public String toString() {
             StringBuilder builder = new StringBuilder("UserProperties(");
             boolean first = true;
-            for (StringPair pair: value) {
+            for (StringPair pair : value) {
                 if (!first) {
                     builder.append(", ");
                 }
@@ -294,7 +307,7 @@ public final class MqttProperties {
             if (property instanceof UserProperty) {
                 userProperties.add((UserProperty) property);
             } else if (property instanceof UserProperties) {
-                for (StringPair pair: ((UserProperties) property).value) {
+                for (StringPair pair : ((UserProperties) property).value) {
                     userProperties.add(new UserProperty(pair.key, pair.value));
                 }
             } else {

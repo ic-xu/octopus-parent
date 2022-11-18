@@ -1,5 +1,6 @@
 package io.octopus.scala.broker.mqtt.server
 
+import io.handler.codec.mqtt.MqttProperties.MqttPropertyType
 import io.handler.codec.mqtt._
 import io.netty.buffer.Unpooled
 import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
@@ -94,11 +95,26 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     logger.trace("Processing CONNECT message. CId={} username: {} channel: {}", clientId, username, channel)
 
     //1 、 check mqtt proto version
-    if (isNotProtocolVersion(msg, MqttVersion.MQTT_3_1) && isNotProtocolVersion(msg, MqttVersion.MQTT_3_1_1) && isNotProtocolVersion(msg, MqttVersion.MQTT_2)) {
+    if (isNotProtocolVersion(msg, MqttVersion.MQTT_3_1)
+      && isNotProtocolVersion(msg, MqttVersion.MQTT_3_1_1)
+      && isNotProtocolVersion(msg, MqttVersion.MQTT_2)
+      && isNotProtocolVersion(msg, MqttVersion.MQTT_5)) {
       logger.warn("MQTT protocol version is not valid. CId={} channel: {}", clientId, channel)
       abortConnection(MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION)
       return
     }
+
+
+    if (isNotProtocolVersion(msg, MqttVersion.MQTT_5)) {
+      handlerConnect3(msg, clientId, username)
+    } else {
+      handlerConnect5(msg, clientId, username)
+    }
+  }
+
+
+  def handlerConnect3(msg: MqttConnectMessage, oldClientId: String, username: String): Unit = {
+    var clientId: String = oldClientId
     val cleanSession = msg.variableHeader.isCleanSession
     // 2、 check clientId
     if (clientId == null || clientId.isEmpty) {
@@ -179,7 +195,188 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
 
       }
     })
+  }
 
+  /**
+   * @see https://github.com/emqx/mqtt5.0-cn/blob/master/mqtt/0301-CONNECT.md
+   * @param msg
+   * @param clientId
+   * @param username
+   */
+  def handlerConnect5(msg: MqttConnectMessage, clientId: String, username: String): Unit = {
+
+    val properties: MqttProperties = msg.variableHeader().properties()
+
+    /*
+    17(0x11)字节，会话过期间隔标识符。
+    四个字节整形表示的会话到期间隔，单位是秒，如果这个属性在一个控制包中出现了两次，就会视为协议错误。
+    如果会话到期间隔设置为 0 或者没有设置，那么当网络连接关闭的时候 Session 就会结束。
+    如果会话到期间隔设为 0xFFFFFFFF(UINT_MAX)，那么这个 Session 就不会过期。
+    如果会话到期间隔大于 0，那么 服务器和客户端在关闭网络连接的之后还要保存网络连接。[MQTT-3.1.2-23]
+    doc
+     */
+    val sessionExpiryInterval = properties.getProperty(MqttPropertyType.SESSION_EXPIRY_INTERVAL.value()).value()
+
+    /*
+    33(0x21)字节 ，接收最大值标识符
+    接收最大值由 2 个字节的整形来表示，如果单个报文中该属性出现了多次或它的值为 0 时，则协议错误。
+    客户端通过使用这个值来限制同时并行处理 QoS1 和 QoS2 发布的消息数量。现在还没有机制来限制服务器可能会发布的 QoS0　消息。
+    接收最大值只会应用在当前网络连接中，如果没有设置接收最大值，那么它就会设为默认值 65535。值被设为0 或者该属性重复从而引发协议错误。
+     */
+    val receiveMaximum = properties.getProperty(MqttPropertyType.RECEIVE_MAXIMUM.value()).value()
+
+
+    /*
+    39(0x27)字节 ，最大报文长度标识符。
+
+    接收最大值由 4 个字节的整形来表示客户端愿意接收的最大报文长度，如果不存在最大报文长度属性，作为剩余长度编码和协议头大小的结果，除了协议的限制外，不限制数据包大小。
+
+    如果单个报文中该属性出现了多次，或当其值设为 0 时，则协议错误。
+
+    非正式评注 当需要限制最大报文大小的时候，由应用程序来选择合适的最大报文长度。
+
+    这里的报文大小指的是整个 MQTT 控制包的所有字节数。客户端使用最大报文大小来通知服务器，让它不要处理超过这个大小的数据包。
+
+    服务器 不能 发送超过最大报文长度的包给客户端。[MQTT-3.1.2-24]如果客户端收到了超出限制的报文，那么会视为协议错误。如同4.13 节所描述的那样，服务器会在断开连接的时候返回一个带有 0x95（报文太大）原因码的 DISCONNECT 报文。
+
+    如果 Packet 太大以至于不能正常发送，那么服务器就需要丢弃那些 Packet 并且表现得好像已经完成应用消息发送那样。[MQTT-3.1.2-25]
+
+    在共享订阅的情况下，有可能消息太大不能发送给部分客户端，但是另外一部分客户端可以接收到，服务器可以选择不向任何客户端发送消息并丢弃所有的消息，也可以只向那些可以接收到消息的客户端发送消息。
+
+    非正式评注 如果数据包在未发送的情况下被丢弃，则服务器可以将丢弃的数据包放在“死信队列(dead letter queue)”上或执行其他诊断操作。 此类行为超出了本规范的范围。
+     */
+    val maximumPacketSize = properties.getProperty(MqttPropertyType.MAXIMUM_PACKET_SIZE.value()).value()
+
+
+    /*
+    34(0x22)字节 ，主题别名最大数量标识符。 主题别名最大数量由 2 个字节的整形来表示，如果单个报文中该属性出现了多次，则协议错误。若未设定主题别名最大数量，则就将其默认设为 0。
+
+    该值用来表示客户端从服务器那里接收到的主题别名的最大数量。客户端使用该值来限制它愿意在此 Connection 上保留的主题别名的数量。
+    服务器不能在给客户端发送的 PUBLISH 报文中发送超出主题别名最大数量的主题别名[MQTT-3.1.2-26]。
+
+    当值为 0 时则表示客户端在该连接中不会接收任何主题别名。如果主题别名最大数量不存在或值为 0，则服务器不能发送任何主题别名给客户端[MQTT-3.1.2-27]。
+     */
+    val topicAliasMaximum = properties.getProperty(MqttPropertyType.TOPIC_ALIAS_MAXIMUM.value()).value()
+
+
+    /*
+    25(0x19)字节 ，请求响应信息标识符。
+    这个字节只能表示 0 或者 1，如果它表示的值是 0 或 1 以外的值，或者该属性出现多次，那么就会视为协议错误。若未指定请求响应消息，则将其值设为默认值 0。
+    客户端使用该值去请求服务器，服务器会在 CONNACK 包中返回响应信息。当请求响应信息设为 0 的时候，意味着服务器不应该返回响应信息了。如果值为 1，那么服务器会在 CONNACK 包中返回响应信息。
+    服务器可以在客户端请求响应信息的时候选择不在 CONNACK 中包含响应信息。
+     */
+    val requestResponseInformation = properties.getProperty(MqttPropertyType.REQUEST_RESPONSE_INFORMATION.value()).value()
+
+
+    /*
+    23(0x17)字节 ，请求问题信息标识符。
+
+    这个字节只能表示 0 或者 1，如果它表示的值是 0 或 1 以外的值，或者该属性出现多次，那么就会视为协议错误。若未指定请求响应消息，则将其值设为默认值 1。
+
+    客户端使用该值来表示是否用户属性或原因码发送失败。
+
+    如果请求问题信息的值被设为 0，服务器可以在 CONNACK 或 DISCONNECT 报文中返回一个原因字符串或用户属性。但是不能发送原因属性或用户属性在其它任何包中，
+    PUBLIHS, CONNACK 或 DISCONNECT 包除外。如果值设为 0，而 客户端却在 PUBLISH,CONNACK,DISCONNECT 包以外收到了原因码或用户属性, 那么就应该用一个带有原因码 0x82（协议错误） 的 DISCONNECT 报文去断开连接。
+
+    如果值设为 1，那么服务器就可以在任何被允许的报文中返回原因码或用户属性。
+     */
+    val requestProblemInformation = properties.getProperty(MqttPropertyType.REQUEST_PROBLEM_INFORMATION.value()).value()
+
+    /*
+    38(0x26)字节 ，用户属性标识符。
+    由一个 UTF-8 的字符串对表示。
+    用户属性可以在单个报文中出现多次，用于表示多个名称，值对。相同的名称也可以出现多次。
+    在 CONNECT 报文中的用户属性在客户端发送到服务器的过程中可以被用来发送和连接相关的属性。这些属性的含义不由本规范定义。
+     */
+    val userProperty = properties.getProperty(MqttPropertyType.USER_PROPERTY.value()).value()
+
+
+    /*
+    21(0x15)字节 ，验证方法标识符。
+    该属性由包含用于扩展验证的扩展方法名的 UTF-8 编码字符串表示，当该属性在同一报文中出现多次时，会被视为协议错误。如果不设置验证方法，默认情况下扩展验证不会被启用。请参阅4.12 节。
+    如果客户端在 CONNECT 报文中设置了验证方法，那么客户端在到 CONNACK 报文前就不能再发送除 AUTH 包和 DISCONNECT 报文以外的报文。[MQTT-3.1.2-30]
+     */
+    val authenticationMethod = properties.getProperty(MqttPropertyType.AUTHENTICATION_METHOD.value()).value()
+
+
+    /*
+    3.1.2.11.10 验证数据 Authentication Data
+    22(0x16)字节 ，验证数据标识符 由包含验证数据的二进制数据表示，如果 CONNECT 报文在包含验证数据的情况下却不包含验证方法，或者当该属性在 CONNECT 报文中出现时，则会被视为协议错误。
+    该数据的内容由验证方法定义，关于扩展验证的更多信息请参考4.12节。
+     */
+    val authenticationData = properties.getProperty(MqttPropertyType.AUTHENTICATION_DATA.value()).value()
+
+    /**
+     * 有效载荷 Payload
+     */
+
+    /*
+    3.1.3.1 客户端标识符 Client Identifier
+    服务端使用客户端标识符 (ClientId) 识别客户端。连接服务端的每个客户端都有唯一的客户端标识符（ClientId）。
+    客户端和服务端都必须使用 ClientId 识别两者之间的 MQTT 会话相关的状态 [MQTT-3.1.3-2]。关于会话状态的更多信息请参阅4.1 节。
+    客户端标识符 (ClientId) 必须存在而且必须是CONNECT报文有效载荷的第一个字段 [MQTT-3.1.3-3]。
+    客户端标识符必须是1.5.3节定义的UTF-8编码字符串 [MQTT-3.1.3-4]。
+    服务端必须允许1到23个字节长的UTF-8编码的客户端标识符，客户端标识符只能包含这些字符：“0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ”（大写字母，小写字母和数字）[MQTT-3.1.3-5]。
+    服务端可以允许编码后超过23个字节的客户端标识符 (ClientId)。服务端可以允许包含不是上面列表字符的客户端标识符 (ClientId)。
+    服务端可以允许客户端提供一个零字节的客户端标识符 (ClientId) ，如果这样做了，服务端必须将这看作特殊情况并分配唯一的客户端标识符给那个客户端[MQTT-3.1.3-6]。
+    然后它必须假设客户端提供了那个唯一的客户端标识符，正常处理这个CONNECT报文，并且必须返回 CONNACK 包中被分配的客户端标识符[MQTT-3.1.3-7]。
+    如果服务器拒绝了客户端标识符，那么它可以按照在4.13节 错误处理所描述的那样使用带有 0x85 （客户端标识符无效）原因码的 CONNACK 报文去响应 CONNECT 报文，然后必须关闭网络连接。
+    非正式评注 客户端实现可以提供一个方便的方法用于生成随机的客户端标识符。使用此方法的客户端应注意避免创建长期孤立的会话。
+
+     */
+    val clientIdentifier = msg.payload().clientIdentifier()
+
+    /*
+    3.1.3.2.2 遗嘱延迟间隔 Will Delay Interval
+    24(0x18) 字节 ，遗嘱延迟间隔标识符。 由四字节整形来表示以秒为单位的遗嘱延迟间隔，当单个 CONNECT 报文中重复出现了该属性则会被视为协议错误，
+    如果遗嘱延迟间隔没有设置，那么会将默认值设为 0，也就意味着遗嘱消息的发布不会有任何延迟。
+    服务器只有在遗嘱延迟间隔过期或者会话结束的时候才可以发布客户端的遗嘱消息。如果在遗嘱延迟间隔过期之前在这个会话上建立了一个新的网络连接，
+    那么服务器就不应该再发送任何遗嘱消息了。
+    非正式评注 遗嘱延迟间隔其中一个用途是在临时网络断开并且客户端在遗嘱消息发布之前成功地重新连接并继续其会话的情况下避免发布遗嘱消息。
+    非正式评注 如果网络连接使用了已存在的到服务器的网络连接的客户端标识符，那么已存在的连接中的遗嘱消息就会被发送，
+    除非新的连接指明了清除开始（Clean Start）为 0 且遗嘱延迟大于 0。如果遗嘱延迟是 0，那么遗嘱消息就会在已存在的网络连接关闭的时候发送出去，
+    如果清除开始设置为 1，那么遗嘱消息会因为会话结束。
+     */
+    val WillDelayInterval = msg.payload().willProperties().getProperty(MqttPropertyType.WILL_DELAY_INTERVAL.value())
+    /*
+    1(0x01) 字节 ，有效载荷格式指示器标识符。
+    有效载荷格式指示器的值分以下两种：
+    当该属性值为 0（0x00） 的时候，意味着遗嘱消息是未确定的字节，相当于不发送有效载荷格式指示器。
+    当该属性值为 1（0x01） 的时候，意味着遗嘱消息是 UTF-8 的字符数据，在有效载荷中的 UTF-8 数据必须是由 Unicode 规范定义且在 [RFC3629] 中定义的格式良好的 UTF-8 数据。
+    服务器必须发送所有未选择有效载荷格式指示器给所有接收应用消息的订阅者[MQTT--3.3.2-4]。接收者也可以验证格式指定的有效载荷，
+    以及是否它没有如同4.13 节所描述的那样发送带有 0x99 （有效载荷格式无效）原因码的 PUBACK，PUBREC 或 DISCONNECT报文。
+     */
+    val payloadFormatIndicator = msg.payload().willProperties().getProperty(MqttPropertyType.PAYLOAD_FORMAT_INDICATOR.value())
+    /*
+    本属性由 4 字节整形来表示。如果 CONNECT 报文重复出现该属性则会被视为协议错误。
+
+    如果存在该属性，那么这个 4 字节的值就用来表示单位为秒的遗嘱消息的生命周期，并且当服务器发布遗嘱消息的时候会被作为发布过期间隔发送。
+     */
+    val messageExpiryInterval = msg.payload().willProperties().getProperty(MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL.value())
+
+
+    /*
+    3 (0x03)字节 , 内容类型标识符。 该属性是以 UTF-8 编码，用来描述遗嘱消息内容的字符串，当该属性在同一报文中出现多次时，则会被视为协议错误。该属性的内容由收发消息的应用程序来定义。
+     */
+    val contentType = msg.payload().willProperties().getProperty(MqttPropertyType.CONTENT_TYPE.value())
+
+    /*
+    3.1.3.2.6 响应主题 Response Topic
+    8 (0x08) 字节 ，响应主题标识符。 由 UTF-8 编码的字符串，通常是用来作为响应消息中的主题名。当该属性在同一报文中重复出现时，则会被视为协议错误。若响应主题存在，会将遗嘱消息视为一个请求。
+     */
+    val responseTopic = msg.payload().willProperties().getProperty(MqttPropertyType.RESPONSE_TOPIC.value())
+
+    /*
+    .1.3.2.7 关联数据 Correlation Data
+    9 (0x09)字节 ，关联数据标识符。
+
+    由二进制数据表示， 该数据通常是给请求消息的发送者中用来鉴别哪一个才是它收到的响应消息的请求。
+    若该属性在同一报文中重复出现，则会被视为协议错误。如果没有设定关联数据 ，那么请求者就不需要任何关联数据。
+     */
+    val correlationData = msg.payload().willProperties().getProperty(MqttPropertyType.CORRELATION_DATA.value())
+
+
+    abortConnection(MqttConnectReturnCode.CONNECTION_REFUSED_UNSUPPORTED_PROTOCOL_VERSION)
   }
 
 
@@ -197,6 +394,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     val willTopic = msg.payload.willTopic
     val retained = msg.variableHeader.isWillRetain
     val qos = MsgQos.valueOf(msg.variableHeader().willQos())
+    val properties = msg.variableHeader().properties()
     new KernelPayloadMessage(3.toShort, qos, MsgRouter.TOPIC, willTopic, willPayload, retained, PubEnum.PUBLISH)
   }
 
@@ -259,8 +457,8 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    */
   private def processPubRec(msg: MqttPubRecMessage): Unit = {
     boundSession.receivePubRec(msg.variableHeader().messageId().toShort)
-//    val mqttPubRelMessage = MqttMessageBuilders.pubRel().packetId(msg.variableHeader().messageId().toShort).build()
-//    sendIfWritableElseDrop(mqttPubRelMessage)
+    //    val mqttPubRelMessage = MqttMessageBuilders.pubRel().packetId(msg.variableHeader().messageId().toShort).build()
+    //    sendIfWritableElseDrop(mqttPubRelMessage)
   }
 
 
@@ -630,13 +828,12 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
         channelFuture = channel.write(mqttMsg)
       }
       channelFuture.addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
-     true
-    }else {
+      true
+    } else {
       ReferenceCountUtil.safeRelease(mqttMsg.payload)
       false
     }
   }
-
 
 
   /**

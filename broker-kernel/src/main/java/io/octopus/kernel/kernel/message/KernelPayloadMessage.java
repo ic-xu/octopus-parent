@@ -3,8 +3,10 @@ package io.octopus.kernel.kernel.message;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.ByteBufUtil;
+import io.octopus.kernel.utils.ObjectUtils;
 
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * @author chenxu
@@ -12,7 +14,6 @@ import java.util.Objects;
  * @date 2022/1/5 8:14 下午
  */
 public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder {
-
 
     private MsgQos qos;
 
@@ -24,23 +25,38 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
 
     private final boolean isRetain;
 
+    private final Properties properties = new Properties();
 
 
     public KernelPayloadMessage(short packageId, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain) {
-        this(packageId, MsgQos.AT_MOST_ONCE, msgRouter, topic, payload, isRetain, PubEnum.PUBLISH);
+        this(packageId, null, MsgQos.AT_MOST_ONCE, msgRouter, topic, payload, isRetain, PubEnum.PUBLISH);
     }
 
-    public KernelPayloadMessage(short packageId, MsgQos qos, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain, PubEnum pubEnum) {
-       super(packageId,pubEnum);
+    public KernelPayloadMessage(short packageId, Properties properties, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain) {
+        this(packageId, properties, MsgQos.AT_MOST_ONCE, msgRouter, topic, payload, isRetain, PubEnum.PUBLISH);
+    }
+
+    public KernelPayloadMessage(short packageId, Properties properties, MsgQos qos, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain, PubEnum pubEnum) {
+        super(packageId, pubEnum);
+        this.qos = qos;
+        this.msgRouter = msgRouter;
+        this.topic = topic;
+        this.payload = payload;
+        this.isRetain = isRetain;
+
+        if (ObjectUtils.isEmpty(properties)) {
+            this.properties.putAll(properties);
+        }
+    }
+
+    public KernelPayloadMessage(short packageId,  MsgQos qos, MsgRouter msgRouter, String topic, ByteBuf payload, boolean isRetain, PubEnum pubEnum) {
+        super(packageId, pubEnum);
         this.qos = qos;
         this.msgRouter = msgRouter;
         this.topic = topic;
         this.payload = payload;
         this.isRetain = isRetain;
     }
-
-
-
     public MsgQos getQos() {
         return qos;
     }
@@ -65,8 +81,6 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
     }
 
 
-
-
     /**
      * 是否保留消息
      *
@@ -77,6 +91,10 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
     }
 
 
+    public Properties getProperties() {
+        return properties;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -86,10 +104,10 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
             return false;
         }
         return Objects.equals(packageId(), kernelPayloadMessage.packageId())
-                && Objects.equals(kernelPayloadMessage.getPubEnum(),this.getPubEnum())
-                && Objects.equals(kernelPayloadMessage.qos,this.qos)
-                && Objects.equals(kernelPayloadMessage.payload,this.payload)
-                && Objects.equals(kernelPayloadMessage.topic,this.topic);
+                && Objects.equals(kernelPayloadMessage.getPubEnum(), this.getPubEnum())
+                && Objects.equals(kernelPayloadMessage.qos, this.qos)
+                && Objects.equals(kernelPayloadMessage.payload, this.payload)
+                && Objects.equals(kernelPayloadMessage.topic, this.topic);
     }
 
     @Override
@@ -120,7 +138,7 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
 
     @Override
     public KernelPayloadMessage replace(ByteBuf content) {
-        return new KernelPayloadMessage(packageId(), msgRouter, topic, payload.copy(), isRetain);
+        return new KernelPayloadMessage(packageId(), properties, msgRouter, topic, payload.copy(), isRetain);
     }
 
     @Override

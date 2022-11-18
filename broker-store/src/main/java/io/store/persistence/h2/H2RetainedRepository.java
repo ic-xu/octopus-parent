@@ -37,7 +37,7 @@ public class H2RetainedRepository implements IRetainedRepository {
         final ByteBuf payload = msg.getPayload().copy();
         byte[] rawPayload = new byte[payload.readableBytes()];
         payload.getBytes(0, rawPayload);
-        final RetainedMessage toStore = new RetainedMessage(topic, msg.getQos(), rawPayload);
+        final RetainedMessage toStore = new RetainedMessage(topic, msg.getQos(), rawPayload,msg.getProperties());
         Set<RetainedMessage> messageSet = queueMap.computeIfAbsent(topic, (key) -> new CopyOnWriteArraySet<>());
         boolean result = messageSet.add(toStore);
         ReferenceCountUtil.safeRelease(msg);

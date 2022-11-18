@@ -31,7 +31,7 @@ public final class MemoryRetainedRepository implements IRetainedRepository {
         final ByteBuf payload = msg.getPayload();
         byte[] rawPayload = new byte[payload.readableBytes()];
         payload.getBytes(0, rawPayload);
-        final RetainedMessage toStore = new RetainedMessage(topic, msg.getQos(), rawPayload);
+        final RetainedMessage toStore = new RetainedMessage(topic, msg.getQos(), rawPayload,msg.getProperties());
        return storage.put(topic, toStore)!=null;
     }
 

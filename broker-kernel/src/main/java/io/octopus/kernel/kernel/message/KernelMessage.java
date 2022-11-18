@@ -10,8 +10,6 @@ public class KernelMessage {
 
     private  short packageId;
 
-
-
     private final PubEnum pubEnum;
 
     public KernelMessage(short packageId, PubEnum pubEnum) {

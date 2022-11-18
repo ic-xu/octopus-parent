@@ -23,20 +23,14 @@ public enum PubEnum {
 
 
     public static PubEnum valueOf(int value) {
-        switch (value) {
-            case 0:
-                return PUBLISH;
-            case 1:
-                return PUB_ACK;
-            case 2:
-                return PUB_REC;
-            case 3:
-                return PUB_REL;
-            case 4:
-                return PUB_COMP;
-            default:
-                throw new IllegalArgumentException("invalid QoS: " + value);
-        }
+        return switch (value) {
+            case 0 -> PUBLISH;
+            case 1 -> PUB_ACK;
+            case 2 -> PUB_REC;
+            case 3 -> PUB_REL;
+            case 4 -> PUB_COMP;
+            default -> throw new IllegalArgumentException("invalid QoS: " + value);
+        };
     }
 
 

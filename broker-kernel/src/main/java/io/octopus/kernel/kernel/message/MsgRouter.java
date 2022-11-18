@@ -26,11 +26,11 @@ public enum MsgRouter {
 
 
     public static MsgRouter valueOf(int value) throws NoSuchObjectException {
-        switch (value){
-            case 1:return USER_NAME;
-            case 2:return TOPIC;
-            default:throw new NoSuchObjectException();
-        }
+        return switch (value) {
+            case 1 -> USER_NAME;
+            case 2 -> TOPIC;
+            default -> throw new NoSuchObjectException();
+        };
     }
 
 }

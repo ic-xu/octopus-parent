@@ -257,7 +257,7 @@ public class DefaultPostOffice implements IPostOffice {
                     MsgQos retainedQos = retainedMsg.qosLevel();
                     MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(subscription, retainedQos);
                     ByteBuf payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload());
-                    KernelPayloadMessage message = new KernelPayloadMessage((short) 2, qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
+                    KernelPayloadMessage message = new KernelPayloadMessage((short) 2,retainedMsg.getProperties(), qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
                     // sendRetainedPublishOnSessionAtQos
                     targetSession.sendMsgAtQos(new StoreMsg<>(message, null), false);
                     //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
