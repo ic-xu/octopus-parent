@@ -2,23 +2,22 @@ package io.octopus.scala.broker.mqtt.server
 
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.DefaultThreadFactory
-import io.octopus.config.{FileResourceLoader, IConfig, IResourceLoader, ResourceLoaderConfig}
-import io.octopus.contants.BrokerConstants
+import io.octopus.kernel.config.{FileResourceLoader, IConfig, IResourceLoader, ResourceLoaderConfig}
+import io.octopus.kernel.contants.BrokerConstants
 import io.octopus.kernel.Version
 import io.octopus.kernel.kernel._
 import io.octopus.kernel.kernel.interceptor.{ConnectionNotifyInterceptor, PostOfficeNotifyInterceptor}
 import io.octopus.kernel.kernel.listener.LifecycleListener
-import io.octopus.kernel.kernel.message.KernelPayloadMessage
-import io.octopus.kernel.kernel.repository.{IQueueRepository, IRetainedRepository, IStoreCreateFactory, ISubscriptionsRepository}
+import io.octopus.kernel.kernel.message.{IMessage, KernelPayloadMessage}
+import io.octopus.kernel.kernel.repository.{IMsgQueue, IRetainedRepository, IStoreCreateFactory, ISubscriptionsRepository, IndexQueueFactory}
 import io.octopus.kernel.kernel.router.IRouterRegister
 import io.octopus.kernel.kernel.security._
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory
 import io.octopus.kernel.utils.{ClassLoadUtils, HostUtils, ObjectUtils}
-import io.octopus.scala.broker.mqtt.persistence.MemoryRepository
 import io.octopus.utils.LoggingUtils
 import io.store.persistence._
 import io.store.persistence.disk.CheckPointServer
-import io.store.persistence.maptree.TopicMapSubscriptionDirectory
+import io.store.persistence.memory.TopicMapSubscriptionDirectory
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.io.File
@@ -106,16 +105,17 @@ class Server extends IServer {
 
     store = new StoreCreateFactory(config)
     val subscriptionsRepository: ISubscriptionsRepository = store.createISubscriptionsRepository()
-    val queueRepository: IQueueRepository = store.createIQueueRepository()
+    val queueRepository: IndexQueueFactory = store.createIndexQueueRepository()
     val retainedRepository: IRetainedRepository = store.createIRetainedRepository()
-
+    val iMsgQueue: IMsgQueue[IMessage] = store.createIMsgQueueRepository()
     val subscriptions: ISubscriptionsDirectory = new TopicMapSubscriptionDirectory
     subscriptions.init(subscriptionsRepository)
     val readWriteControl: ReadWriteControl = new ReadWriteControl(this.reController)
     this.checkPointServer = new CheckPointServer
 
-    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer))
-    postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.kernelInterceptor.asJava, readWriteControl)
+//    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer))
+    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, iMsgQueue)
+    postOffice = new DefaultPostOffice(iMsgQueue,subscriptions, retainedRepository, sessionResistor, this.kernelInterceptor.asJava, readWriteControl)
     sessionResistor.setPostOffice(postOffice)
 
     //    this.sessionResistor = new SessionRegistry(subscriptions, queueRepository, authorizator, msgQueue)

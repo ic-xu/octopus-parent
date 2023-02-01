@@ -1,6 +1,7 @@
 package io.store.persistence.h2;
 
 
+import io.octopus.kernel.kernel.message.MsgQos;
 import io.octopus.kernel.kernel.queue.Index;
 import org.h2.mvstore.WriteBuffer;
 import org.h2.mvstore.type.StringDataType;
@@ -36,9 +37,9 @@ public final class QueueMessageIndexDataType implements org.h2.mvstore.type.Data
     public void write(WriteBuffer buff, Object obj) {
         if (obj instanceof Index) {
             final Index index = (Index) obj;
-            buff.putLong(index.getOffset());
-            buff.putInt(index.getSize());
-            buff.putInt(index.getQueueName());
+            buff.putLong(index.offset());
+            buff.putInt(index.size());
+            buff.putInt(index.queueName());
 //            stringDataType.write(buff, index.getQueueName());
         } else {
             throw new IllegalArgumentException("Unrecognized message class " + obj.getClass());
@@ -58,7 +59,9 @@ public final class QueueMessageIndexDataType implements org.h2.mvstore.type.Data
         final int size = buff.getInt();
 //        final String queueName = stringDataType.read(buff);
         final int queueName = buff.getInt();
-        return new Index(offset, size, queueName);
+        final MsgQos qos =MsgQos.valueOf( buff.get());
+        final long messageId = buff.getLong();
+        return new Index(offset, size, queueName,qos,messageId);
     }
 
     @Override

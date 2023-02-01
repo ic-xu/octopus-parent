@@ -1,6 +1,6 @@
 package io.store.util;
 
-import io.octopus.contants.BrokerConstants;
+import io.octopus.kernel.contants.BrokerConstants;
 import io.store.persistence.DatabasesType;
 
 /**

@@ -8,8 +8,8 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.Future;
-import io.octopus.config.IConfig;
-import io.octopus.contants.BrokerConstants;
+import io.octopus.kernel.config.IConfig;
+import io.octopus.kernel.contants.BrokerConstants;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.metrics.BytesMetrics;
 import io.octopus.kernel.kernel.metrics.BytesMetricsCollector;
@@ -82,13 +82,13 @@ public class TransportBootstrap {
         boolean epoll = config.boolProp(BrokerConstants.NETTY_EPOLL_PROPERTY_NAME, false);
         if (epoll) {
             LOGGER.info("Netty is using Epoll");
-            bossGroup = new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("boss"));
-            workerGroup = new EpollEventLoopGroup(new DefaultThreadFactory("work"));
+            bossGroup = new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("netty-boss"));
+            workerGroup = new EpollEventLoopGroup(new DefaultThreadFactory("netty-work"));
             channelClass = EpollServerSocketChannel.class;
         } else {
             LOGGER.info("Netty is using NIO");
-            bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("boss"));
-            workerGroup = new NioEventLoopGroup(new DefaultThreadFactory("worker"));
+            bossGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("netty-boss"));
+            workerGroup = new NioEventLoopGroup(new DefaultThreadFactory("netty-work"));
             channelClass = NioServerSocketChannel.class;
         }
 

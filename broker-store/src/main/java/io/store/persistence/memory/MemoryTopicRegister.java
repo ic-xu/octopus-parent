@@ -1,4 +1,4 @@
-package io.store.persistence.maptree;
+package io.store.persistence.memory;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 import io.octopus.kernel.kernel.subscriptions.TopicRegister;
 

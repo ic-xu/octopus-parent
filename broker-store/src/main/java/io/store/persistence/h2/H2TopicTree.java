@@ -1,4 +1,4 @@
-package io.store.persistence.maptree;
+package io.store.persistence.h2;
 
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 import org.h2.mvstore.MVMap;

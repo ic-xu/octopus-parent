@@ -1,13 +1,13 @@
 package io.store.persistence.memory;
 
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IndexQueueFactory;
 
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class MemoryQueueRepository implements IQueueRepository {
+public class MemoryQueueFactory implements IndexQueueFactory {
 
     @Override
     public Queue<Index> createQueue(String cli, boolean clean) {

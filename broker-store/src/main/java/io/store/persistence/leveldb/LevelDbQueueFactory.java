@@ -1,7 +1,7 @@
 package io.store.persistence.leveldb;
 
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IndexQueueFactory;
 import org.iq80.leveldb.DB;
 
 import java.util.Map;
@@ -11,11 +11,11 @@ import java.util.Queue;
  * @author chenxu
  * @version 1
  */
-public class LevelDbQueueRepository implements IQueueRepository {
+public class LevelDbQueueFactory implements IndexQueueFactory {
 
     private final DB db;
 
-    public LevelDbQueueRepository(DB db) {
+    public LevelDbQueueFactory(DB db) {
         this.db = db;
     }
 

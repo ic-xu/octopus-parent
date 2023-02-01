@@ -26,7 +26,7 @@
 //import io.store.persistence.memory.MemoryRetainedRepository;
 //import io.store.persistence.memory.MemorySubscriptionsRepository;
 //import io.octopus.base.subscriptions.ISubscriptionsDirectory;
-//import io.store.persistence.maptree.TopicMapSubscriptionDirectory;
+//import io.store.persistence.memory.TopicMapSubscriptionDirectory;
 //import org.h2.mvstore.MVStore;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;

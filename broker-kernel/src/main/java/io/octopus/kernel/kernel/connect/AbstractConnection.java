@@ -1,7 +1,7 @@
 package io.octopus.kernel.kernel.connect;
 
 import io.netty.channel.Channel;
-import io.octopus.config.BrokerConfiguration;
+import io.octopus.kernel.config.BrokerConfiguration;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.message.KernelMessage;
 import io.octopus.kernel.kernel.security.IAuthenticator;

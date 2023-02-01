@@ -1,9 +1,10 @@
 package io.octopus.kernel.kernel;
 
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
-import io.octopus.kernel.kernel.queue.StoreMsg;
+import io.octopus.kernel.kernel.queue.Index;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +21,7 @@ public interface ISession {
      * @param msg msg；
      * @return  boolean
      */
-    boolean receiveMsg(KernelPayloadMessage msg);
+    boolean receiveMsg(KernelPayloadMessage msg) throws IOException;
 
 
 
@@ -55,10 +56,10 @@ public interface ISession {
 
     /**
      * 发送消息给到客户端
-     * @param storeMsg 消息
+     * @param index 消息
      * @param directPublish 是否直接发送
      */
-    void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish);
+    void sendMsgAtQos(Index index, Boolean directPublish);
 
     /**
      * 绑定UDP端点

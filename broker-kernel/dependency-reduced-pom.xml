@@ -16,9 +16,11 @@
           <target>${maven.compiler.target}</target>
           <encoding>UTF-8</encoding>
           <excludes>libs</excludes>
+          <compilerArgs>
+            <arg>--enable-preview</arg>
+          </compilerArgs>
           <compilerArguments>
             <verbose />
-            <bootclasspath>${java.home}/lib/rt.jar:${java.home}/lib/jce.jar:${java.home}/lib/jsse.jar</bootclasspath>
           </compilerArguments>
         </configuration>
       </plugin>

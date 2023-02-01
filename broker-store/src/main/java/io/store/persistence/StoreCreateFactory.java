@@ -1,12 +1,9 @@
 package io.store.persistence;
 
 import io.netty.util.internal.ObjectUtil;
-import io.octopus.config.IConfig;
-import io.octopus.contants.BrokerConstants;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
-import io.octopus.kernel.kernel.repository.IRetainedRepository;
-import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
-import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.config.IConfig;
+import io.octopus.kernel.contants.BrokerConstants;
+import io.octopus.kernel.kernel.repository.*;
 import io.octopus.kernel.kernel.router.IRouterRegister;
 import io.octopus.kernel.utils.ObjectUtils;
 import io.store.persistence.h2.H2Builder;
@@ -53,19 +50,16 @@ public class StoreCreateFactory implements IStoreCreateFactory {
         }
         switch (dbType) {
             //H2
-            case H2:
+            case H2 -> {
                 String h2Path = persistencePath + "h2/octopus_store.db";
                 initPersistencePath(h2Path);
                 storeCreateFactoryImp = new H2Builder(config).initStore(new MVStore.Builder().fileName(h2Path).autoCommitDisabled().open());
-                break;
+            }
             //levelDB
-            case LEVELDB:
-                storeCreateFactoryImp = new LevelDbBuilder(config, persistencePath + "levelDB/").initStore();
-                break;
+            case LEVELDB ->  storeCreateFactoryImp = new LevelDbBuilder(config, persistencePath + "levelDB/").initStore();
+
             //memory
-            default:
-                storeCreateFactoryImp = new MemoryBuilder();
-                break;
+            default -> storeCreateFactoryImp = new MemoryBuilder();
         }
         logger.info("start db {}", dbType);
     }
@@ -76,8 +70,8 @@ public class StoreCreateFactory implements IStoreCreateFactory {
     }
 
     @Override
-    public IQueueRepository createIQueueRepository() {
-        return storeCreateFactoryImp.createIQueueRepository();
+    public IndexQueueFactory createIndexQueueRepository() {
+        return storeCreateFactoryImp.createIndexQueueRepository();
     }
 
     @Override
@@ -95,6 +89,11 @@ public class StoreCreateFactory implements IStoreCreateFactory {
     @Override
     public IRouterRegister createIRouterRegister() {
         return storeCreateFactoryImp.createIRouterRegister();
+    }
+
+    @Override
+    public IMsgQueue createIMsgQueueRepository() {
+        return storeCreateFactoryImp.createIMsgQueueRepository();
     }
 
 

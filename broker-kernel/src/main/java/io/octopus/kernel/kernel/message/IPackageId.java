@@ -1,5 +1,7 @@
 package io.octopus.kernel.kernel.message;
 
+import java.io.IOException;
+
 /**
  * @author chenxu
  * @version 1
@@ -13,7 +15,7 @@ public interface IPackageId {
    *
    * @return
    */
-  Long longId();
+  Long messageId();
 
 
   /**
@@ -21,6 +23,10 @@ public interface IPackageId {
    *
    * @return
    */
-  Short shortId();
+  Short packageId();
+
+
+
+  Integer getSize() throws IOException;
 
 }

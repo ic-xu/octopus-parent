@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.subscriptions.plugin.imp;
 
-import io.octopus.contants.ConstantsTopics;
+import io.octopus.kernel.contants.ConstantsTopics;
 import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 import io.octopus.kernel.kernel.subscriptions.Topic;

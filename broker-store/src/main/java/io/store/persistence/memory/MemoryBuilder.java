@@ -1,9 +1,7 @@
 package io.store.persistence.memory;
 
-import io.octopus.kernel.kernel.repository.IQueueRepository;
-import io.octopus.kernel.kernel.repository.IRetainedRepository;
-import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
-import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.message.IMessage;
+import io.octopus.kernel.kernel.repository.*;
 import io.octopus.kernel.kernel.router.IRouterRegister;
 
 /**
@@ -13,8 +11,8 @@ import io.octopus.kernel.kernel.router.IRouterRegister;
 public class MemoryBuilder implements IStoreCreateFactory {
 
     @Override
-    public IQueueRepository createIQueueRepository() {
-        return new MemoryQueueRepository();
+    public IndexQueueFactory createIndexQueueRepository() {
+        return new MemoryQueueFactory();
     }
 
     @Override
@@ -30,6 +28,11 @@ public class MemoryBuilder implements IStoreCreateFactory {
     @Override
     public IRouterRegister createIRouterRegister() {
         return null;
+    }
+
+    @Override
+    public IMsgQueue<IMessage> createIMsgQueueRepository() {
+        return new MemberMsgQueue<>();
     }
 
     @Override

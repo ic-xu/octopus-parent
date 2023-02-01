@@ -1,13 +1,13 @@
 package io.store.persistence.disk;
 
 import io.netty.buffer.ByteBuf;
+import io.octopus.kernel.contants.BrokerConstants;
 import io.octopus.kernel.checkpoint.CheckPoint;
-import io.octopus.contants.BrokerConstants;
+import io.octopus.kernel.kernel.message.IMessage;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.Index;
 import io.octopus.kernel.kernel.queue.MsgRepository;
 import io.octopus.kernel.kernel.queue.SearchData;
-import io.octopus.kernel.kernel.queue.StoreMsg;
 import io.octopus.kernel.utils.KernelMsgDecode;
 import io.octopus.kernel.utils.KernelMsgEncode;
 import org.slf4j.Logger;
@@ -73,7 +73,7 @@ public class ConcurrentFileRepository implements MsgRepository<KernelPayloadMess
 
 
     @Override
-    public StoreMsg<KernelPayloadMessage> offer(KernelPayloadMessage msg) {
+    public Index offer(KernelPayloadMessage msg) {
         if (stop.get()) {
             return null;
         }
@@ -98,7 +98,7 @@ public class ConcurrentFileRepository implements MsgRepository<KernelPayloadMess
             size.incrementAndGet();
             lastMessageSize = messageArray.length + 4;
             checkPointServer.saveCheckPoint(wrapperCheckPoint(), false);
-            return new StoreMsg<>(msg, new Index(currentWritePosition.getAndAdd(lastMessageSize), messageArray.length, threadNum));
+            return new Index(currentWritePosition.getAndAdd(lastMessageSize), messageArray.length, threadNum,msg.getQos(), msg.messageId());
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -123,7 +123,7 @@ public class ConcurrentFileRepository implements MsgRepository<KernelPayloadMess
 
 
     @Override
-    public StoreMsg<KernelPayloadMessage> poll() {
+    public IMessage poll() {
         ByteBuf messageBuf;
         long messageIndex = currentReadPosition.get();
         readLock.lock();
@@ -161,17 +161,17 @@ public class ConcurrentFileRepository implements MsgRepository<KernelPayloadMess
         }
 
 //        return new StoreMsg<>(mqttIMessage, new MsgIndex(messageIndex, messageSize, threadNum));
-        return null;
+        return kernelPayloadMessage;
     }
 
 
     @Override
-    public StoreMsg<KernelPayloadMessage> poll(SearchData searchData) {
-        FileMappedByteBuffer reallyFile = findReallyFile(searchData.getIndex().getOffset());
-        int reallyPosition = (int) (searchData.getIndex().getOffset() - reallyFile.getFileName());
+    public IMessage poll(SearchData searchData) {
+        FileMappedByteBuffer reallyFile = findReallyFile(searchData.getIndex().offset());
+        int reallyPosition = (int) (searchData.getIndex().offset() - reallyFile.getFileName());
         if (reallyPosition > 0) {
 //            ByteBuf messageBuf = reallyFile.pollMessage(reallyPosition);
-            ByteBuf messageBuf = reallyFile.readMessageBody(reallyPosition,searchData.getIndex().getSize());
+            ByteBuf messageBuf = reallyFile.readMessageBody(reallyPosition,searchData.getIndex().size());
             if (messageBuf == null) {
                 return null;
             }
@@ -179,10 +179,10 @@ public class ConcurrentFileRepository implements MsgRepository<KernelPayloadMess
                 final int size = messageBuf.capacity();
                 final KernelPayloadMessage kernelPayloadMessage = KernelMsgDecode.decode(messageBuf);
 //                return new StoreMsg<>(mqttIMessage, new MsgIndex(searchData.getIndex().getOffset(), size, threadNum));
-                return null;
+                return kernelPayloadMessage;
             } catch (Exception e) {
                 e.printStackTrace();
-                logger.error("position is {} ,FileMappedByteBuffer is {}", searchData.getIndex().getOffset(), reallyFile.getFileName());
+                logger.error("position is {} ,FileMappedByteBuffer is {}", searchData.getIndex().offset(), reallyFile.getFileName());
                 logger.error("bytes length is {} ", messageBuf.capacity());
                 System.exit(1);
             }

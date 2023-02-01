@@ -4,6 +4,7 @@ import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.message.MsgQos;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -30,14 +31,14 @@ public interface IPostOffice {
      * @param fromSession 消息来源
      * @return 结果
      */
-    Boolean processReceiverMsg(KernelPayloadMessage kernelPayloadMessage, ISession fromSession);
+    Boolean processReceiverMsg(KernelPayloadMessage kernelPayloadMessage, ISession fromSession) throws IOException;
 
     /**
      * 内部直接发送，跳过对topic 和用户的校验，一般用作嵌入broker 或者集群间的内部发送数据
      *
      * @param msg msg
      */
-    void internalPublish(KernelPayloadMessage msg);
+    void internalPublish(KernelPayloadMessage msg) throws IOException;
 
     /**
      * 订阅消息

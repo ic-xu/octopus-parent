@@ -1,4 +1,4 @@
-package io.octopus.contants;
+package io.octopus.kernel.contants;
 
 public interface ConstantsTopics {
 

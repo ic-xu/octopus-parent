@@ -2,7 +2,7 @@ package io.octopus.kernel.kernel.connect;
 
 
 import io.netty.channel.Channel;
-import io.octopus.config.IConfig;
+import io.octopus.kernel.config.IConfig;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.IPostOffice;
 import io.octopus.kernel.kernel.security.IAuthenticator;

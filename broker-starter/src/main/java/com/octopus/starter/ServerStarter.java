@@ -1,28 +1,24 @@
-package com.octopus;
+package com.octopus.starter;
 
 
 import io.octopus.kernel.Version;
 import io.octopus.kernel.kernel.*;
-import io.octopus.config.FileResourceLoader;
-import io.octopus.config.IConfig;
-import io.octopus.config.IResourceLoader;
-import io.octopus.config.ResourceLoaderConfig;
-import io.octopus.contants.BrokerConstants;
+import io.octopus.kernel.config.FileResourceLoader;
+import io.octopus.kernel.config.IConfig;
+import io.octopus.kernel.config.IResourceLoader;
+import io.octopus.kernel.config.ResourceLoaderConfig;
+import io.octopus.kernel.contants.BrokerConstants;
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor;
 import io.octopus.kernel.kernel.interceptor.PostOfficeNotifyInterceptor;
 import io.octopus.kernel.kernel.listener.LifecycleListener;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
-import io.octopus.kernel.kernel.repository.IRetainedRepository;
-import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
-import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.kernel.repository.*;
 import io.octopus.kernel.kernel.security.*;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
 import io.octopus.kernel.utils.ClassLoadUtils;
 import io.octopus.kernel.utils.ObjectUtils;
-import io.octopus.scala.broker.mqtt.persistence.MemoryRepository;
 import io.store.persistence.StoreCreateFactory;
 import io.store.persistence.disk.CheckPointServer;
-import io.store.persistence.maptree.TopicMapSubscriptionDirectory;
+import io.store.persistence.memory.TopicMapSubscriptionDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +58,7 @@ public class ServerStarter {
 
     private IAuthenticator authenticator;
     private IRWController irwController;
-    private IStoreCreateFactory store;
+    private IStoreCreateFactory storeFactory;
 
 
     public ServerStarter() {
@@ -211,7 +207,7 @@ public class ServerStarter {
      * 初始化存储管理器
      */
     private void initializeStore() throws IOException {
-        store = new StoreCreateFactory(config);
+        storeFactory = new StoreCreateFactory(config);
     }
 
 
@@ -220,17 +216,21 @@ public class ServerStarter {
      */
     private void initAndStartNettyAcepter() throws Exception {
 
-        ISubscriptionsRepository subscriptionsRepository = store.createISubscriptionsRepository();
-        IQueueRepository queueRepository = store.createIQueueRepository();
-        IRetainedRepository retainedRepository = store.createIRetainedRepository();
-
+        ISubscriptionsRepository subscriptionsRepository = storeFactory.createISubscriptionsRepository();
         ISubscriptionsDirectory subscriptions = new TopicMapSubscriptionDirectory();
         subscriptions.init(subscriptionsRepository);
-        ReadWriteControl readWriteControl = new ReadWriteControl(this.irwController);
-        CheckPointServer checkPointServer = new CheckPointServer();
 
-        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer));
-        IPostOffice postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.postOfficeNotifyInterceptors, readWriteControl);
+
+        IndexQueueFactory indexQueueFactory = storeFactory.createIndexQueueRepository();
+        ReadWriteControl readWriteControl = new ReadWriteControl(this.irwController);
+//        CheckPointServer checkPointServer = new CheckPointServer();
+//        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer));
+        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(indexQueueFactory, readWriteControl, config, storeFactory.createIMsgQueueRepository());
+
+
+        IRetainedRepository retainedRepository = storeFactory.createIRetainedRepository();
+        IMsgQueue iMsgQueue = storeFactory.createIMsgQueueRepository();
+        IPostOffice postOffice = new DefaultPostOffice(iMsgQueue,subscriptions, retainedRepository, sessionResistor, this.postOfficeNotifyInterceptors, readWriteControl);
         sessionResistor.setPostOffice(postOffice);
 
         //    this.sessionResistor = new SessionRegistry(subscriptions, queueRepository, authorizator, msgQueue)

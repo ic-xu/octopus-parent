@@ -4,14 +4,13 @@ import io.netty.util.ReferenceCountUtil;
 import io.octopus.kernel.kernel.connect.AbstractConnection;
 import io.octopus.kernel.kernel.message.*;
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.queue.MsgRepository;
-import io.octopus.kernel.kernel.queue.SearchData;
-import io.octopus.kernel.kernel.queue.StoreMsg;
+import io.octopus.kernel.kernel.repository.IMsgQueue;
 import io.octopus.kernel.kernel.subscriptions.Subscription;
 import io.octopus.kernel.utils.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,7 +69,7 @@ public class DefaultSession implements ISession, Runnable {
     /**
      * 消息队列大小
      */
-    protected final MsgRepository<KernelPayloadMessage> msgRepository;
+    protected final IMsgQueue<IMessage> msgRepository;
 
     /**
      * 发送中的窗口
@@ -125,7 +124,7 @@ public class DefaultSession implements ISession, Runnable {
                           String clientId, Boolean clean, KernelPayloadMessage willMsg,
                           Queue<Index> qos1Queue, Queue<Index> qos2Queue,
                           Integer inflictWindowSize, Integer clientVersion,
-                          MsgRepository<KernelPayloadMessage> msgRepository) {
+                          IMsgQueue<IMessage> msgRepository) {
 
         this.postOffice = postOffice;
         this.userName = userName;
@@ -147,7 +146,7 @@ public class DefaultSession implements ISession, Runnable {
      * @param msg msg；
      */
     @Override
-    public boolean receiveMsg(KernelPayloadMessage msg) {
+    public boolean receiveMsg(KernelPayloadMessage msg) throws IOException {
         return postOffice.processReceiverMsg(msg, this);
     }
 
@@ -155,17 +154,17 @@ public class DefaultSession implements ISession, Runnable {
     /**
      * 发送消息，postOffice 调用这个消息发送相关消息
      *
-     * @param storeMsg      msg
+     * @param index         msg
      * @param directPublish Send directly
      */
     @Override
-    public void sendMsgAtQos(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
-        storeMsg.getMsg().setPackageId(nextPacketId());
-        switch (storeMsg.getMsg().getQos()) {
-            case AT_MOST_ONCE -> sendMsgAtQos0(storeMsg);
+    public void sendMsgAtQos(Index index, Boolean directPublish) {
+
+        switch (index.qos()) {
+            case AT_MOST_ONCE -> sendMsgAtQos0(index);
             //这里发布的时候两个使用同样的处理方法即可
-            case AT_LEAST_ONCE -> sendMsgAtQos1(storeMsg, directPublish);
-            case EXACTLY_ONCE -> sendMsgAtQos2(storeMsg, directPublish);
+            case AT_LEAST_ONCE -> sendMsgAtQos1(index, directPublish);
+            case EXACTLY_ONCE -> sendMsgAtQos2(index, directPublish);
 
             //TODO UDP 的转发逻辑还没有实现
             case UDP -> logger.error("Not admissible {}", "UDP");
@@ -174,16 +173,26 @@ public class DefaultSession implements ISession, Runnable {
     }
 
 
-    private void sendMsgAtQos0(StoreMsg<KernelPayloadMessage> storeMsg) {
-        connection.sendIfWritableElseDrop(storeMsg.getMsg());
+    private void sendMsgAtQos0(Index index) {
+        IMessage iMessage = msgRepository.retrievalKernelMsg(index);
+        if (iMessage instanceof KernelPayloadMessage) {
+            KernelPayloadMessage payloadMessage = (KernelPayloadMessage) iMessage;
+            connection.sendIfWritableElseDrop(payloadMessage);
+        }
+
     }
 
 
-    private void sendMsgAtQos1(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos1(Index index, Boolean directPublish) {
         if (!connected() && isClean()) { //pushing messages to disconnected not clean session
             return;
         }
-        KernelPayloadMessage msg = storeMsg.getMsg();
+        IMessage iMessage = msgRepository.retrievalKernelMsg(index);
+        boolean canSend = iMessage instanceof KernelPayloadMessage;
+        if (!canSend) {
+            return;
+        }
+        KernelPayloadMessage msg = (KernelPayloadMessage) iMessage;
 
         if (canSkipQos1Queue() || directPublish) {
             inflictSlots.decrementAndGet();
@@ -204,7 +213,7 @@ public class DefaultSession implements ISession, Runnable {
                 connection.flush();
             }
         } else {
-            qos1Queue.offer(storeMsg.getIndex());
+            qos1Queue.offer(index);
         }
     }
 
@@ -225,12 +234,17 @@ public class DefaultSession implements ISession, Runnable {
     }
 
 
-    private void sendMsgAtQos2(StoreMsg<KernelPayloadMessage> storeMsg, Boolean directPublish) {
+    private void sendMsgAtQos2(Index index, Boolean directPublish) {
         if (!connected() && isClean()) {
             //pushing messages to disconnected not clean session
             return;
         }
-        KernelPayloadMessage msg = storeMsg.getMsg();
+        IMessage iMessage = msgRepository.retrievalKernelMsg(index);
+        boolean canSend = iMessage instanceof KernelPayloadMessage;
+        if (!canSend) {
+            return;
+        }
+        KernelPayloadMessage msg = (KernelPayloadMessage) iMessage;
 
         if (canSkipQos2Queue() || directPublish) {
             ///缓存qos2消息
@@ -244,7 +258,7 @@ public class DefaultSession implements ISession, Runnable {
                 connection.flush();
             }
         } else {
-            qos2Queue.offer(storeMsg.getIndex());
+            qos2Queue.offer(index);
 //            drainQueueToConnection();
         }
     }
@@ -261,8 +275,6 @@ public class DefaultSession implements ISession, Runnable {
             logger.trace("Received a pubAck with not matching packetId  {} ", recPacketId);
         }
     }
-
-
 
 
     @Override
@@ -306,6 +318,12 @@ public class DefaultSession implements ISession, Runnable {
 
     public void bind(AbstractConnection connection) {
         this.connection = connection;
+        startSession();
+    }
+
+
+    public synchronized void startSession() {
+        Thread.startVirtualThread(this);
     }
 
 
@@ -351,10 +369,8 @@ public class DefaultSession implements ISession, Runnable {
         while (!qos1Queue.isEmpty() && inflictHasSlotsAndConnectionIsUp()) {
             Index msgIndex = qos1Queue.poll();
             if (!ObjectUtils.isEmpty(msgIndex)) {
-
-                StoreMsg<KernelPayloadMessage> storeMsg = msgRepository.poll(new SearchData(clientId, msgIndex));
                 /// 重新开发发送 qos1 的消息。
-                sendMsgAtQos1(storeMsg, false);
+                sendMsgAtQos1(msgIndex, false);
             }
         }
     }
@@ -430,33 +446,61 @@ public class DefaultSession implements ISession, Runnable {
      */
     protected void drainQos2QueueToConnection() {
         if (null == qos2SenderMsg) {
+            KernelPayloadMessage msg = null;
             Index msgIndex = qos2Queue.poll();
-            if (!ObjectUtils.isEmpty(msgIndex)) {
-                StoreMsg<KernelPayloadMessage> storeMsg = msgRepository.poll(new SearchData(clientId, msgIndex));
-                KernelPayloadMessage msg = storeMsg.getMsg();
-
-                /// 一直找到正常的消息为止
-                while (null == msg) {
-                    storeMsg = msgRepository.poll(new SearchData(clientId, msgIndex));
-                    msg = storeMsg.getMsg();
+            /// 一直找到正常的消息为止
+            while (null == msg && null != msgIndex) {
+                if (!ObjectUtils.isEmpty(msgIndex)) {
+                    IMessage iMessage = msgRepository.retrievalKernelMsg(msgIndex);
+                    boolean canSend = iMessage instanceof KernelPayloadMessage;
+                    if (!canSend) {
+                        return;
+                    }
+                    msg = (KernelPayloadMessage) iMessage;
+                } else {
+                    msgIndex = qos2Queue.poll();
                 }
+            }
 
-                ///缓存qos2消息
-                qos2SenderMsg = new Qos2SenderWrapper(msg);
-                ///添加超时检测
-                inflictTimeouts.add(new InFlightPacket(msg.packageId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
-                ///发送消息
-                connection.sendIfWritableElseDrop(msg);
-                logger.debug("Write direct to the peer, inflict slots: {}", inflictSlots.get());
-                if (inflictSlots.get() == 0) {
-                    connection.flush();
-                }
+
+            if(ObjectUtils.isEmpty(msg)){
+                return;
+            }
+            ///缓存qos2消息
+            qos2SenderMsg = new Qos2SenderWrapper(msg);
+            ///添加超时检测
+            inflictTimeouts.add(new InFlightPacket(msg.packageId(), DefaultSession.FLIGHT_BEFORE_RESEND_MS));
+            ///发送消息
+            connection.sendIfWritableElseDrop(msg);
+            logger.debug("Write direct to the peer, inflict slots: {}", inflictSlots.get());
+            if (inflictSlots.get() == 0) {
+                connection.flush();
             }
         }
     }
 
     @Override
     public void run() {
+
+        while (true) {
+
+            if (status.get().ordinal() <= SessionStatus.CONNECTING.ordinal() && connection.getChannel().isActive()) {
+                //链接处于正常链接状态
+                System.out.println(clientId+ ">>>>>>>>>>>> "+Thread.currentThread().getName()+Thread.currentThread().isVirtual());
+            } else {
+                //链接处于异常状态，这里需要判断session 是否到期被清除，
+                // 因为有的协议需要session 保存一定的超时时间，当超时
+                //时间到了之后，才能正常处理过期调的 session
+                System.out.println(clientId+">>>>>>>>>>>> 链接断开状态,关闭虚拟线程");
+                return;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ignored) {
+            }
+
+
+        }
 
     }
 
@@ -488,10 +532,6 @@ public class DefaultSession implements ISession, Runnable {
         //    //unSubscription
         //    cleanSubscribe()
         //update status
-        disconnect();
-    }
-
-    private void disconnect() {
         Boolean res = assignState(SessionStatus.CONNECTED, SessionStatus.DISCONNECTING);
         if (!res) {
             logger.info("this status is SessionStatus.DISCONNECTING");
@@ -500,6 +540,7 @@ public class DefaultSession implements ISession, Runnable {
         connection = null;
         willMsg = null;
         assignState(SessionStatus.DISCONNECTING, SessionStatus.DISCONNECTED);
+        status.set(SessionStatus.DISCONNECTED);
     }
 
     /**

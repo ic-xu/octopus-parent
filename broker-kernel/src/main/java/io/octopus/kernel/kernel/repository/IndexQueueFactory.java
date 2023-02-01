@@ -5,7 +5,7 @@ import io.octopus.kernel.kernel.queue.Index;
 import java.util.Map;
 import java.util.Queue;
 
-public interface IQueueRepository {
+public interface IndexQueueFactory {
 
     Queue<Index> createQueue(String cli, boolean clean);
 

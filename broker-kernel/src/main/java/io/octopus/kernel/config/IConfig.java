@@ -1,6 +1,6 @@
-package io.octopus.config;
+package io.octopus.kernel.config;
 
-import io.octopus.contants.BrokerConstants;
+import io.octopus.kernel.contants.BrokerConstants;
 import io.octopus.kernel.kernel.Environment;
 
 /**

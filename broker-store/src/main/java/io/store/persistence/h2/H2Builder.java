@@ -1,10 +1,8 @@
 package io.store.persistence.h2;
 
-import io.octopus.config.IConfig;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
-import io.octopus.kernel.kernel.repository.IRetainedRepository;
-import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
-import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.config.IConfig;
+import io.octopus.kernel.kernel.message.IMessage;
+import io.octopus.kernel.kernel.repository.*;
 import io.octopus.kernel.kernel.router.IRouterRegister;
 import org.h2.mvstore.MVStore;
 import org.slf4j.Logger;
@@ -38,8 +36,8 @@ public class H2Builder implements IStoreCreateFactory {
         mvStore.close();
     }
 
-    public IQueueRepository queueRepository() {
-        return new H2QueueRepository(mvStore);
+    public IndexQueueFactory queueRepository() {
+        return new H2IndexQueueFactory(mvStore);
     }
 
     public IRetainedRepository retainedRepository() {
@@ -47,7 +45,7 @@ public class H2Builder implements IStoreCreateFactory {
     }
 
     @Override
-    public IQueueRepository createIQueueRepository() {
+    public IndexQueueFactory createIndexQueueRepository() {
         return queueRepository();
     }
 
@@ -58,12 +56,17 @@ public class H2Builder implements IStoreCreateFactory {
 
     @Override
     public ISubscriptionsRepository createISubscriptionsRepository() {
-        return null;
+      throw  new RuntimeException("该方法还未实现");
     }
 
     @Override
     public IRouterRegister createIRouterRegister() {
-        return null;
+        throw  new RuntimeException("该方法还未实现");
+    }
+
+    @Override
+    public H2MsgQueue<IMessage> createIMsgQueueRepository() {
+        return  new H2MsgQueue<>(mvStore);
     }
 
     @Override

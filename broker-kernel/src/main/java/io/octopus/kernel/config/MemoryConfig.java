@@ -1,4 +1,4 @@
-package io.octopus.config;
+package io.octopus.kernel.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

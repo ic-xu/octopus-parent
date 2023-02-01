@@ -7,7 +7,7 @@ import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttMessageType;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.octopus.config.IConfig;
+import io.octopus.kernel.config.IConfig;
 import io.octopus.kernel.kernel.IPostOffice;
 import io.octopus.kernel.utils.NettyUtils;
 

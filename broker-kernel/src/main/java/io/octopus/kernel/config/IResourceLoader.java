@@ -1,4 +1,4 @@
-package io.octopus.config;
+package io.octopus.kernel.config;
 
 import java.io.Reader;
 

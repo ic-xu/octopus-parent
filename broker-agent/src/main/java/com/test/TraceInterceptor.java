@@ -6,7 +6,6 @@ import io.handler.codec.mqtt.MqttCustomerMessage;
 import io.handler.codec.mqtt.MqttMessage;
 import io.handler.codec.mqtt.MqttPublishMessage;
 import io.octopus.kernel.kernel.message.IMessage;
-import io.octopus.kernel.kernel.queue.StoreMsg;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
@@ -60,8 +59,8 @@ public class TraceInterceptor {
 
 
             }
-            else if(arg instanceof StoreMsg){
-                MqttMessage message = (MqttMessage) ((StoreMsg<IMessage>) arg).getMsg();
+            else if(arg instanceof IMessage){
+                MqttMessage message = (MqttMessage) arg;
                 if (message.longId() > 0) {
                     Span span = TrackManager.getSpan();
                     if (null == span) {

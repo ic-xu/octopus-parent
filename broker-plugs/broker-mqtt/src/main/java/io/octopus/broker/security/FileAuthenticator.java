@@ -1,6 +1,6 @@
 package io.octopus.broker.security;
 
-import io.octopus.config.FileResourceLoader;
+import io.octopus.kernel.config.FileResourceLoader;
 import io.octopus.kernel.kernel.security.ResourceAuthenticator;
 
 /**

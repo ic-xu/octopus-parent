@@ -1,6 +1,7 @@
 package io.octopus.kernel.kernel.repository;
 
 import io.octopus.kernel.kernel.Lifecycle;
+import io.octopus.kernel.kernel.message.IMessage;
 import io.octopus.kernel.kernel.router.IRouterRegister;
 
 /**
@@ -13,7 +14,7 @@ public interface IStoreCreateFactory extends Lifecycle {
      *
      * @return
      */
-   IQueueRepository createIQueueRepository() ;
+   IndexQueueFactory createIndexQueueRepository() ;
 
 
     IRetainedRepository createIRetainedRepository();
@@ -23,4 +24,8 @@ public interface IStoreCreateFactory extends Lifecycle {
 
 
     IRouterRegister createIRouterRegister() ;
+
+
+
+    IMsgQueue<IMessage> createIMsgQueueRepository();
 }

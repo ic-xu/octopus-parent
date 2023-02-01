@@ -16,13 +16,19 @@ public class PacketIPackageId implements IPackageId {
     }
 
 
+
     @Override
-    public Long longId() {
+    public Long messageId() {
         return alongId;
     }
 
     @Override
-    public Short shortId() {
+    public Short packageId() {
         return aShortId;
+    }
+
+    @Override
+    public Integer getSize() {
+        return 0;
     }
 }

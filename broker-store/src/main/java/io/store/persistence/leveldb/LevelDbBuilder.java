@@ -1,10 +1,7 @@
 package io.store.persistence.leveldb;
 
-import io.octopus.config.IConfig;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
-import io.octopus.kernel.kernel.repository.IRetainedRepository;
-import io.octopus.kernel.kernel.repository.IStoreCreateFactory;
-import io.octopus.kernel.kernel.repository.ISubscriptionsRepository;
+import io.octopus.kernel.config.IConfig;
+import io.octopus.kernel.kernel.repository.*;
 import io.octopus.kernel.kernel.router.IRouterRegister;
 import io.store.persistence.memory.MemoryRetainedRepository;
 import org.iq80.leveldb.DB;
@@ -50,8 +47,8 @@ public class LevelDbBuilder implements IStoreCreateFactory {
 
 
     @Override
-    public IQueueRepository createIQueueRepository() {
-        return new LevelDbQueueRepository(db);
+    public IndexQueueFactory createIndexQueueRepository() {
+        return new LevelDbQueueFactory(db);
     }
 
     @Override
@@ -61,12 +58,17 @@ public class LevelDbBuilder implements IStoreCreateFactory {
 
     @Override
     public ISubscriptionsRepository createISubscriptionsRepository() {
-        return null;
+        throw new RuntimeException("");
     }
 
     @Override
     public IRouterRegister createIRouterRegister() {
-        return null;
+        throw new RuntimeException("");
+    }
+
+    @Override
+    public IMsgQueue createIMsgQueueRepository() {
+        throw new RuntimeException("");
     }
 
 

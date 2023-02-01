@@ -7,7 +7,7 @@ import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 import io.netty.handler.timeout.IdleStateHandler
 import io.netty.util.ReferenceCountUtil
 import io.octopus.broker.handler.InflictReSenderHandler
-import io.octopus.config.BrokerConfiguration
+import io.octopus.kernel.config.BrokerConfiguration
 import io.octopus.kernel.exception.SessionCorruptedException
 import io.octopus.kernel.kernel._
 import io.octopus.kernel.kernel.connect.AbstractConnection
@@ -112,7 +112,12 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     }
   }
 
-
+  /**
+   * 连接消息
+   * @param msg connectMessage
+   * @param oldClientId clientId
+   * @param username userName
+   */
   def handlerConnect3(msg: MqttConnectMessage, oldClientId: String, username: String): Unit = {
     var clientId: String = oldClientId
     val cleanSession = msg.variableHeader.isCleanSession
@@ -205,6 +210,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
    */
   def handlerConnect5(msg: MqttConnectMessage, clientId: String, username: String): Unit = {
 
+
     val properties: MqttProperties = msg.variableHeader().properties()
 
     /*
@@ -228,21 +234,13 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
 
     /*
     39(0x27)字节 ，最大报文长度标识符。
-
     接收最大值由 4 个字节的整形来表示客户端愿意接收的最大报文长度，如果不存在最大报文长度属性，作为剩余长度编码和协议头大小的结果，除了协议的限制外，不限制数据包大小。
-
     如果单个报文中该属性出现了多次，或当其值设为 0 时，则协议错误。
-
     非正式评注 当需要限制最大报文大小的时候，由应用程序来选择合适的最大报文长度。
-
     这里的报文大小指的是整个 MQTT 控制包的所有字节数。客户端使用最大报文大小来通知服务器，让它不要处理超过这个大小的数据包。
-
     服务器 不能 发送超过最大报文长度的包给客户端。[MQTT-3.1.2-24]如果客户端收到了超出限制的报文，那么会视为协议错误。如同4.13 节所描述的那样，服务器会在断开连接的时候返回一个带有 0x95（报文太大）原因码的 DISCONNECT 报文。
-
     如果 Packet 太大以至于不能正常发送，那么服务器就需要丢弃那些 Packet 并且表现得好像已经完成应用消息发送那样。[MQTT-3.1.2-25]
-
     在共享订阅的情况下，有可能消息太大不能发送给部分客户端，但是另外一部分客户端可以接收到，服务器可以选择不向任何客户端发送消息并丢弃所有的消息，也可以只向那些可以接收到消息的客户端发送消息。
-
     非正式评注 如果数据包在未发送的情况下被丢弃，则服务器可以将丢弃的数据包放在“死信队列(dead letter queue)”上或执行其他诊断操作。 此类行为超出了本规范的范围。
      */
     val maximumPacketSize = properties.getProperty(MqttPropertyType.MAXIMUM_PACKET_SIZE.value()).value()
@@ -270,14 +268,10 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
 
     /*
     23(0x17)字节 ，请求问题信息标识符。
-
     这个字节只能表示 0 或者 1，如果它表示的值是 0 或 1 以外的值，或者该属性出现多次，那么就会视为协议错误。若未指定请求响应消息，则将其值设为默认值 1。
-
     客户端使用该值来表示是否用户属性或原因码发送失败。
-
     如果请求问题信息的值被设为 0，服务器可以在 CONNACK 或 DISCONNECT 报文中返回一个原因字符串或用户属性。但是不能发送原因属性或用户属性在其它任何包中，
     PUBLIHS, CONNACK 或 DISCONNECT 包除外。如果值设为 0，而 客户端却在 PUBLISH,CONNACK,DISCONNECT 包以外收到了原因码或用户属性, 那么就应该用一个带有原因码 0x82（协议错误） 的 DISCONNECT 报文去断开连接。
-
     如果值设为 1，那么服务器就可以在任何被允许的报文中返回原因码或用户属性。
      */
     val requestProblemInformation = properties.getProperty(MqttPropertyType.REQUEST_PROBLEM_INFORMATION.value()).value()
@@ -322,7 +316,6 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     然后它必须假设客户端提供了那个唯一的客户端标识符，正常处理这个CONNECT报文，并且必须返回 CONNACK 包中被分配的客户端标识符[MQTT-3.1.3-7]。
     如果服务器拒绝了客户端标识符，那么它可以按照在4.13节 错误处理所描述的那样使用带有 0x85 （客户端标识符无效）原因码的 CONNACK 报文去响应 CONNECT 报文，然后必须关闭网络连接。
     非正式评注 客户端实现可以提供一个方便的方法用于生成随机的客户端标识符。使用此方法的客户端应注意避免创建长期孤立的会话。
-
      */
     val clientIdentifier = msg.payload().clientIdentifier()
 
@@ -369,7 +362,6 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     /*
     .1.3.2.7 关联数据 Correlation Data
     9 (0x09)字节 ，关联数据标识符。
-
     由二进制数据表示， 该数据通常是给请求消息的发送者中用来鉴别哪一个才是它收到的响应消息的请求。
     若该属性在同一报文中重复出现，则会被视为协议错误。如果没有设定关联数据 ，那么请求者就不需要任何关联数据。
      */

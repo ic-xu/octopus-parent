@@ -9,20 +9,21 @@ public enum PubEnum {
     /**
      * 不同质量的消息体
      */
-    PUBLISH(0),
-    PUB_ACK(1),
-    PUB_REC(2),
-    PUB_REL(3),
-    PUB_COMP(4);
+    PUBLISH((byte)0),
+    PUB_ACK((byte)1),
+    PUB_REC((byte)2),
+    PUB_REL((byte)3),
+    PUB_COMP((byte)4);
 
-    private final int value;
+    private final byte value;
 
-    PubEnum(int value) {
+    PubEnum(byte value) {
         this.value = value;
     }
 
 
-    public static PubEnum valueOf(int value) {
+
+    public static PubEnum valueOf(byte value) {
         return switch (value) {
             case 0 -> PUBLISH;
             case 1 -> PUB_ACK;
@@ -34,7 +35,7 @@ public enum PubEnum {
     }
 
 
-    public int getValue() {
+    public byte getValue() {
         return value;
     }
 

@@ -1,11 +1,12 @@
 package io.octopus.kernel.kernel;
 
 import io.octopus.kernel.exception.SessionCorruptedException;
-import io.octopus.config.IConfig;
+import io.octopus.kernel.config.IConfig;
+import io.octopus.kernel.kernel.message.IMessage;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.queue.MsgRepository;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IMsgQueue;
+import io.octopus.kernel.kernel.repository.IndexQueueFactory;
 import io.octopus.kernel.kernel.security.IRWController;
 import io.octopus.kernel.kernel.subscriptions.Topic;
 import io.octopus.kernel.utils.ObjectUtils;
@@ -26,7 +27,7 @@ public class DefaultSessionResistor implements ISessionResistor {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final IQueueRepository queueRepository;
+    private final IndexQueueFactory indexQueueFactory;
     private final IRWController authorizator;
     private IConfig config;
 
@@ -46,15 +47,15 @@ public class DefaultSessionResistor implements ISessionResistor {
     private final ConcurrentHashMap<String, Queue<Index>> qos2IndexQueues = new ConcurrentHashMap<>();
     private IPostOffice postOffice = null;
 
-    private final MsgRepository<KernelPayloadMessage> msgRepository;
+    private final IMsgQueue<IMessage> iMsgQueue;
 
 
-    public DefaultSessionResistor(IQueueRepository queueRepository, IRWController authorizator,
-                                  IConfig config, MsgRepository<KernelPayloadMessage> msgRepository) {
-        this.queueRepository = queueRepository;
+    public DefaultSessionResistor(IndexQueueFactory indexQueueFactory, IRWController authorizator,
+                                  IConfig config, IMsgQueue<IMessage> iMsgQueue) {
+        this.indexQueueFactory = indexQueueFactory;
         this.authorizator = authorizator;
         this.config = config;
-        this.msgRepository = msgRepository;
+        this.iMsgQueue = iMsgQueue;
     }
 
     public void setPostOffice(IPostOffice postOffice) {
@@ -130,6 +131,10 @@ public class DefaultSessionResistor implements ISessionResistor {
             logger.debug("Replace session of client with same id");
             published = sessions.replace(clientId, oldSession, oldSession);
         }
+//        synchronized (DefaultSessionResistor.class){
+//            oldSession.handleConnectionLost();
+//        }
+
         if (!published) {
             throw new SessionCorruptedException("old session was already removed");
         }
@@ -145,11 +150,10 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @return session
      */
     public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
-        Queue<Index> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
-        Queue<Index> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> queueRepository.createQueue(clientId, isClean));
+        Queue<Index> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> indexQueueFactory.createQueue(clientId, isClean));
+        Queue<Index> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> indexQueueFactory.createQueue(clientId, isClean));
         Integer receiveMaximum = 10;
-        DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean,
-                willMsg, qos1Queue, qos2Queue, receiveMaximum, clientVersion, msgRepository);
+        DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean, willMsg, qos1Queue, qos2Queue, receiveMaximum, clientVersion, iMsgQueue);
         newSession.markConnecting();
         return newSession;
     }
@@ -235,7 +239,7 @@ public class DefaultSessionResistor implements ISessionResistor {
     @Override
     public void remove(ISession session) {
         sessions.remove(session.getClientId(), session);
-        queueRepository.cleanQueue(session.getClientId());
+        indexQueueFactory.cleanQueue(session.getClientId());
     }
 
 

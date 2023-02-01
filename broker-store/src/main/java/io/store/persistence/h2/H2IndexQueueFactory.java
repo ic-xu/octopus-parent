@@ -2,18 +2,18 @@
 package io.store.persistence.h2;
 
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.repository.IQueueRepository;
+import io.octopus.kernel.kernel.repository.IndexQueueFactory;
 import org.h2.mvstore.MVStore;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
-public class H2QueueRepository implements IQueueRepository {
+public class H2IndexQueueFactory implements IndexQueueFactory {
 
     private MVStore mvStore;
 
-    public H2QueueRepository(MVStore mvStore) {
+    public H2IndexQueueFactory(MVStore mvStore) {
         this.mvStore = mvStore;
     }
 

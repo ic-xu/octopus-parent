@@ -6,7 +6,6 @@ import io.octopus.kernel.kernel.subscriptions.Subscription;
 import io.octopus.kernel.kernel.subscriptions.Topic;
 import io.octopus.kernel.kernel.subscriptions.TopicRegister;
 import io.octopus.kernel.utils.TopicUtils;
-import io.store.persistence.maptree.MemoryTopicRegister;
 
 import java.util.HashSet;
 import java.util.Set;

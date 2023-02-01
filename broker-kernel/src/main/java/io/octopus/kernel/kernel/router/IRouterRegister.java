@@ -4,6 +4,9 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.Set;
 
+/**
+ * 分布式消息路由注册中心
+ */
 public interface IRouterRegister {
 
     Set<InetSocketAddress> getAddressByTopic(String topicName);

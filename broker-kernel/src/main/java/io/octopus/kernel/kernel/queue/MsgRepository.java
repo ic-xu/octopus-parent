@@ -2,6 +2,7 @@ package io.octopus.kernel.kernel.queue;
 
 import io.octopus.kernel.checkpoint.CheckPoint;
 import io.octopus.kernel.kernel.Lifecycle;
+import io.octopus.kernel.kernel.message.IMessage;
 
 /**
  * @author chenxu
@@ -19,7 +20,7 @@ public interface MsgRepository<E> extends Lifecycle {
      * @param e message byteArray
      * @return the message index
      */
-    StoreMsg<E> offer(E e) throws Exception;
+    Index offer(E e) throws Exception;
 
 
     /**
@@ -28,7 +29,7 @@ public interface MsgRepository<E> extends Lifecycle {
      *
      * @return the head of this queue, or {@code null} if this queue is empty
      */
-    StoreMsg<E> poll();
+    IMessage poll();
 
 
     int size();
@@ -41,7 +42,7 @@ public interface MsgRepository<E> extends Lifecycle {
      * @param searchData index
      * @return E
      */
-    StoreMsg<E> poll(SearchData searchData);
+    IMessage poll(SearchData searchData);
 
 
     /**

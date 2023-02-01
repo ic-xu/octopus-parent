@@ -44,9 +44,9 @@ public class IndexFile {
 
     public void writeIndex(Index msgIndex) {
         int writeOffset = findNotWriteBlock() * 64;
-        mappedByteBuffer.putLong(writeOffset, msgIndex.getOffset());
-        mappedByteBuffer.putLong(writeOffset + 64, msgIndex.getSize());
-        mappedByteBuffer.putLong(writeOffset + 96, msgIndex.getQueueName());
+        mappedByteBuffer.putLong(writeOffset, msgIndex.offset());
+        mappedByteBuffer.putLong(writeOffset + 64, msgIndex.size());
+        mappedByteBuffer.putLong(writeOffset + 96, msgIndex.queueName());
     }
 
 

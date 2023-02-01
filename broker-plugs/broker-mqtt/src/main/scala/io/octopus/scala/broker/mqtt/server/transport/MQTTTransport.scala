@@ -10,8 +10,8 @@ import io.netty.handler.ssl.{SslContext, SslHandler}
 import io.netty.handler.timeout.IdleStateHandler
 import io.octopus.broker.handler._
 import io.octopus.broker.security.DefaultOctopusSslContextCreator
-import io.octopus.config.IConfig
-import io.octopus.contants.BrokerConstants
+import io.octopus.kernel.config.IConfig
+import io.octopus.kernel.contants.BrokerConstants
 import io.octopus.kernel.kernel.{BaseTransport, IPostOffice, ISessionResistor}
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.metrics.{BytesMetricsCollector, MessageMetricsCollector}
