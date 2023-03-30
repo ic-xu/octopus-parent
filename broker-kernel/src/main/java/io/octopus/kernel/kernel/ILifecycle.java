@@ -5,7 +5,7 @@ package io.octopus.kernel.kernel;
  *
  * @author user
  */
-public interface Lifecycle {
+public interface ILifecycle {
 
     /**
      * 初始化方法

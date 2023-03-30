@@ -12,6 +12,7 @@ import io.octopus.broker.handler._
 import io.octopus.broker.security.DefaultOctopusSslContextCreator
 import io.octopus.kernel.config.IConfig
 import io.octopus.kernel.contants.BrokerConstants
+import io.octopus.kernel.kernel.handler.OctopusIdleTimeoutHandler
 import io.octopus.kernel.kernel.{BaseTransport, IPostOffice, ISessionResistor}
 import io.octopus.kernel.kernel.interceptor.ConnectionNotifyInterceptor
 import io.octopus.kernel.kernel.metrics.{BytesMetricsCollector, MessageMetricsCollector}
@@ -109,13 +110,13 @@ class MQTTTransport extends BaseTransport {
     val sslPort = sslPortProp.toInt
     logger.debug("Starting SSL on port {}", sslPort)
 
-    val timeoutHandler = new OctopusIdleTimeoutHandler
+
     val host = config.getProperty(BrokerConstants.HOST_PROPERTY_NAME)
     val sNeedsClientAuth = config.getProperty(BrokerConstants.NEED_CLIENT_AUTH, "false")
     initTcpTransportFactory(host, sslPort, BrokerConstants.SSL_MQTT_PROTO, channel => {
       val pipeline: ChannelPipeline = channel.pipeline()
       pipeline.addLast("ssl", createSslHandler(channel, sslContext, sNeedsClientAuth.toBoolean))
-      configureMQTTPipeline(pipeline, timeoutHandler, mqttHandler)
+      configureMQTTPipeline(pipeline, mqttHandler)
     })
   }
 
@@ -128,7 +129,6 @@ class MQTTTransport extends BaseTransport {
       return
     }
     val sslPort = sslPortProp.toInt
-    val timeoutHandler = new OctopusIdleTimeoutHandler
     val host = config.getProperty(BrokerConstants.HOST_PROPERTY_NAME)
     val path = config.getProperty(BrokerConstants.WEB_SOCKET_PATH_PROPERTY_NAME, BrokerConstants.WEBSOCKET_PATH)
     val maxFrameSize = config.intProp(BrokerConstants.WEB_SOCKET_MAX_FRAME_SIZE_PROPERTY_NAME, 65536)
@@ -142,7 +142,7 @@ class MQTTTransport extends BaseTransport {
       pipeline.addLast("webSocketHandler", new WebSocketServerProtocolHandler(path, BrokerConstants.MQTT_SUBPROTOCOL_CSV_LIST, false, maxFrameSize))
       pipeline.addLast("ws2bytebufDecoder", new WebSocketDecoder)
       pipeline.addLast("bytebuf2wsEncoder", new WebSocketEncoder)
-      configureMQTTPipeline(pipeline, timeoutHandler, mqttHandler)
+      configureMQTTPipeline(pipeline, mqttHandler)
     })
   }
 
@@ -150,7 +150,6 @@ class MQTTTransport extends BaseTransport {
   def initializePlainTCPTransport(mqttHandler: NettyMQTTHandler, config: IConfig): Unit = {
 
     logger.debug("Configuring TCP MQTT transport")
-    val timeoutHandler = new OctopusIdleTimeoutHandler
     val host = config.getProperty(BrokerConstants.HOST_PROPERTY_NAME)
     val tcpPortProp = config.getProperty(BrokerConstants.PORT_PROPERTY_NAME, BrokerConstants.DISABLED_PORT_BIND)
     if (BrokerConstants.DISABLED_PORT_BIND.equals(tcpPortProp)) {
@@ -160,7 +159,7 @@ class MQTTTransport extends BaseTransport {
     val port = tcpPortProp.toInt
     initTcpTransportFactory(host, port, BrokerConstants.PLAIN_MQTT_PROTO, channel => {
       val pipeline = channel.pipeline
-      configureMQTTPipeline(pipeline, timeoutHandler, mqttHandler)
+      configureMQTTPipeline(pipeline, mqttHandler)
     })
   }
 
@@ -176,7 +175,7 @@ class MQTTTransport extends BaseTransport {
     }
     val port = webSocketPortProp.toInt
 
-    val timeoutHandler = new OctopusIdleTimeoutHandler
+
 
     val host = config.getProperty(BrokerConstants.HOST_PROPERTY_NAME)
     val path = config.getProperty(BrokerConstants.WEB_SOCKET_PATH_PROPERTY_NAME, BrokerConstants.WEBSOCKET_PATH)
@@ -189,15 +188,15 @@ class MQTTTransport extends BaseTransport {
       pipeline.addLast("ContinuationWebSocketFrameHandler", new ContinuationWebSocketFrameHandler)
       pipeline.addLast("ws2bytebufDecoder", new WebSocketDecoder)
       pipeline.addLast("bytebuf2wsEncoder", new WebSocketEncoder)
-      configureMQTTPipeline(pipeline, timeoutHandler, mqttHandler)
+      configureMQTTPipeline(pipeline, mqttHandler)
 
     })
   }
 
-  def configureMQTTPipeline(pipeline: ChannelPipeline, timeoutHandler: OctopusIdleTimeoutHandler, mqttHandler: NettyMQTTHandler): Unit = {
-
-    pipeline.addFirst("idleStateHandler", new IdleStateHandler(nettyChannelTimeoutSeconds, 0, 0))
-    pipeline.addAfter("idleStateHandler", "timeoutHandler", timeoutHandler)
+  def configureMQTTPipeline(pipeline: ChannelPipeline,  mqttHandler: NettyMQTTHandler): Unit = {
+//    val timeoutHandler = new OctopusIdleTimeoutHandler
+    pipeline.addFirst("idleStateHandlerTiger", new IdleStateHandler(0, 50, 10000,TimeUnit.MILLISECONDS))
+//    pipeline.addLast("timeoutHandler", timeoutHandler)
     if (brokerConfig.isOpenNettyLogger) {
       pipeline.addLast("logger", new LoggingHandler("Netty", LogLevel.INFO))
       logger.info("pipeline add NettyLogger Handler")

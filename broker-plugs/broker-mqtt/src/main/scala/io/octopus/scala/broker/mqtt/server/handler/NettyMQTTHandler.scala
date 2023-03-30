@@ -3,6 +3,7 @@ package io.octopus.scala.broker.mqtt.server.handler
 import io.handler.codec.mqtt.MqttMessage
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandlerAdapter, DefaultChannelPromise}
+import io.netty.handler.timeout.{IdleState, IdleStateEvent}
 import io.netty.util.ReferenceCountUtil
 import io.octopus.broker.handler.InflictReSenderHandler
 import io.octopus.kernel.utils.NettyUtils
@@ -20,19 +21,9 @@ class NettyMQTTHandler(connectionFactory: MQTTConnectionFactory) extends Channel
 
   val logger: Logger = LoggerFactory.getLogger(classOf[NettyMQTTHandler])
 
-//  private val ATTR_CONNECTION = "connection"
-//  private val ATTR_KEY_CONNECTION: AttributeKey[Object] = AttributeKey.valueOf(ATTR_CONNECTION)
-//
-//
-//  private def bindMqttConnection(channel: Channel, connection: MQTTConnection): Unit = {
-//    channel.attr(ATTR_KEY_CONNECTION).set(connection)
-//  }
-//
-//  private def getMQTTConnection2Channel(channel: Channel) = channel.attr(ATTR_KEY_CONNECTION).get.asInstanceOf[MQTTConnection]
-
 
   override def channelRead(ctx: ChannelHandlerContext, message: Object): Unit = {
-    var msg:MqttMessage = null
+    var msg: MqttMessage = null
     //从channel 中获取相应的连接对象，通过连接对象处理相应的事务
     val mqttConnection: MQTTConnection = NettyUtils.getMQTTConnection2Channel(ctx.channel).asInstanceOf[MQTTConnection]
     try {
@@ -43,10 +34,9 @@ class NettyMQTTHandler(connectionFactory: MQTTConnectionFactory) extends Channel
       case ex: Throwable =>
         //ctx.fireExceptionCaught(ex);
         logger.error("Error processing protocol message: {}", msg.fixedHeader.messageType, ex)
-        ctx.channel().close().addListener((_ : DefaultChannelPromise) => logger.info("Closed client channel due to exception in processing"))
+        ctx.channel().close().addListener((_: DefaultChannelPromise) => logger.info("Closed client channel due to exception in processing"))
     } finally ReferenceCountUtil.safeRelease(msg)
   }
-
 
 
   override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
@@ -79,11 +69,21 @@ class NettyMQTTHandler(connectionFactory: MQTTConnectionFactory) extends Channel
 
 
   override def userEventTriggered(ctx: ChannelHandlerContext, evt: Object): Unit = {
-    if (evt.isInstanceOf[InflictReSenderHandler.ResendNotAckedPublishes]) {
-      val mqttConnection: MQTTConnection = NettyUtils.getMQTTConnection2Channel(ctx.channel).asInstanceOf[MQTTConnection]
-      mqttConnection.reSendNotAckedPublishes()
+
+    val mqttConnection: MQTTConnection = NettyUtils.getMQTTConnection2Channel(ctx.channel).asInstanceOf[MQTTConnection]
+    evt match {
+      case event: IdleStateEvent =>
+        if(event.state() ==  IdleState.WRITER_IDLE){
+          mqttConnection.writeTimeOut()
+        }else{
+          ctx.fireUserEventTriggered(evt)
+        }
+      case notAck:InflictReSenderHandler.ResendNotAckedPublishes =>
+        mqttConnection.reSendNotAckedPublishes()
+      case _=>
     }
-    ctx.fireUserEventTriggered(evt)
+
+
   }
 
 

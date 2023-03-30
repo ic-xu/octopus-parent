@@ -94,4 +94,12 @@ public abstract class AbstractConnection {
     }
 
     public abstract void readCompleted();
+
+
+    /**
+     * 触发写超时,如果超过一定时间不写入，就触发这个方法
+     */
+    public  void writeTimeOut(){
+
+    }
 }

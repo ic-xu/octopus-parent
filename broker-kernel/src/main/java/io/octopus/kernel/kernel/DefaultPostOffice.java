@@ -1,11 +1,14 @@
 package io.octopus.kernel.kernel;
 
+import com.lmax.disruptor.EventHandler;
+import com.lmax.disruptor.RingBuffer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.octopus.kernel.kernel.disruptor.DisruptorFactor;
+import io.octopus.kernel.kernel.disruptor.MessageArr;
 import io.octopus.kernel.kernel.interceptor.PostOfficeNotifyInterceptor;
 import io.octopus.kernel.kernel.message.*;
 import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.repository.IMsgQueue;
 import io.octopus.kernel.kernel.repository.IRetainedRepository;
 import io.octopus.kernel.kernel.security.ReadWriteControl;
 import io.octopus.kernel.kernel.subscriptions.ISubscriptionsDirectory;
@@ -28,7 +31,7 @@ import java.util.stream.Collectors;
  * @version 1
  * @date 2022/7/12 10:21
  */
-public class DefaultPostOffice implements IPostOffice {
+public class DefaultPostOffice implements IPostOffice, EventHandler<MessageArr> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DefaultPostOffice.class);
     private final List<String> adminUser = new ArrayList<>(4);
@@ -40,11 +43,9 @@ public class DefaultPostOffice implements IPostOffice {
     private final List<PostOfficeNotifyInterceptor> interceptors;
     private final ReadWriteControl authorizator;
 
-    private final IMsgQueue iMsgQueue;
 
-    public DefaultPostOffice(IMsgQueue<IMessage> iMsgQueue, ISubscriptionsDirectory subscriptionsDirectory, IRetainedRepository retainedRepository,
+    public DefaultPostOffice(ISubscriptionsDirectory subscriptionsDirectory, IRetainedRepository retainedRepository,
                              ISessionResistor sessionResistor, List<PostOfficeNotifyInterceptor> interceptors, ReadWriteControl authorizator) {
-        this.iMsgQueue = iMsgQueue;
         this.subscriptionsDirectory = subscriptionsDirectory;
         this.retainedRepository = retainedRepository;
         this.sessionResistor = sessionResistor;
@@ -54,7 +55,8 @@ public class DefaultPostOffice implements IPostOffice {
 
     /**
      * 收到消息
-     * @param msg   消息体
+     *
+     * @param msg         消息体
      * @param fromSession 消息来源
      * @return 是否接收成功
      */
@@ -66,35 +68,62 @@ public class DefaultPostOffice implements IPostOffice {
             LOGGER.error("MQTT client: {} is not authorized to publish on topic: {}", fromSession.getClientId(), topic);
             return false;
         }
-
-        //处理刷盘逻辑
-        Index index = processFlushDisk(msg);
-
-        // 分发消息
-        publish2Subscribers(topic, false, index);
-
-        // 如果消息需要存储，则调用存储组件
-        processRetainMsg(msg, topic);
+        internalPublish(msg);
         return true;
     }
 
+
+    /**
+     * 分发消息
+     * @param msg 消息体
+     * @throws IOException 异常信息
+     */
+    private void dispatchMsg(KernelPayloadMessage msg) throws IOException {
+        RingBuffer<MessageArr> ringBuffer = DisruptorFactor.newOrGetInstance(this).getRingBuffer();
+        long next = ringBuffer.next();
+        MessageArr msgArr = ringBuffer.get(next);
+        byte[] bytes = msg.toByteArr();
+        msgArr.setContent(bytes);
+        ringBuffer.publish(next);
+    }
+
+
+
+    @Override
+    public void onEvent(MessageArr byteArr, long l, boolean b) throws Exception {
+        byte[] content = byteArr.getContent();
+        KernelPayloadMessage msg = KernelPayloadMessage.fromByteArr(content);
+        /// publish2Subscribers: publish message to ever one client
+        Set<Subscription> topicMatchingSubscriptions = subscriptionsDirectory.matchQosSharpening(new Topic(msg.getTopic()), false);
+        topicMatchingSubscriptions.forEach(sub -> {
+            //处理 qos,按照两个中比较小的一个发送
+            MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(sub, msg.getQos());
+            // 发送某一个
+//            publish2ClientId(sub.getClientId(), sub.getTopicFilter().getValue(), qos, msg);
+            ISession targetSession = this.sessionResistor.retrieve(sub.getClientId());
+            boolean isSessionPresent = targetSession != null;
+            if (isSessionPresent) {
+                LOGGER.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}", sub.getClientId(), sub.getTopicFilter(), qos);
+                // we need to retain because duplicate only copy r/w indexes and don't retain() causing refCnt = 0
+                targetSession.publishMsg(msg);
+            } else { // If we are, the subscriber disconnected after the subscriptions tree selected that session as a
+                // destination.
+                LOGGER.debug("PUBLISH to not yet present session. CId: {}, topicFilter: {}, qos: {}", sub.getClientId(), sub.getTopicFilter(), qos);
+            }
+        });
+    }
+
+
     @Override
     public void internalPublish(KernelPayloadMessage msg) throws IOException {
-        MsgQos qos = msg.getQos();
-        Topic topic = new Topic(msg.getTopic());
-        LOGGER.debug("Sending internal PUBLISH message Topic={}, qos={}", topic, qos);
-        Index index = iMsgQueue.storeMsg(msg);
+        //处理刷盘逻辑
+        processFlushDisk(msg);
 
-        publish2Subscribers(topic, false, index);
-        if (!msg.isRetain()) {
-            return;
-        }
-        // QoS == 0 && retain => clean old retained
-        if (qos == MsgQos.AT_MOST_ONCE || msg.getPayload().readableBytes() == 0) {
-            retainedRepository.cleanRetained(topic);
-            return;
-        }
-        retainedRepository.retain(topic, msg);
+        // 分发消息
+        dispatchMsg(msg);
+
+        // 如果消息需要存储，则调用存储组件
+        processRetainMsg(msg);
     }
 
     /**
@@ -181,58 +210,23 @@ public class DefaultPostOffice implements IPostOffice {
      * @return
      */
     private Index processFlushDisk(KernelPayloadMessage msg) throws IOException {
-       return iMsgQueue.storeMsg(msg);
+
+        //TODO 刷盘逻辑有待处理
+        return null;
     }
 
 
-    /**
-     * publish2Subscribers: publish message to ever one client
-     *
-     * @param index           msg
-     * @param topic              topic
-     * @param isNeedBroadcasting if send message to other broker
-     */
-    private void publish2Subscribers(Topic topic, Boolean isNeedBroadcasting, Index index) {
-        Set<Subscription> topicMatchingSubscriptions = subscriptionsDirectory.matchQosSharpening(topic, isNeedBroadcasting);
-        topicMatchingSubscriptions.forEach(sub -> {
-            //处理 qos,按照两个中比较小的一个发送
-            MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(sub, index.qos());
-            // 发送某一个
-            publish2ClientId(sub.getClientId(), sub.getTopicFilter().getValue(), qos, index, false);
-        });
-    }
-
-
-    /**
-     * publish Message to a client by clientId
-     *
-     * @param clientId  clientId
-     * @param topicName topic
-     * @param qos       qos
-     * @param index  storeMsg
-     */
-    private void publish2ClientId(String clientId, String topicName, MsgQos qos, Index index, Boolean directPublish) {
-        ISession targetSession = this.sessionResistor.retrieve(clientId);
-        boolean isSessionPresent = targetSession != null;
-        if (isSessionPresent) {
-            LOGGER.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}", clientId, topicName, qos);
-            // we need to retain because duplicate only copy r/w indexes and don't retain() causing refCnt = 0
-            targetSession.sendMsgAtQos(index, directPublish);
-        } else { // If we are, the subscriber disconnected after the subscriptions tree selected that session as a
-            // destination.
-            LOGGER.debug("PUBLISH to not yet present session. CId: {}, topicFilter: {}, qos: {}", clientId, topicName, qos);
-        }
-    }
 
 
     /**
      * store retainMsg
      *
      * @param msg   msg
-     * @param topic topic
      */
-    private void processRetainMsg(KernelPayloadMessage msg, Topic topic) {
+    private void processRetainMsg(KernelPayloadMessage msg) {
+
         if (msg.isRetain()) {
+            Topic topic = new Topic(msg.getTopic());
             if (!msg.getPayload().isReadable()) {
                 retainedRepository.cleanRetained(topic);
             } else if (msg.getQos() == MsgQos.AT_MOST_ONCE) {
@@ -247,7 +241,7 @@ public class DefaultPostOffice implements IPostOffice {
 
     /**
      * TODO 发布保留的订阅消息
-      */
+     */
     private void publishRetainedMessagesForSubscriptions(String clientID, List<Subscription> newSubscriptions) {
         ISession targetSession = this.sessionResistor.retrieve(clientID);
         newSubscriptions.forEach(subscription -> {
@@ -261,15 +255,10 @@ public class DefaultPostOffice implements IPostOffice {
                     MsgQos retainedQos = retainedMsg.qosLevel();
                     MsgQos qos = MsgQos.lowerQosToTheSubscriptionDesired(subscription, retainedQos);
                     ByteBuf payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload());
-                    KernelPayloadMessage message = new KernelPayloadMessage((short) 2,0L,retainedMsg.getProperties(), qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
+                    KernelPayloadMessage message = new KernelPayloadMessage((short) 2, 0L, retainedMsg.getProperties(), qos, MsgRouter.TOPIC, retainedMsg.getTopic().getValue(), payloadBuf, true, PubEnum.PUBLISH);
                     // sendRetainedPublishOnSessionAtQos
-                    Index index = null;
-                    try {
-                        index = iMsgQueue.storeMsg(message);
-                        targetSession.sendMsgAtQos(index, false);
-                    } catch (IOException e) {
+                    targetSession.publishMsg(message);
 
-                    }
 
                     //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
                 });
@@ -277,5 +266,4 @@ public class DefaultPostOffice implements IPostOffice {
         });
 
     }
-
 }

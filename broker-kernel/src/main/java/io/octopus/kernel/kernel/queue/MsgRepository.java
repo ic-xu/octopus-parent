@@ -1,14 +1,14 @@
 package io.octopus.kernel.kernel.queue;
 
 import io.octopus.kernel.checkpoint.CheckPoint;
-import io.octopus.kernel.kernel.Lifecycle;
+import io.octopus.kernel.kernel.ILifecycle;
 import io.octopus.kernel.kernel.message.IMessage;
 
 /**
  * @author chenxu
  * @version 1
  */
-public interface MsgRepository<E> extends Lifecycle {
+public interface MsgRepository<E> extends ILifecycle {
 
 
     default void init(Object params) {

@@ -1,11 +1,7 @@
 package io.octopus.kernel.kernel;
 
 import io.octopus.kernel.exception.SessionCorruptedException;
-import io.octopus.kernel.config.IConfig;
-import io.octopus.kernel.kernel.message.IMessage;
 import io.octopus.kernel.kernel.message.KernelPayloadMessage;
-import io.octopus.kernel.kernel.queue.Index;
-import io.octopus.kernel.kernel.repository.IMsgQueue;
 import io.octopus.kernel.kernel.repository.IndexQueueFactory;
 import io.octopus.kernel.kernel.security.IRWController;
 import io.octopus.kernel.kernel.subscriptions.Topic;
@@ -16,7 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author chenxu
@@ -29,8 +26,6 @@ public class DefaultSessionResistor implements ISessionResistor {
 
     private final IndexQueueFactory indexQueueFactory;
     private final IRWController authorizator;
-    private IConfig config;
-
 
     private final ConcurrentHashMap<String, DefaultSession> sessions = new ConcurrentHashMap<>();
 
@@ -39,23 +34,21 @@ public class DefaultSessionResistor implements ISessionResistor {
     /**
      * 专门用来存储qos1 消息索引的
      */
-    private final ConcurrentHashMap<String, Queue<Index>> qos1IndexQueues = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Queue<KernelPayloadMessage>> qos1MsgQueues = new ConcurrentHashMap<>();
 
     /**
      * 专门用来存储qos2 消息索引的
      */
-    private final ConcurrentHashMap<String, Queue<Index>> qos2IndexQueues = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Queue<KernelPayloadMessage>> qos2MsgQueues = new ConcurrentHashMap<>();
     private IPostOffice postOffice = null;
 
-    private final IMsgQueue<IMessage> iMsgQueue;
+//    private final IMsgQueue<IMessage> iMsgQueue;
 
 
-    public DefaultSessionResistor(IndexQueueFactory indexQueueFactory, IRWController authorizator,
-                                  IConfig config, IMsgQueue<IMessage> iMsgQueue) {
+    public DefaultSessionResistor(IndexQueueFactory indexQueueFactory, IRWController authorizator) {
         this.indexQueueFactory = indexQueueFactory;
         this.authorizator = authorizator;
-        this.config = config;
-        this.iMsgQueue = iMsgQueue;
+//        this.iMsgQueue = iMsgQueue;
     }
 
     public void setPostOffice(IPostOffice postOffice) {
@@ -67,11 +60,11 @@ public class DefaultSessionResistor implements ISessionResistor {
 
         SessionCreationResult createResult;
         DefaultSession newSession = createNewSession(clientId, username, isClean, willMsg, clientVersion);
-        if (!sessions.contains(clientId)) {
+        if (!sessions.containsKey(clientId)) {
             createResult = new SessionCreationResult(newSession, CreationModeEnum.CREATED_CLEAN_NEW, false);
 
             DefaultSession previous = sessions.putIfAbsent(clientId, newSession);
-            Boolean success = previous == null;
+            boolean success = previous == null;
             // new session
             if (success) {
                 logger.trace("case 1, not existing session with CId {}", clientId);
@@ -88,10 +81,10 @@ public class DefaultSessionResistor implements ISessionResistor {
     public SessionCreationResult reOpenExistingSession(String clientId, DefaultSession newSession,
                                                        String username, Boolean newClean, KernelPayloadMessage willMsg) {
         DefaultSession oldSession = sessions.get(clientId);
-        SessionCreationResult result = null;
+        SessionCreationResult result;
         if (oldSession.disconnected()) {
             if (newClean) {
-                Boolean updatedStatus = oldSession.assignState(SessionStatus.DISCONNECTED, SessionStatus.CONNECTING);
+                Boolean updatedStatus = oldSession.markReConnectingStatus();
                 if (!updatedStatus) {
                     throw new SessionCorruptedException("old session was already changed state");
                 }
@@ -99,11 +92,11 @@ public class DefaultSessionResistor implements ISessionResistor {
                 // publish new session
                 dropQueuesForClient(clientId);
                 unsubscribe(oldSession);
-                copySessionConfig(newClean, willMsg, oldSession);
+                oldSession.update(true, willMsg);
                 logger.trace("case 2, oldSession with same CId {} disconnected", clientId);
                 result = new SessionCreationResult(oldSession, CreationModeEnum.CREATED_CLEAN_NEW, true);
             } else {
-                Boolean connecting = oldSession.assignState(SessionStatus.DISCONNECTED, SessionStatus.CONNECTING);
+                Boolean connecting = oldSession.markReConnectingStatus();
                 if (!connecting) {
                     throw new SessionCorruptedException("old session moved in connected state by other thread");
                 }
@@ -131,9 +124,6 @@ public class DefaultSessionResistor implements ISessionResistor {
             logger.debug("Replace session of client with same id");
             published = sessions.replace(clientId, oldSession, oldSession);
         }
-//        synchronized (DefaultSessionResistor.class){
-//            oldSession.handleConnectionLost();
-//        }
 
         if (!published) {
             throw new SessionCorruptedException("old session was already removed");
@@ -150,10 +140,10 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @return session
      */
     public DefaultSession createNewSession(String clientId, String username, Boolean isClean, KernelPayloadMessage willMsg, int clientVersion) {
-        Queue<Index> qos1Queue = qos1IndexQueues.computeIfAbsent(clientId, key -> indexQueueFactory.createQueue(clientId, isClean));
-        Queue<Index> qos2Queue = qos2IndexQueues.computeIfAbsent(clientId, key -> indexQueueFactory.createQueue(clientId, isClean));
+        Queue<KernelPayloadMessage> sessionQos1MsgQueue = qos1MsgQueues.computeIfAbsent(clientId, key -> new ArrayBlockingQueue<>(50));
+        Queue<KernelPayloadMessage> sessionQos2MsgQueue = qos2MsgQueues.computeIfAbsent(clientId, key ->  new ArrayBlockingQueue<>(50));
         Integer receiveMaximum = 10;
-        DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean, willMsg, qos1Queue, qos2Queue, receiveMaximum, clientVersion, iMsgQueue);
+        DefaultSession newSession = new DefaultSession(postOffice, clientId, username, isClean, willMsg, sessionQos1MsgQueue, sessionQos2MsgQueue, receiveMaximum, clientVersion);
         newSession.markConnecting();
         return newSession;
     }
@@ -164,7 +154,7 @@ public class DefaultSessionResistor implements ISessionResistor {
      * @param clientId client
      */
     private void dropQueuesForClient(String clientId) {
-        qos1IndexQueues.remove(clientId);
+        qos1MsgQueues.remove(clientId);
     }
 
     private void reactivateSubscriptions(DefaultSession session, String username) {
@@ -186,16 +176,6 @@ public class DefaultSessionResistor implements ISessionResistor {
         //    session.getSubTopicList.forEach(existingSub => subscriptionsDirectory.removeSubscription(new Topic(existingSub), session.getClientId))
     }
 
-    /**
-     * copy session config (isClean,will)
-     *
-     * @param isClean     isclean
-     * @param willMessage willMsg
-     * @param session     session
-     */
-    private void copySessionConfig(Boolean isClean, KernelPayloadMessage willMessage, DefaultSession session) {
-        session.update(isClean, willMessage);
-    }
 
 
     @Override
@@ -238,7 +218,7 @@ public class DefaultSessionResistor implements ISessionResistor {
 
     @Override
     public void remove(ISession session) {
-        sessions.remove(session.getClientId(), session);
+        sessions.remove(session.getClientId());
         indexQueueFactory.cleanQueue(session.getClientId());
     }
 

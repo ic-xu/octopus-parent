@@ -1,4 +1,4 @@
-package io.octopus.broker.handler;
+package io.octopus.kernel.kernel.handler;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -27,6 +27,9 @@ public class OctopusIdleTimeoutHandler extends ChannelDuplexHandler {
                 LOGGER.trace("Firing channel inactive event. MqttClientId = {}.", NettyUtils.clientID(ctx.channel()));
                 // fire a close that then fire channelInactive to trigger publish of Will
                 ctx.close().addListener(CLOSE_ON_FAILURE);
+            }else{
+                super. userEventTriggered(ctx, evt);
+                ctx.fireUserEventTriggered(evt);
             }
         } else {
             if (LOGGER.isTraceEnabled()) {
@@ -34,6 +37,7 @@ public class OctopusIdleTimeoutHandler extends ChannelDuplexHandler {
                           evt.getClass().getName());
             }
             super.userEventTriggered(ctx, evt);
+            ctx.fireUserEventTriggered(evt);
         }
     }
 }

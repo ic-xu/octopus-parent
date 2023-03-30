@@ -114,8 +114,8 @@ class Server extends IServer {
     this.checkPointServer = new CheckPointServer
 
 //    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer))
-    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, iMsgQueue)
-    postOffice = new DefaultPostOffice(iMsgQueue,subscriptions, retainedRepository, sessionResistor, this.kernelInterceptor.asJava, readWriteControl)
+    sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl)
+    postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.kernelInterceptor.asJava,readWriteControl)
     sessionResistor.setPostOffice(postOffice)
 
     //    this.sessionResistor = new SessionRegistry(subscriptions, queueRepository, authorizator, msgQueue)

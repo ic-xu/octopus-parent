@@ -225,12 +225,12 @@ public class ServerStarter {
         ReadWriteControl readWriteControl = new ReadWriteControl(this.irwController);
 //        CheckPointServer checkPointServer = new CheckPointServer();
 //        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(queueRepository, readWriteControl, config, new MemoryRepository(config, checkPointServer));
-        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(indexQueueFactory, readWriteControl, config, storeFactory.createIMsgQueueRepository());
+        DefaultSessionResistor sessionResistor = new DefaultSessionResistor(indexQueueFactory, readWriteControl);
 
 
         IRetainedRepository retainedRepository = storeFactory.createIRetainedRepository();
-        IMsgQueue iMsgQueue = storeFactory.createIMsgQueueRepository();
-        IPostOffice postOffice = new DefaultPostOffice(iMsgQueue,subscriptions, retainedRepository, sessionResistor, this.postOfficeNotifyInterceptors, readWriteControl);
+//        IMsgQueue iMsgQueue = storeFactory.createIMsgQueueRepository();
+        IPostOffice postOffice = new DefaultPostOffice(subscriptions, retainedRepository, sessionResistor, this.postOfficeNotifyInterceptors, readWriteControl);
         sessionResistor.setPostOffice(postOffice);
 
         //    this.sessionResistor = new SessionRegistry(subscriptions, queueRepository, authorizator, msgQueue)

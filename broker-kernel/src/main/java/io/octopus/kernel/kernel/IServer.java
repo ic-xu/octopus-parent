@@ -9,7 +9,7 @@ import java.util.List;
  * @version 1
  * @date 2022/6/21 17:45
  */
-public interface IServer extends Lifecycle {
+public interface IServer extends ILifecycle {
 
 
     /**

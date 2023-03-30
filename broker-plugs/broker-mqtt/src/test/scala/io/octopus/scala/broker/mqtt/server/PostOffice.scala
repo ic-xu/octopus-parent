@@ -143,7 +143,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
     if (isSessionPresent) {
       LOGGER.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}", clientId, topicName, qos)
       // we need to retain because duplicate only copy r/w indexes and don't retain() causing refCnt = 0
-      targetSession.sendMsgAtQos(storeMsg, directPublish)
+      targetSession.publishMsg(storeMsg, directPublish)
     }
     else { // If we are, the subscriber disconnected after the subscriptions tree selected that session as a
       // destination.
@@ -209,7 +209,7 @@ class PostOffice(subscriptionsDirectory: ISubscriptionsDirectory,
           val payloadBuf = Unpooled.wrappedBuffer(retainedMsg.getPayload)
           val message = new KernelPayloadMessage(short2Short(0), qos, MsgRouter.TOPIC, retainedMsg.getTopic.getValue, payloadBuf, true,PubEnum.PUBLISH)
           // sendRetainedPublishOnSessionAtQos
-          targetSession.sendMsgAtQos(new StoreMsg[KernelPayloadMessage](message, null), false)
+          targetSession.publishMsg(new StoreMsg[KernelPayloadMessage](message, null), false)
           //                targetSession.sendRetainedPublishOnSessionAtQos(retainedMsg.getTopic(), qos, payloadBuf);
         })
       }

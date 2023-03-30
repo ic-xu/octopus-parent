@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -49,11 +50,13 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
     }
 
     @Override
-    public synchronized byte[] toByteArr() throws IOException {
+    public  byte[] toByteArr() throws IOException {
         ///qos -> 1byte，msgRouter -> 1byte, isRetain->1byte
         ByteBuf byteBuffer = Unpooled.buffer();
         //packageId + packagePubEnum
-        byteBuffer.writeBytes(super.toByteArr());
+        byteBuffer.writeShort(packageId());
+        byteBuffer.writeLong(messageId());
+        byteBuffer.writeByte(getPubEnum().getValue());
         //qos -> 1byte
         byteBuffer.writeByte(qos.getValue());
         //msgRouter -> 1byte,
@@ -71,18 +74,26 @@ public class KernelPayloadMessage extends KernelMessage implements ByteBufHolder
         byteBuffer.writeBytes(propertiesByteArr);
         //payload
         byteBuffer.writeBytes(payload);
-        return ByteBufUtil.getBytes(payload);
+        byte[] bytes1 = ByteBufUtil.getBytes(byteBuffer);
+        return bytes1;
     }
 
 
     public static KernelPayloadMessage fromByteArr(byte[] byteArr) throws NoSuchObjectException, IOException {
         ByteBuf byteBuf = Unpooled.wrappedBuffer(byteArr);
+
         short packageId = byteBuf.readShort();
+
         long longPackageId = byteBuf.readLong();
+
         PubEnum pubEnum1 = PubEnum.valueOf(byteBuf.readByte());
+
         MsgQos qos = MsgQos.valueOf(byteBuf.readByte());
+
         MsgRouter router = MsgRouter.valueOf(byteBuf.readByte());
+
         boolean retain = byteBuf.readByte() > 0;
+
         int topicLength = byteBuf.readInt();
 
         //topic String

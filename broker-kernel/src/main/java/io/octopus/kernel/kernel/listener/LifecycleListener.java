@@ -1,6 +1,6 @@
 package io.octopus.kernel.kernel.listener;
 
-import io.octopus.kernel.kernel.Lifecycle;
+import io.octopus.kernel.kernel.ILifecycle;
 
 /**
  * @author chenxu
@@ -12,58 +12,58 @@ public interface LifecycleListener {
 
     /**
      * 初始化前
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void beforeInit(Lifecycle lifecycle)throws Exception;
+    void beforeInit(ILifecycle ILifecycle)throws Exception;
 
     /**
      * 初始化之后
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void afterInit(Lifecycle lifecycle)throws Exception;
+    void afterInit(ILifecycle ILifecycle)throws Exception;
 
     /**
      * 开始之前
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void beforeStart(Lifecycle lifecycle)throws Exception;
+    void beforeStart(ILifecycle ILifecycle)throws Exception;
 
     /**
      * 开始之后
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void afterStart(Lifecycle lifecycle)throws Exception;
+    void afterStart(ILifecycle ILifecycle)throws Exception;
 
     /**
      * 停止前
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void beforeStop(Lifecycle lifecycle)throws Exception;
+    void beforeStop(ILifecycle ILifecycle)throws Exception;
 
     /***
      * 停止之后
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void afterStop(Lifecycle lifecycle)throws Exception;
+    void afterStop(ILifecycle ILifecycle)throws Exception;
 
 
     /**
      * 销毁之前
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void beforeDestroy(Lifecycle lifecycle)throws Exception;
+    void beforeDestroy(ILifecycle ILifecycle)throws Exception;
 
     /***
      * 销毁之后
-     * @param lifecycle lifecycle
+     * @param ILifecycle lifecycle
      * @throws Exception 异常
      */
-    void afterDestroy(Lifecycle lifecycle)throws Exception;
+    void afterDestroy(ILifecycle ILifecycle)throws Exception;
 }

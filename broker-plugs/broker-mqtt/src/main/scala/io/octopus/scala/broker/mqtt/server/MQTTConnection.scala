@@ -114,9 +114,10 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
 
   /**
    * 连接消息
-   * @param msg connectMessage
+   *
+   * @param msg         connectMessage
    * @param oldClientId clientId
-   * @param username userName
+   * @param username    userName
    */
   def handlerConnect3(msg: MqttConnectMessage, oldClientId: String, username: String): Unit = {
     var clientId: String = oldClientId
@@ -178,7 +179,8 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
             // OK continue with sending queued messages and normal flow
             //notify other offline
             if (result.mode eq CreationModeEnum.REOPEN_EXISTING) {
-              result.session.sendQueuedMessagesWhileOffline()
+              logger.trace("Republishing all saved messages for session {} on CId={}", this, clientId)
+              result.session.flushAllQueuedMessages()
             }
             initializeKeepAliveTimeout(channel, msg, clientIdUsed)
 
@@ -406,12 +408,12 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
       case MqttQoS.AT_MOST_ONCE =>
         val receiverMsg = new KernelPayloadMessage(msg.variableHeader().packetId().toShort, MsgRouter.TOPIC, topicName, msg.payload(), msg.fixedHeader().isRetain)
         receiverMsg.setQos(MsgQos.AT_MOST_ONCE)
-        boundSession.receiveMsg(receiverMsg)
+        boundSession.processReceiveMsg(receiverMsg)
       case MqttQoS.AT_LEAST_ONCE =>
         val receiverMsg = new KernelPayloadMessage(msg.variableHeader().packetId().toShort, MsgRouter.TOPIC, topicName, msg.payload(), msg.fixedHeader().isRetain)
         receiverMsg.setQos(MsgQos.AT_LEAST_ONCE)
 
-        if (boundSession.receiveMsg(receiverMsg)) {
+        if (boundSession.processReceiveMsg(receiverMsg)) {
           sendPubAck(msg.variableHeader.packetId)
         }
       case MqttQoS.EXACTLY_ONCE =>
@@ -466,7 +468,7 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
     if (null != oldPublishMsg) {
       val receiverMessage = new KernelPayloadMessage(msg.variableHeader().messageId().toShort, MsgQos.EXACTLY_ONCE, MsgRouter.TOPIC, oldPublishMsg.variableHeader().topicName(),
         oldPublishMsg.payload(), oldPublishMsg.fixedHeader().isRetain, PubEnum.PUBLISH)
-      if (boundSession.receiveMsg(receiverMessage)) {
+      if (boundSession.processReceiveMsg(receiverMessage)) {
         //          interceptor.notifyTopicPublished(mqttPublishMessage, clientId, username)
         sendPubCompMessage(messageId)
       }
@@ -780,11 +782,16 @@ class MQTTConnection(channel: Channel, brokerConfig: BrokerConfiguration, authen
   def writabilityChanged(): Unit = {
     if (channel.isWritable) {
       logger.debug("Channel {} is again writable", channel)
-      boundSession.writeAbilityChanged()
+      boundSession.flushAllQueuedMessages()
     }
   }
 
-  def reSendNotAckedPublishes(): Unit = {
+  override def writeTimeOut(): Unit = {
+//    boundSession.runLoop()
+  }
+
+
+   def reSendNotAckedPublishes(): Unit = {
     boundSession.reSendInflictNotAcked()
   }
 

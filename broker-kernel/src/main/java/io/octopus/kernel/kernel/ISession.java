@@ -21,7 +21,7 @@ public interface ISession {
      * @param msg msg；
      * @return  boolean
      */
-    boolean receiveMsg(KernelPayloadMessage msg) throws IOException;
+    boolean processReceiveMsg(KernelPayloadMessage msg) throws IOException;
 
 
 
@@ -56,10 +56,9 @@ public interface ISession {
 
     /**
      * 发送消息给到客户端
-     * @param index 消息
-     * @param directPublish 是否直接发送
+     * @param msg 消息
      */
-    void sendMsgAtQos(Index index, Boolean directPublish);
+    void publishMsg(KernelPayloadMessage msg);
 
     /**
      * 绑定UDP端点

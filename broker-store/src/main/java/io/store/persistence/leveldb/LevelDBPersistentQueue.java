@@ -150,7 +150,6 @@ public class LevelDBPersistentQueue extends AbstractQueue<Index> {
     public void clear() {
         while (queueTail.get() <= queueHead.get()) {
            final byte[] queueTailKey = getQueueTailKey();
-
             db.delete(queueTailKey);
         }
     }
